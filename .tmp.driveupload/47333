@@ -1,4 +1,4 @@
-/* matchSet.js -- 完全フルバージョン（スマホスクロール対応済み） */
+/* matchSet.js -- スクロール対応済みフルバージョン */
 document.addEventListener("DOMContentLoaded", () => {
   const addSetBtn = document.getElementById("addSetBtn");
   const setsContainer = document.getElementById("setsContainer");
@@ -161,7 +161,7 @@ document.addEventListener("DOMContentLoaded", () => {
     canvasContainer.className = "canvas-container";
     const canvas = document.createElement("canvas");
     canvas.id = `targetCanvas_${setIndex}`;
-    canvas.style.touchAction = "auto";
+    canvas.style.touchAction = "auto"; // ← 強制上書き
     canvasContainer.appendChild(canvas);
     setWrapper.appendChild(canvasContainer);
 
@@ -207,6 +207,9 @@ document.addEventListener("DOMContentLoaded", () => {
     let dragIndex = null;
     let startPos = null;
     let moved = false;
+
+    // 強制的に touch-action:none を解除
+    canvas.style.touchAction = "auto";
 
     img.onload = () => {
       resizeCanvas();
@@ -264,7 +267,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const dy = pos.y - startPos.y;
       if (Math.abs(dx) > 5 || Math.abs(dy) > 5) moved = true;
       if (dragIndex !== null) {
-        if (e.type && e.type.startsWith("touch")) e.preventDefault();
+        if (e.type && e.type.startsWith("touch")) e.preventDefault(); // ドラッグ中のみスクロール停止
         canvas.markers[dragIndex].x = pos.x;
         canvas.markers[dragIndex].y = pos.y;
         drawCanvas(canvas, img, canvas.markers, canvas.scale, canvas.offsetX, canvas.offsetY);
@@ -297,11 +300,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     canvas.addEventListener("touchstart", startDrag, { passive: true });
     canvas.addEventListener("touchmove", function(e) {
-      if (dragIndex !== null) {
-        e.preventDefault(); // 矢をドラッグ中のみスクロール禁止
-        onDrag(e);
-      }
-      // dragIndex === null のときは何もしない → ブラウザスクロール有効
+      if (dragIndex !== null) e.preventDefault(); // ドラッグ中のみスクロール停止
+      onDrag(e);
     }, { passive: false });
     canvas.addEventListener("touchend", endDrag, { passive: true });
     canvas.addEventListener("touchcancel", endDrag, { passive: true });
@@ -408,15 +408,16 @@ document.addEventListener("DOMContentLoaded", () => {
       { color: [255, 0, 0], score: 9 },
       { color: [0, 0, 255], score: 7 },
       { color: [0, 0, 0], score: 5 },
-      { color: [255, 255, 255], score: 3 }
+      { color: [255, 255, 255], score: 3 },
     ];
-    let minDist = Infinity, selectedScore = 0;
-    for (const t of targets) {
+    let best = { score: 0, dist: Infinity };
+    targets.forEach(t => {
       const dist = colorDistance([r, g, b], t.color);
-      if (dist < minDist) { minDist = dist; selectedScore = t.score; }
-    }
-    return selectedScore;
+      if (dist < best.dist) best = { score: t.score, dist };
+    });
+    return best.score;
   }
 
+  /* ---------- initialize ---------- */
   loadSetsForDate(currentDate);
 });
