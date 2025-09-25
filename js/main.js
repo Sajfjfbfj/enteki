@@ -161,7 +161,7 @@ document.addEventListener("DOMContentLoaded", () => {
     canvasContainer.className = "canvas-container";
     const canvas = document.createElement("canvas");
     canvas.id = `targetCanvas_${setIndex}`;
-    canvas.style.touchAction = "none";
+    canvas.style.touchAction = "manipulation";
     canvasContainer.appendChild(canvas);
     setWrapper.appendChild(canvasContainer);
 
