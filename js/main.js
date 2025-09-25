@@ -1,4 +1,4 @@
-/* matchSet.js -- 完全フルバージョン */
+/* matchSet.js -- 完全フルバージョン（スクロール対応） */
 document.addEventListener("DOMContentLoaded", () => {
   const addSetBtn = document.getElementById("addSetBtn");
   const setsContainer = document.getElementById("setsContainer");
@@ -208,18 +208,12 @@ document.addEventListener("DOMContentLoaded", () => {
     let startPos = null;
     let moved = false;
 
-   img.onload = () => {
-  resizeCanvas();
-  // ここをコメントアウトまたは削除
-  // if(!existingSet && canvas.markers.length === 0){
-  //   const autoMarkers = generateAutoMarkers(img);
-  //   canvas.markers = autoMarkers;
-  // }
-  drawCanvas(canvas, img, canvas.markers, canvas.scale, canvas.offsetX, canvas.offsetY);
-};
+    img.onload = () => {
+      resizeCanvas();
+      drawCanvas(canvas, img, canvas.markers, canvas.scale, canvas.offsetX, canvas.offsetY);
+    };
 
-
-    function resizeCanvas(){
+    function resizeCanvas() {
       const parentW = canvas.parentElement.clientWidth || 300;
       const parentH = Math.max(canvas.parentElement.clientHeight, 600);
       canvas.width = parentW;
@@ -227,10 +221,11 @@ document.addEventListener("DOMContentLoaded", () => {
       const scaleX = canvas.width / img.width;
       const scaleY = canvas.height / img.height;
       canvas.scale = Math.min(scaleX, scaleY);
-      canvas.offsetX = (canvas.width - img.width*canvas.scale)/2;
-      canvas.offsetY = (canvas.height - img.height*canvas.scale)/2;
+      canvas.offsetX = (canvas.width - img.width * canvas.scale) / 2;
+      canvas.offsetY = (canvas.height - img.height * canvas.scale) / 2;
       drawCanvas(canvas, img, canvas.markers, canvas.scale, canvas.offsetX, canvas.offsetY);
     }
+
     window.addEventListener("resize", resizeCanvas);
 
     function getEventPosition(e) {
@@ -255,10 +250,9 @@ document.addEventListener("DOMContentLoaded", () => {
       for (let i = canvas.markers.length - 1; i >= 0; i--) {
         const dx = startPos.x - canvas.markers[i].x;
         const dy = startPos.y - canvas.markers[i].y;
-        if (dx*dx + dy*dy <= markerRadius*markerRadius) {
-          dragIndex = i;
-          if (e.type && e.type.startsWith("touch")) e.preventDefault();
-          break;
+        if (dx * dx + dy * dy <= markerRadius * markerRadius) {
+          dragIndex = i; // ドラッグ対象がある場合だけ
+          break; // preventDefault は呼ばない
         }
       }
     }
@@ -270,7 +264,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const dy = pos.y - startPos.y;
       if (Math.abs(dx) > 5 || Math.abs(dy) > 5) moved = true;
       if (dragIndex !== null) {
-        if (e.type && e.type.startsWith("touch")) e.preventDefault();
+        if (e.type && e.type.startsWith("touch")) e.preventDefault(); // ドラッグ中のみスクロール阻害
         canvas.markers[dragIndex].x = pos.x;
         canvas.markers[dragIndex].y = pos.y;
         drawCanvas(canvas, img, canvas.markers, canvas.scale, canvas.offsetX, canvas.offsetY);
@@ -282,17 +276,17 @@ document.addEventListener("DOMContentLoaded", () => {
       if (!moved && dragIndex === null && startPos) {
         const near = canvas.markers.some(m => {
           const dx = m.x - pos.x, dy = m.y - pos.y;
-          return dx*dx + dy*dy < 4;
+          return dx * dx + dy * dy < 4;
         });
         if (!near) {
-          const pixel = getImagePixelColorOnImage(canvas.img,pos.x,pos.y);
+          const pixel = getImagePixelColorOnImage(canvas.img, pos.x, pos.y);
           const score = getScoreFromColor(pixel);
           canvas.markers.push({ x: pos.x, y: pos.y, score });
         }
       }
       dragIndex = null;
       startPos = null;
-      canvas.markers = canvas.markers.filter(m => m.x>=0 && m.x<=img.width && m.y>=0 && m.y<=img.height);
+      canvas.markers = canvas.markers.filter(m => m.x >= 0 && m.x <= img.width && m.y >= 0 && m.y <= img.height);
       drawCanvas(canvas, img, canvas.markers, canvas.scale, canvas.offsetX, canvas.offsetY);
       saveSetsForDate(currentDate, getAllSetsData());
     }
@@ -300,107 +294,127 @@ document.addEventListener("DOMContentLoaded", () => {
     canvas.addEventListener("mousedown", startDrag);
     document.addEventListener("mousemove", onDrag);
     document.addEventListener("mouseup", endDrag);
-    canvas.addEventListener("touchstart", startDrag, { passive:false });
-    canvas.addEventListener("touchmove", onDrag, { passive:false });
-    canvas.addEventListener("touchend", endDrag, { passive:false });
-    canvas.addEventListener("touchcancel", endDrag, { passive:false });
+
+    canvas.addEventListener("touchstart", startDrag, { passive: true });
+    canvas.addEventListener("touchmove", function(e) {
+      if (dragIndex !== null) e.preventDefault(); // ドラッグ中のみ preventDefault
+      onDrag(e);
+    }, { passive: false });
+    canvas.addEventListener("touchend", endDrag, { passive: true });
+    canvas.addEventListener("touchcancel", endDrag, { passive: true });
   }
 
   /* ---------- draw & score ---------- */
-  function drawCanvas(canvas, img, markers, scale, offsetX=0, offsetY=0){
+  function drawCanvas(canvas, img, markers, scale, offsetX = 0, offsetY = 0) {
     const ctx = canvas.getContext("2d");
-    const markerRadius=20;
-    ctx.clearRect(0,0,canvas.width,canvas.height);
+    const markerRadius = 20;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.save();
-    ctx.setTransform(scale,0,0,scale,offsetX,offsetY);
-    ctx.drawImage(img,0,0);
+    ctx.setTransform(scale, 0, 0, scale, offsetX, offsetY);
+    ctx.drawImage(img, 0, 0);
 
-    markers.forEach((marker,index)=>{
+    markers.forEach((marker, index) => {
       let strokeColor;
-      switch(marker.score){
-        case 10: strokeColor='yellow'; break;
-        case 9: strokeColor='red'; break;
-        case 7: strokeColor='blue'; break;
-        case 5: strokeColor='black'; break;
-        case 3: strokeColor='white'; break;
-        default: strokeColor='gray';
+      switch (marker.score) {
+        case 10: strokeColor = 'yellow'; break;
+        case 9: strokeColor = 'red'; break;
+        case 7: strokeColor = 'blue'; break;
+        case 5: strokeColor = 'black'; break;
+        case 3: strokeColor = 'white'; break;
+        default: strokeColor = 'gray';
       }
       ctx.beginPath();
-      ctx.arc(marker.x, marker.y, markerRadius, 0, Math.PI*2);
-      ctx.fillStyle='white';
+      ctx.arc(marker.x, marker.y, markerRadius, 0, Math.PI * 2);
+      ctx.fillStyle = 'white';
       ctx.fill();
-      ctx.strokeStyle=strokeColor;
-      ctx.lineWidth=2;
+      ctx.strokeStyle = strokeColor;
+      ctx.lineWidth = 2;
       ctx.stroke();
-      ctx.fillStyle='black';
-      ctx.font='bold 18px sans-serif';
-      ctx.textAlign='center';
-      ctx.textBaseline='middle';
-      ctx.fillText(index+1, marker.x, marker.y);
+      ctx.fillStyle = 'black';
+      ctx.font = 'bold 18px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(index + 1, marker.x, marker.y);
     });
 
     ctx.restore();
     updateScoreBoard(canvas, `#scoreList_${canvas.id.split("_")[1]}`, `#totalScore_${canvas.id.split("_")[1]}`, markers);
   }
 
-  function updateScoreBoard(canvas, scoreListSelector, totalScoreSelector, markers=null){
+  function updateScoreBoard(canvas, scoreListSelector, totalScoreSelector, markers = null) {
     const list = document.querySelector(scoreListSelector);
-    if(!list) return;
+    if (!list) return;
     markers = markers || canvas.markers;
-    let total=0;
-    while(list.children.length<markers.length){
-      const li=document.createElement("li");
-      li.className="score-item";
-      const span=document.createElement("span");
-      span.className="arrow-label";
+    let total = 0;
+    while (list.children.length < markers.length) {
+      const li = document.createElement("li");
+      li.className = "score-item";
+      const span = document.createElement("span");
+      span.className = "arrow-label";
       li.appendChild(span);
-      const select=document.createElement("select");
-      select.className="score-select";
-      select.style.fontSize="18px";
-      select.style.padding="6px 10px";
-      select.style.minWidth="84px";
-      [0,3,5,7,9,10].forEach(v=>{const opt=document.createElement("option");opt.value=v;opt.textContent=v+"点";select.appendChild(opt);});
-      select.addEventListener("change",()=>{const idx=Array.from(list.children).indexOf(li);if(idx>=0){markers[idx].score=parseInt(select.value);drawCanvas(canvas,canvas.img,markers,canvas.scale,canvas.offsetX,canvas.offsetY);saveSetsForDate(currentDate,getAllSetsData());}});
+      const select = document.createElement("select");
+      select.className = "score-select";
+      select.style.fontSize = "18px";
+      select.style.padding = "6px 10px";
+      select.style.minWidth = "84px";
+      [0, 3, 5, 7, 9, 10].forEach(v => {
+        const opt = document.createElement("option");
+        opt.value = v;
+        opt.textContent = v + "点";
+        select.appendChild(opt);
+      });
+      select.addEventListener("change", () => {
+        const idx = Array.from(list.children).indexOf(li);
+        if (idx >= 0) {
+          markers[idx].score = parseInt(select.value);
+          drawCanvas(canvas, canvas.img, markers, canvas.scale, canvas.offsetX, canvas.offsetY);
+          saveSetsForDate(currentDate, getAllSetsData());
+        }
+      });
       li.appendChild(select);
       list.appendChild(li);
     }
-    markers.forEach((m,i)=>{total+=(m.score||0);const li=list.children[i];li.querySelector(".arrow-label").textContent=`矢${i+1}: `;li.querySelector("select.score-select").value=m.score??0;});
-    while(list.children.length>markers.length){list.removeChild(list.lastChild);}
-    const totalElem=document.querySelector(totalScoreSelector);if(totalElem) totalElem.textContent=total;
+    markers.forEach((m, i) => {
+      total += (m.score || 0);
+      const li = list.children[i];
+      li.querySelector(".arrow-label").textContent = `矢${i + 1}: `;
+      li.querySelector("select.score-select").value = m.score ?? 0;
+    });
+    while (list.children.length > markers.length) {
+      list.removeChild(list.lastChild);
+    }
+    const totalElem = document.querySelector(totalScoreSelector);
+    if (totalElem) totalElem.textContent = total;
   }
 
   /* ---------- helper ---------- */
-  function generateAutoMarkers(img){
-    const markers = [];
-    const positions = [
-      {x: 150, y:150},{x:250,y:160},{x:180,y:280},{x:220,y:240},{x:200,y:200} // 任意初期位置
-    ];
-    positions.forEach(pos=>{
-      const pixel = getImagePixelColorOnImage(img,pos.x,pos.y);
-      const score = getScoreFromColor(pixel);
-      markers.push({x:pos.x,y:pos.y,score});
-    });
-    return markers;
-  }
-
-  function getImagePixelColorOnImage(img,x,y){
+  function getImagePixelColorOnImage(img, x, y) {
     const tempCanvas = document.createElement("canvas");
     tempCanvas.width = img.width;
     tempCanvas.height = img.height;
     const tempCtx = tempCanvas.getContext("2d");
-    tempCtx.drawImage(img,0,0);
-    return tempCtx.getImageData(Math.floor(x),Math.floor(y),1,1).data;
+    tempCtx.drawImage(img, 0, 0);
+    return tempCtx.getImageData(Math.floor(x), Math.floor(y), 1, 1).data;
   }
 
-  function colorDistance([r,g,b],[tr,tg,tb]) { return Math.sqrt((r-tr)**2+(g-tg)**2+(b-tb)**2); }
-  function getScoreFromColor([r,g,b,a]) {
-    if(a===0) return 0;
-    const targets = [{color:[255,255,0],score:10},{color:[255,0,0],score:9},{color:[0,0,255],score:7},{color:[0,0,0],score:5},{color:[255,255,255],score:3}];
-    let minDist=Infinity,selectedScore=0;
-    for(const t of targets){const dist=colorDistance([r,g,b],t.color);if(dist<minDist){minDist=dist;selectedScore=t.score;} }
+  function colorDistance([r, g, b], [tr, tg, tb]) { return Math.sqrt((r - tr) ** 2 + (g - tg) ** 2 + (b - tb) ** 2); }
+  function getScoreFromColor([r, g, b, a]) {
+    if (a === 0) return 0;
+    const targets = [
+      { color: [255, 255, 0], score: 10 },
+      { color: [255, 0, 0], score: 9 },
+      { color: [0, 0, 255], score: 7 },
+      { color: [0, 0, 0], score: 5 },
+      { color: [255, 255, 255], score: 3 }
+    ];
+    let minDist = Infinity, selectedScore = 0;
+    for (const t of targets) {
+      const dist = colorDistance([r, g, b], t.color);
+      if (dist < minDist) { minDist = dist; selectedScore = t.score; }
+    }
     return selectedScore;
   }
 
   /* ---------- boot ---------- */
-  loadSetsForDate(currentDate); 
+  loadSetsForDate(currentDate);
 });
