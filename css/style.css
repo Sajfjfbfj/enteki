@@ -161,3 +161,6 @@ body.dark #messageOverlay div { background-color:#1c1f29; color:#f6f7f8; box-sha
 @media(max-width:640px){
   #messageOverlay div { width:calc(100%-40px); max-height:calc(100vh-100px); margin:0 auto; transform:translateY(-50%); }
 }
+.canvas-container {
+  touch-action: auto !important;
+}

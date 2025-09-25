@@ -13,7 +13,6 @@ document.addEventListener("DOMContentLoaded", () => {
   function loadSummary() {
     const storedData = JSON.parse(localStorage.getItem("kyudoSetsByDate") || "{}");
     summaryContainer.innerHTML = "";
-
     const currentMonth = new Date().getMonth() + 1;
     const currentYear = new Date().getFullYear();
 
@@ -328,96 +327,51 @@ document.addEventListener("DOMContentLoaded", () => {
       }
       ctx.beginPath();
       ctx.arc(marker.x, marker.y, markerRadius, 0, Math.PI * 2);
-      ctx.fillStyle = 'white';
-      ctx.fill();
       ctx.strokeStyle = strokeColor;
-      ctx.lineWidth = 2;
+      ctx.lineWidth = 3;
       ctx.stroke();
-      ctx.fillStyle = 'black';
-      ctx.font = 'bold 18px sans-serif';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(index + 1, marker.x, marker.y);
+      ctx.fillStyle = "rgba(255,255,255,0.3)";
+      ctx.fill();
+      ctx.fillStyle = "black";
+      ctx.font = `${markerRadius}px sans-serif`;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(marker.score, marker.x, marker.y);
     });
-
     ctx.restore();
-    updateScoreBoard(canvas, `#scoreList_${canvas.id.split("_")[1]}`, `#totalScore_${canvas.id.split("_")[1]}`, markers);
-  }
 
-  function updateScoreBoard(canvas, scoreListSelector, totalScoreSelector, markers = null) {
-    const list = document.querySelector(scoreListSelector);
-    if (!list) return;
-    markers = markers || canvas.markers;
-    let total = 0;
-    while (list.children.length < markers.length) {
-      const li = document.createElement("li");
-      li.className = "score-item";
-      const span = document.createElement("span");
-      span.className = "arrow-label";
-      li.appendChild(span);
-      const select = document.createElement("select");
-      select.className = "score-select";
-      select.style.fontSize = "18px";
-      select.style.padding = "6px 10px";
-      select.style.minWidth = "84px";
-      [0, 3, 5, 7, 9, 10].forEach(v => {
-        const opt = document.createElement("option");
-        opt.value = v;
-        opt.textContent = v + "点";
-        select.appendChild(opt);
+    const scoreList = document.querySelector(scoreListSelector);
+    if (scoreList) {
+      scoreList.innerHTML = "";
+      markers.forEach((m, i) => {
+        const li = document.createElement("li");
+        li.textContent = `${i + 1}射目: ${m.score}点`;
+        scoreList.appendChild(li);
       });
-      select.addEventListener("change", () => {
-        const idx = Array.from(list.children).indexOf(li);
-        if (idx >= 0) {
-          markers[idx].score = parseInt(select.value);
-          drawCanvas(canvas, canvas.img, markers, canvas.scale, canvas.offsetX, canvas.offsetY);
-          saveSetsForDate(currentDate, getAllSetsData());
-        }
-      });
-      li.appendChild(select);
-      list.appendChild(li);
     }
-    markers.forEach((m, i) => {
-      total += (m.score || 0);
-      const li = list.children[i];
-      li.querySelector(".arrow-label").textContent = `矢${i + 1}: `;
-      li.querySelector("select.score-select").value = m.score ?? 0;
-    });
-    while (list.children.length > markers.length) {
-      list.removeChild(list.lastChild);
-    }
+
     const totalElem = document.querySelector(totalScoreSelector);
-    if (totalElem) totalElem.textContent = total;
+    if (totalElem) totalElem.textContent = markers.reduce((sum, m) => sum + m.score, 0);
   }
 
-  /* ---------- helper ---------- */
   function getImagePixelColorOnImage(img, x, y) {
     const tempCanvas = document.createElement("canvas");
     tempCanvas.width = img.width;
     tempCanvas.height = img.height;
-    const tempCtx = tempCanvas.getContext("2d");
-    tempCtx.drawImage(img, 0, 0);
-    return tempCtx.getImageData(Math.floor(x), Math.floor(y), 1, 1).data;
+    const ctx = tempCanvas.getContext("2d");
+    ctx.drawImage(img, 0, 0);
+    const data = ctx.getImageData(x, y, 1, 1).data;
+    return { r: data[0], g: data[1], b: data[2], a: data[3] };
   }
 
-  function colorDistance([r, g, b], [tr, tg, tb]) { return Math.sqrt((r - tr) ** 2 + (g - tg) ** 2 + (b - tb) ** 2); }
-  function getScoreFromColor([r, g, b, a]) {
-    if (a === 0) return 0;
-    const targets = [
-      { color: [255, 255, 0], score: 10 },
-      { color: [255, 0, 0], score: 9 },
-      { color: [0, 0, 255], score: 7 },
-      { color: [0, 0, 0], score: 5 },
-      { color: [255, 255, 255], score: 3 },
-    ];
-    let best = { score: 0, dist: Infinity };
-    targets.forEach(t => {
-      const dist = colorDistance([r, g, b], t.color);
-      if (dist < best.dist) best = { score: t.score, dist };
-    });
-    return best.score;
+  function getScoreFromColor({ r, g, b }) {
+    if (r > 200 && g > 200 && b > 200) return 3;
+    if (b > 200) return 5;
+    if (r > 200) return 7;
+    if (r > 200 && g < 50 && b < 50) return 9;
+    if (r > 200 && g > 200 && b < 50) return 10;
+    return 0;
   }
 
-  /* ---------- initialize ---------- */
   loadSetsForDate(currentDate);
 });
