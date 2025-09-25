@@ -90,7 +90,7 @@ header .menu button { cursor: pointer; }
 
 /* ===== Canvas container ===== */
 canvas {
-  touch-action: auto; /* これでキャンバス上でもスクロールできる */
+  touch-action: manipulation; /* これでキャンバス上でもスクロールできる */
 }
 
 .canvas-container {
