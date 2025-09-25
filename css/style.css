@@ -9,7 +9,7 @@ body {
   -moz-osx-font-smoothing: grayscale;
   background: var(--bg, #f6f7f8);
   color: var(--text, #222);
-      touch-action: manipulation;
+  
 }
 
 /* ===== Layout container ===== */
