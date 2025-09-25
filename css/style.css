@@ -1,0 +1,482 @@
+/* styles.css — フルバージョン（あなたの HTML に合わせて） */
+
+/* ===== Reset / base ===== */
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0;
+  padding: 0;
+  font-family: "Manrope", "Yu Gothic", "Hiragino Maru Gothic ProN", "sans-serif";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background: var(--bg, #f6f7f8);
+  color: var(--text, #222);
+}
+
+/* ===== Layout container (keeps HTML structure intact) ===== */
+.container { max-width: 1200px; margin: 0 auto; padding: 0 16px; }
+
+/* ===== Navbar (kept simple — Tailwind provides main look) ===== */
+header .logo { font-weight: 700; font-size: 1.125rem; }
+header .menu button { cursor: pointer; }
+
+/* ===== Calendar / top area ===== */
+.calendar-container,
+.daily-summary,
+.set-wrapper {
+  /* visual consistency if you don't use Tailwind for these parts */
+}
+
+/* ===== Set wrapper (card) ===== */
+.set-wrapper {
+  background: linear-gradient(145deg, #ffffff, #f0f4fb);
+  margin: 18px 0;
+  padding: 18px;
+  border-radius: 12px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+  transition: transform .12s ease, box-shadow .12s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+@media(min-width: 768px) {
+  .set-wrapper { flex-direction: row; align-items: flex-start; }
+}
+
+/* title inside set */
+.set-wrapper h2 {
+  font-size: 1.1rem;
+  margin: 0 0 6px 0;
+  color: #153057;
+}
+
+/* ===== Tools area (labels & select) ===== */
+.tools {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 220px;
+}
+@media(min-width: 768px) {
+  .tools { width: 34%; }
+}
+
+/* Each tool label */
+.tool-label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.95rem;
+  color: #1f2d3d;
+}
+
+/* tool select (the equipment dropdowns) */
+.tool-select {
+  padding: 8px 10px;
+  font-size: 1rem;
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+  background: #fff;
+  appearance: auto;
+  -webkit-appearance: menulist;
+  width: 100%;
+}
+
+/* Make tool selects visually clearer on mobile */
+@media (max-width: 767px) {
+  .tools { flex-direction: row; flex-wrap: wrap; gap: 8px; }
+  .tool-label { flex: 1 1 48%; }
+}
+
+/* ===== Canvas container ===== */
+.canvas-container {
+  background: #fff;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+  overflow: hidden;
+  position: relative;
+  flex: 1 1 60%;
+  min-height: 280px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* The canvas element itself — sizes controlled by JS (width/height),
+   but set block display and touch-action none to prevent browser zoom */
+.canvas-container canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  touch-action: none; /* important: prevent browser pan/zoom interfering */
+  -ms-touch-action: none;
+  background: transparent;
+}
+
+/* If you use a fallback background image (non-canvas) */
+.canvas-placeholder {
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+}
+
+/* ===== Score board (right side in desktop) ===== */
+.score-board {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 220px;
+}
+@media(min-width: 768px) {
+  .score-board { width: 28%; }
+}
+
+/* Score list */
+.score-list {
+  list-style: none;
+  padding: 6px 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* each item */
+.score-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1rem;
+  justify-content: space-between;
+}
+
+/* The select used inside scoreboard for score choice — enlarged for touch */
+.score-select {
+  font-size: 18px;         /* larger text for tapping */
+  padding: 8px 10px;      /* bigger hit area */
+  border-radius: 8px;
+  border: 1px solid #b6c2d6;
+  background: #fff;
+  min-width: 88px;        /* ensure visible */
+  appearance: auto;
+  -webkit-appearance: menulist-button;
+  cursor: pointer;
+}
+
+/* popup select (the floating one that appears near marker) */
+.popup-score-select {
+  font-size: 18px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(0,0,0,0.12);
+  background: white;
+  -webkit-appearance: menulist-button;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+  display: none;
+}
+
+/* total text */
+.score-board p { font-weight: 700; font-size: 1.05rem; margin: 6px 0 0 0; }
+
+/* reset button */
+.score-board button {
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: none;
+  background: #2b6cb0;
+  color: white;
+  cursor: pointer;
+}
+
+/* ===== Accessibility / focus states ===== */
+.score-select:focus,
+.tool-select:focus,
+.popup-score-select:focus,
+#addSetBtn:focus {
+  outline: 3px solid rgba(25,105,225,0.18);
+  outline-offset: 2px;
+}
+
+/* ===== small screen tweaks (mobile friendly) ===== */
+@media (max-width: 767px) {
+  .set-wrapper { padding: 14px; gap: 12px; }
+  .tools { width: auto; }
+  .score-board { width: auto; }
+  .canvas-container { min-height: 340px; }
+  .tool-select { font-size: 16px; padding: 10px; }
+  .score-select { font-size: 20px; padding: 10px 12px; min-width: 96px; }
+  .popup-score-select { font-size: 20px; padding: 10px 12px; }
+}
+
+/* ===== visual for left/right stacking in desktop ===== */
+.set-wrapper > .canvas-container { order: 1; }
+.set-wrapper > .tools { order: 0; }
+.set-wrapper > .score-board { order: 2; }
+
+/* ===== List in daily summary ===== */
+.daily-summary ul { padding-left: 16px; }
+.daily-summary a, .daily-summary li { display: block; padding: 8px 6px; border-radius: 8px; }
+
+/* ===== keep #addSetBtn EXACT as you requested (unchanged) ===== */
+#addSetBtn {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  width: 250px;
+  margin: 0 auto;
+  padding: .9em 2em;
+  overflow: hidden;
+  border: 1px solid #2589d0;
+  border-radius: 5px;
+  background-color: #fff;
+  color: #2589d0;
+  font-size: 1em;
+  cursor: pointer;
+  transition: color .3s ease;
+}
+
+#addSetBtn:hover {
+  background-color: transparent;
+  color: #fff;
+}
+
+#addSetBtn::before {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: -1;
+  width: 0;
+  height: 100%;
+  background-color: #2589d0;
+  content: '';
+  transition: width .3s ease;
+}
+
+#addSetBtn:hover::before {
+  width: 100%;
+}
+
+/* ===== small utilities ===== */
+.hidden { display: none !important; }
+.center { display:flex; align-items:center; justify-content:center; }
+/* ===== Tools Form (道具管理) ===== */
+.tools {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: #fefefe;
+  padding: 16px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+}
+
+.tool-label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.95rem;
+  color: #1f2d3d;
+}
+
+.tool-label label {
+  font-weight: 600;
+}
+
+.tool-select {
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+  background-color: #fff;
+  font-size: 1rem;
+  color: #111;
+  width: 100%;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.tool-select:focus {
+  border-color: #1969e1;
+  box-shadow: 0 0 0 2px rgba(25, 105, 225, 0.2);
+  outline: none;
+}
+
+/* ===== Responsive adjustments ===== */
+@media (max-width: 767px) {
+  .tools {
+    gap: 10px;
+  }
+}
+
+/* ===== Section headings ===== */
+.tools h3 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #153057;
+  margin-bottom: 6px;
+}
+
+/* ===== Dark mode support ===== */
+body.dark .tools {
+  background: #1c1f29;
+}
+
+body.dark .tool-label {
+  color: #d1d5db; /* lighter text */
+}
+
+body.dark .tool-select {
+  background: #111721;
+  border-color: #374151;
+  color: #f6f7f8;
+}
+
+body.dark .tool-select::placeholder {
+  color: #9ca3af;
+}
+/* ===== 道具管理ページ用追加スタイル ===== */
+
+/* 登録メッセージ */
+#message {
+  font-size: 0.95rem;
+  line-height: 1.6;
+  padding: 12px 16px;
+  border-radius: 10px;
+  border: 1px solid #cbd5e1;
+  background-color: #f0f4fb;
+  color: #1e3a8a;
+  margin-bottom: 1rem;
+  transition: all 0.2s ease;
+
+  /* 縦並び対応 */
+  white-space: pre-line; /* 改行コード \n を有効にする */
+}
+
+#message.registered {
+  background-color: #e0f2fe;
+  border-color: #60a5fa;
+  color: #1e40af;
+  font-weight: 600;
+}
+
+/* 編集 / 保存ボタン */
+#editBtn, #saveToolsBtn {
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: background-color 0.2s ease;
+}
+#editBtn { background-color: #1969e1; color: #fff; }
+#editBtn:hover { background-color: #155ab5; }
+#saveToolsBtn { background-color: #16a34a; color: #fff; }
+#saveToolsBtn:hover { background-color: #15803d; }
+
+/* 編集エリア */
+#editArea {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.category-wrapper {
+  background: #fefefe;
+  padding: 16px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+}
+.category-wrapper h3 { margin-bottom: 8px; color: #153057; }
+.category-wrapper ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.category-wrapper li {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.category-wrapper input {
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid #cbd5e1;
+  flex: 1;
+}
+.category-wrapper button {
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  background-color: #1969e1;
+  color: #fff;
+  font-weight: 600;
+  transition: background-color 0.2s ease;
+}
+.category-wrapper button:hover { background-color: #155ab5; }
+
+/* ダークモード対応 */
+body.dark #editArea,
+body.dark .category-wrapper {
+  background-color: #1c1f29;
+  color: #f6f7f8;
+}
+body.dark #message {
+  background-color: #111721;
+  border-color: #2563eb;
+  color: #60a5fa;
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 767px) {
+  #editArea { gap: 12px; }
+  .category-wrapper li { flex-direction: column; align-items: stretch; }
+  .category-wrapper input { width: 100%; }
+}
+/* 保存メッセージオーバーレイ */
+#messageOverlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 50;
+}
+
+#messageOverlay div {
+  background-color: #1969e1; /* Light mode primary */
+  color: #fff;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.875rem; /* 14px */
+  box-shadow: 0 6px 18px rgba(0,0,0,0.2);
+  opacity: 0;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  max-width: 90%;
+  text-align: center;
+}
+
+/* 表示状態 */
+#messageOverlay div.show {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
+/* SP用：画面幅が 640px 以下で左右にマージンを取る */
+@media (max-width: 640px) {
+  #messageOverlay div {
+    width: calc(100% - 40px); /* 左右20pxずつ */
+    max-height: calc(100vh - 100px); /* 上下余白確保 */
+    margin: 0 auto;
+    transform: translateY(-50%);
+  }
+}
+
+/* ===== ダークモード対応 ===== */
+body.dark #messageOverlay div {
+  background-color: #1c1f29; /* Dark mode background */
+  color: #f6f7f8;           /* Light text in dark mode */
+  box-shadow: 0 6px 18px rgba(0,0,0,0.4);
+}

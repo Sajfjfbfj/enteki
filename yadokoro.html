@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <link rel="stylesheet" href="css/style.css">
+  <title>遠的スコア表 - 的分析</title>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#1969e1",
+            "background-light": "#f6f7f8",
+            "background-dark": "#111721",
+          },
+          fontFamily: {
+            "display": ["Manrope", "Yu Gothic", "Hiragino Maru Gothic ProN", "sans-serif"],
+          },
+          borderRadius: {
+            "DEFAULT": "0.5rem",
+            "lg": "1rem",
+            "xl": "1.5rem",
+            "full": "9999px"
+          },
+        },
+      },
+    }
+  </script>
+
+  <!-- Google Fonts & Icons -->
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-800 dark:text-slate-200">
+<div class="flex flex-col min-h-screen">
+
+  <!-- ナビゲーションバー -->
+  <header class="sticky top-0 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-sm z-10 shadow-sm">
+    <div class="container mx-auto px-4">
+      <div class="flex items-center justify-between h-16">
+        <h1 class="text-lg font-bold text-slate-900 dark:text-white">遠的スコア表</h1>
+      </div>
+      <div class="flex border-b border-slate-200 dark:border-slate-800">
+        <a class="px-4 py-2 text-sm font-bold text-slate-500 hover:text-primary dark:text-slate-400 dark:hover:text-primary" href="index.html">ホーム</a>
+        <a class="px-4 py-2 text-sm font-bold text-slate-500 hover:text-primary dark:text-slate-400 dark:hover:text-primary" href="tools.html">道具管理</a>
+        <a class="px-4 py-2 text-sm font-bold border-b-2 border-primary text-primary" href="yadokoro.html">矢所分析</a>
+        <a class="px-4 py-2 text-sm font-bold text-slate-500 hover:text-primary dark:text-slate-400 dark:hover:text-primary" href="help.html">ヘルプ</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- メインコンテンツ -->
+  <main class="flex-grow container mx-auto px-4 py-6">
+
+    <!-- 的分析セクション -->
+    <section>
+      <h2 class="text-xl font-bold mb-4 text-slate-900 dark:text-white">的分析</h2>
+      <div class="bg-white dark:bg-slate-900 rounded-xl shadow-lg p-4 flex flex-col md:flex-row gap-6">
+        <!-- 的キャンバス -->
+        <canvas id="targetCanvas" class="w-full md:w-1/2 h-64 bg-slate-100 dark:bg-slate-800 rounded-xl"></canvas>
+
+        <!-- 得点分布グラフ -->
+        <div class="w-full md:w-1/2">
+          <h3 class="font-bold mb-2 text-slate-900 dark:text-white">得点分布</h3>
+          <canvas id="scoreChart" class="w-full h-64 bg-white dark:bg-slate-900 rounded-xl"></canvas>
+        </div>
+      </div>
+    </section>
+    
+  </main>
+</div>
+
+<!-- JS -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="js/analysis.js"></script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/service-worker.js')
+      .then(reg => console.log('Service Worker registered:', reg))
+      .catch(err => console.error('Service Worker registration failed:', err));
+  });
+}
+</script>
+
+</body>
+</html>

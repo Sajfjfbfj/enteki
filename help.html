@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="apple-touch-icon" sizes="57x57" href="/apple-icon-57x57.png">
+<link rel="apple-touch-icon" sizes="60x60" href="/apple-icon-60x60.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="76x76" href="/apple-icon-76x76.png">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="120x120" href="/apple-icon-120x120.png">
+<link rel="apple-touch-icon" sizes="144x144" href="/apple-icon-144x144.png">
+<link rel="apple-touch-icon" sizes="152x152" href="/apple-icon-152x152.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-icon-180x180.png">
+
+<link rel="icon" type="image/png" sizes="192x192" href="/android-icon-192x192.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+
+<link rel="manifest" href="/manifest.json">
+
+<meta name="theme-color" content="#1969e1">
+<meta name="msapplication-TileColor" content="#ffffff">
+<meta name="msapplication-TileImage" content="/ms-icon-144x144.png">
+
+  <title>遠的スコア表 ヘルプ</title>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#1969e1",
+            "background-light": "#f6f7f8",
+            "background-dark": "#111721",
+          },
+          fontFamily: {
+            "display": ["Manrope", "Yu Gothic", "Hiragino Maru Gothic ProN", "sans-serif"],
+          },
+          borderRadius: {
+            "DEFAULT": "0.5rem",
+            "lg": "1rem",
+            "xl": "1.5rem",
+            "full": "9999px"
+          },
+        },
+      },
+    }
+  </script>
+
+  <!-- Google Fonts & Icons -->
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-800 dark:text-slate-200">
+<div class="flex flex-col min-h-screen">
+
+  <!-- ナビゲーションバー -->
+  <header class="sticky top-0 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-sm z-10 shadow-sm">
+    <div class="container mx-auto px-4">
+      <div class="flex items-center justify-between h-16">
+        <h1 class="text-lg font-bold text-slate-900 dark:text-white">遠的スコア表</h1>
+        
+      </div>
+      <div class="flex border-b border-slate-200 dark:border-slate-800">
+        <a class="px-4 py-2 text-sm font-bold text-slate-500 hover:text-primary dark:text-slate-400 dark:hover:text-primary" href="index.html">ホーム</a>
+        <a class="px-4 py-2 text-sm font-bold text-slate-500 hover:text-primary dark:text-slate-400 dark:hover:text-primary" href="tools.html">道具管理</a>
+        <a class="px-4 py-2 text-sm font-bold text-slate-500 hover:text-primary dark:text-slate-400 dark:hover:text-primary" href="yadokoro.html">矢所分析</a>
+        <a class="px-4 py-2 text-sm font-bold border-b-2 border-primary text-primary" href="help.html">ヘルプ</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- メインコンテンツ -->
+  <main class="flex-grow container mx-auto px-4 py-6 space-y-8">
+
+    <section>
+      <h2 class="text-2xl font-bold mb-4 text-slate-900 dark:text-white">スコアの入力方法</h2>
+      <div class="bg-white dark:bg-slate-900 rounded-xl shadow-lg p-4 space-y-4">
+        <div class="flex items-start space-x-4">
+          <div class="bg-primary text-white rounded-full flex-shrink-0 w-8 h-8 flex items-center justify-center font-bold text-lg">1</div>
+          <p class="text-base text-slate-600 dark:text-slate-400">
+            各立ちで的の的中地点をタッチすると自動で点数が出てきます。もし、点数の境目等の修正が必要だった場合、マーカードラックしスコア表の点数をご自身でお選びください。
+          </p>
+        </div>
+        <div class="flex items-start space-x-4">
+          <div class="bg-primary text-white rounded-full flex-shrink-0 w-8 h-8 flex items-center justify-center font-bold text-lg">2</div>
+          <p class="text-base text-slate-600 dark:text-slate-400">
+            合計得点と的中率は自動で計算され、画面上部に表示されます。
+          </p>
+        </div>
+      </div>
+      
+    </section>
+ <section>
+      <h2 class="text-2xl font-bold mb-4 text-slate-900 dark:text-white">立ちごとの削除について</h2>
+      <div class="bg-white dark:bg-slate-900 rounded-xl shadow-lg p-4">
+        <p class="text-base text-slate-600 dark:text-slate-400">
+         立ちごと削除する場合は各立ちの右上にあります削除ボタンから削除してください。
+        </p>
+      </div>
+    </section>
+    <section>
+      <h2 class="text-2xl font-bold mb-4 text-slate-900 dark:text-white">遠的競技について</h2>
+      <div class="bg-white dark:bg-slate-900 rounded-xl shadow-lg p-4">
+        <p class="text-base text-slate-600 dark:text-slate-400">
+          遠的競技は、60m先の的を射る競技です。的の大きさは直径100cmで、中心から点数が定められています。詳細なルールは全日本弓道連盟の競技規則をご確認ください。
+        </p>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="text-2xl font-bold mb-4 text-slate-900 dark:text-white">道具登録について</h2>
+      <div class="bg-white dark:bg-slate-900 rounded-xl shadow-lg p-4">
+        <p class="text-base text-slate-600 dark:text-slate-400">
+          道具登録は道具管理ページより登録編集できます。
+        </p>
+      </div>
+    </section>
+<section>
+      <h2 class="text-2xl font-bold mb-4 text-slate-900 dark:text-white">履歴の表示</h2>
+      <div class="bg-white dark:bg-slate-900 rounded-xl shadow-lg p-4">
+        <p class="text-base text-slate-600 dark:text-slate-400">
+          過去のスコアは日付選択画面から確認できます。
+        </p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="container mx-auto px-4 py-4 text-center text-slate-500 dark:text-slate-400 text-sm">
+    <p>© 2024 Kyudo 遠的 App. All Rights Reserved.</p>
+  </footer>
+</div>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/service-worker.js')
+      .then(reg => console.log('Service Worker registered:', reg))
+      .catch(err => console.error('Service Worker registration failed:', err));
+  });
+}
+</script>
+
+</body>
+</html>
