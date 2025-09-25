@@ -1,4 +1,4 @@
-/* matchSet.js -- 完全フルバージョン（スクロール対応） */
+/* matchSet.js -- 完全フルバージョン（スクロール対応済み） */
 document.addEventListener("DOMContentLoaded", () => {
   const addSetBtn = document.getElementById("addSetBtn");
   const setsContainer = document.getElementById("setsContainer");
@@ -161,7 +161,7 @@ document.addEventListener("DOMContentLoaded", () => {
     canvasContainer.className = "canvas-container";
     const canvas = document.createElement("canvas");
     canvas.id = `targetCanvas_${setIndex}`;
-    canvas.style.touchAction = "manipulation";
+    canvas.style.touchAction = "auto"; // ← ここが重要
     canvasContainer.appendChild(canvas);
     setWrapper.appendChild(canvasContainer);
 
@@ -251,8 +251,8 @@ document.addEventListener("DOMContentLoaded", () => {
         const dx = startPos.x - canvas.markers[i].x;
         const dy = startPos.y - canvas.markers[i].y;
         if (dx * dx + dy * dy <= markerRadius * markerRadius) {
-          dragIndex = i; // ドラッグ対象がある場合だけ
-          break; // preventDefault は呼ばない
+          dragIndex = i;
+          break;
         }
       }
     }
@@ -264,7 +264,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const dy = pos.y - startPos.y;
       if (Math.abs(dx) > 5 || Math.abs(dy) > 5) moved = true;
       if (dragIndex !== null) {
-        if (e.type && e.type.startsWith("touch")) e.preventDefault(); // ドラッグ中のみスクロール阻害
+        if (e.type && e.type.startsWith("touch")) e.preventDefault();
         canvas.markers[dragIndex].x = pos.x;
         canvas.markers[dragIndex].y = pos.y;
         drawCanvas(canvas, img, canvas.markers, canvas.scale, canvas.offsetX, canvas.offsetY);
@@ -297,7 +297,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     canvas.addEventListener("touchstart", startDrag, { passive: true });
     canvas.addEventListener("touchmove", function(e) {
-      if (dragIndex !== null) e.preventDefault(); // ドラッグ中のみ preventDefault
+      if (dragIndex !== null) e.preventDefault();
       onDrag(e);
     }, { passive: false });
     canvas.addEventListener("touchend", endDrag, { passive: true });

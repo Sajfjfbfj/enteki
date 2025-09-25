@@ -89,6 +89,10 @@ header .menu button { cursor: pointer; }
 }
 
 /* ===== Canvas container ===== */
+canvas {
+  touch-action: auto; /* これでキャンバス上でもスクロールできる */
+}
+
 .canvas-container {
   background: #fff;
   border-radius: 10px;
