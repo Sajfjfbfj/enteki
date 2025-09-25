@@ -161,7 +161,7 @@ document.addEventListener("DOMContentLoaded", () => {
     canvasContainer.className = "canvas-container";
     const canvas = document.createElement("canvas");
     canvas.id = `targetCanvas_${setIndex}`;
-    canvas.style.touchAction = "auto"; // ← 強制上書き
+    canvas.style.touchAction = "auto"; // ← 変更なし
     canvasContainer.appendChild(canvas);
     setWrapper.appendChild(canvasContainer);
 
@@ -208,7 +208,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let startPos = null;
     let moved = false;
 
-    // 強制的に touch-action:none を解除
+    // touch-action は auto のまま
     canvas.style.touchAction = "auto";
 
     img.onload = () => {
@@ -421,3 +421,4 @@ document.addEventListener("DOMContentLoaded", () => {
   /* ---------- initialize ---------- */
   loadSetsForDate(currentDate);
 });
+
