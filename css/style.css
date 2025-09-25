@@ -108,10 +108,11 @@ header .menu button { cursor: pointer; }
   display: block;
   width: 100%;
   height: 100%;
-  touch-action: none; /* important: prevent browser pan/zoom interfering */
-  -ms-touch-action: none;
+  touch-action: manipulation; /* ← スクロール許可 & ズーム禁止 */
+  -ms-touch-action: manipulation;
   background: transparent;
 }
+
 
 /* If you use a fallback background image (non-canvas) */
 .canvas-placeholder {
