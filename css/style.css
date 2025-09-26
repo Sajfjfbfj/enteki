@@ -9,7 +9,6 @@ body {
   -moz-osx-font-smoothing: grayscale;
   background: var(--bg, #f6f7f8);
   color: var(--text, #222);
-  
 }
 
 /* ===== Layout container ===== */
@@ -26,14 +25,11 @@ header .menu button { cursor: pointer; }
   padding: 18px;
   border-radius: 12px;
   box-shadow: 0 6px 18px rgba(0,0,0,0.06);
-  transition: transform .12s ease, box-shadow .12s ease;
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
-@media(min-width: 768px) {
-  .set-wrapper { flex-direction: row; align-items: flex-start; }
-}
+@media(min-width: 768px) { .set-wrapper { flex-direction: row; align-items: flex-start; } }
 .set-wrapper h2 { font-size: 1.1rem; margin: 0 0 6px 0; color: #153057; }
 
 /* ===== Tools / select ===== */
@@ -54,7 +50,6 @@ header .menu button { cursor: pointer; }
   font-size: 0.95rem;
   color: #1f2d3d;
 }
-.tool-label label { font-weight: 600; }
 .tool-select {
   padding: 8px 10px;
   border-radius: 8px;
@@ -80,33 +75,27 @@ header .menu button { cursor: pointer; }
   background: #fff;
   border-radius: 10px;
   border: 1px solid #e2e8f0;
-  overflow: visible;
   position: relative;
   flex: 1 1 60%;
   min-height: 280px;
   display: flex;
   align-items: center;
   justify-content: center;
+  touch-action: auto !important; /* 縦方向スクロールは確実に有効 */
 }
+
 .canvas-container canvas {
   display: block;
   width: 100%;
   height: 100%;
-  touch-action: manipulation;
-  -ms-touch-action: manipulation;
-  background: transparent;
-}
-.canvas-container {
-  /* 縦方向のスクロールは許可 */
-  touch-action: pan-y;
-}
-
-.canvas-container canvas {
-  /* canvas はタッチ操作（ドラッグ）優先にする */
-  touch-action: none;
+  touch-action: auto !important; /* canvas 上のドラッグ優先を確実に有効 */
   user-select: none;
   -webkit-user-drag: none;
   -webkit-touch-callout: none;
+  background: transparent;
+}
+canvas#targetCanvas_0{
+  touch-action: auto !important;
 }
 
 /* ===== Score board ===== */
@@ -156,9 +145,6 @@ body.dark .tools { background:#1c1f29; }
 body.dark .tool-label { color:#d1d5db; }
 body.dark .tool-select { background:#111721; border-color:#374151; color:#f6f7f8; }
 body.dark .tool-select::placeholder { color:#9ca3af; }
-body.dark #editArea, body.dark .category-wrapper { background-color:#1c1f29; color:#f6f7f8; }
-body.dark #message { background-color:#111721; border-color:#2563eb; color:#60a5fa; }
-body.dark #messageOverlay div { background-color:#1c1f29; color:#f6f7f8; box-shadow:0 6px 18px rgba(0,0,0,0.4); }
 
 /* ===== Responsive / mobile tweaks ===== */
 @media (max-width: 767px) {
@@ -167,14 +153,4 @@ body.dark #messageOverlay div { background-color:#1c1f29; color:#f6f7f8; box-sha
   .canvas-container { min-height:340px; }
   .tool-select { font-size:16px; padding:10px; }
   .score-select, .popup-score-select { font-size:20px; padding:10px 12px; min-width:96px; }
-  #editArea { gap:12px; }
-  .category-wrapper li { flex-direction:column; align-items:stretch; }
-  .category-wrapper input { width:100%; }
 }
-@media(max-width:640px){
-  #messageOverlay div { width:calc(100%-40px); max-height:calc(100vh-100px); margin:0 auto; transform:translateY(-50%); }
-}
-canvas {
-  touch-action: auto !important;
-}
-

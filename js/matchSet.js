@@ -21,6 +21,9 @@ function initScoreCanvas(id) {
 
   let editIndex = null;
   let scaleFactor = 1;
+  let longPressTimer = null;
+  const longPressDuration = 800;
+  let isDragging = false; // ←追加
 
   window[`setData${id}`] = { markers, editSelect };
 
@@ -33,10 +36,6 @@ function initScoreCanvas(id) {
     scaleFactor = canvas.clientWidth / canvas.width;
     drawCanvas();
   };
-
-  // --- 長押し削除 ---
-  let longPressTimer = null;
-  const longPressDuration = 800;
 
   function startPress(x, y) {
     dragIndex = null;
@@ -64,6 +63,7 @@ function initScoreCanvas(id) {
   function moveMarker(x, y) {
     if (dragIndex === null) return;
     if (longPressTimer) clearTimeout(longPressTimer);
+    isDragging = true; // ←ドラッグ開始
     markers[dragIndex].x = x;
     markers[dragIndex].y = y;
     drawCanvas();
@@ -71,31 +71,12 @@ function initScoreCanvas(id) {
 
   function endPress() {
     if (longPressTimer) clearTimeout(longPressTimer);
-
-    if (dragIndex !== null) {
-      const containerRect = canvas.parentElement.getBoundingClientRect();
-      const rect = canvas.getBoundingClientRect();
-      const scaleX = rect.width / canvas.width;
-      const scaleY = rect.height / canvas.height;
-
-      markers = markers.filter(m => {
-        const markerX = m.x * scaleX + rect.left;
-        const markerY = m.y * scaleY + rect.top;
-        return (
-          markerX >= containerRect.left &&
-          markerX <= containerRect.right &&
-          markerY >= containerRect.top &&
-          markerY <= containerRect.bottom
-        );
-      });
-    }
-
     dragIndex = null;
     updateScoreBoard();
     drawCanvas();
+    isDragging = false; // ←ドラッグ終了
   }
 
-  // --- 座標取得 ---
   function getEventPosition(e) {
     const rect = canvas.getBoundingClientRect();
     let clientX, clientY;
@@ -106,15 +87,14 @@ function initScoreCanvas(id) {
       clientX = e.clientX;
       clientY = e.clientY;
     }
-    return {
-      x: (clientX - rect.left) / scaleFactor,
-      y: (clientY - rect.top) / scaleFactor
-    };
+    return { x: (clientX - rect.left) / scaleFactor, y: (clientY - rect.top) / scaleFactor };
   }
 
   function handlePress(pos, e) {
-    e.preventDefault(); // ページスクロールや選択防止
-    if (!startPress(pos.x, pos.y)) {
+    // 長押しやドラッグ中のみ preventDefault
+    if (startPress(pos.x, pos.y)) e.preventDefault(); 
+    else if (e.type.startsWith("touch")) e.stopPropagation(); // タップはスクロールOK
+    else {
       const pixel = getImagePixelColor(pos.x, pos.y, img);
       const score = getScoreFromColor(pixel);
       markers.push({ x: pos.x, y: pos.y, score });
@@ -238,8 +218,8 @@ function initScoreCanvas(id) {
   canvas.addEventListener("mouseup", endPress);
   canvas.addEventListener("mouseleave", endPress);
 
-  canvas.addEventListener("touchstart", e => handlePress(getEventPosition(e), e), { passive: false });
-  canvas.addEventListener("touchmove", e => moveMarker(getEventPosition(e).x, getEventPosition(e).y), { passive: false });
+  canvas.addEventListener("touchstart", e => handlePress(getEventPosition(e), e), { passive: true });
+  canvas.addEventListener("touchmove", e => { if (isDragging) e.preventDefault(); moveMarker(getEventPosition(e).x, getEventPosition(e).y); }, { passive: false });
   canvas.addEventListener("touchend", endPress);
   canvas.addEventListener("touchcancel", endPress);
 }

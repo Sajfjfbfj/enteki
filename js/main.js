@@ -418,3 +418,10 @@ document.addEventListener("DOMContentLoaded", () => {
   /* ---------- initialize ---------- */
   loadSetsForDate(currentDate);
 });
+const canvas = document.getElementById("targetCanvas_0"); // 例
+const observer = new MutationObserver(() => {
+  if (canvas.style.touchAction === "none") {
+    canvas.style.touchAction = "auto";
+  }
+});
+observer.observe(canvas, { attributes: true, attributeFilter: ["style"] });
