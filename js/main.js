@@ -1,4 +1,4 @@
-/* matchSet.js -- Pixelなどでもスクロール可能対応済み */
+/* matchSet.js -- Pixelなどでもスクロール可能対応済み + 道具保存対応（完全版） */
 document.addEventListener("DOMContentLoaded", () => {
   const addSetBtn = document.getElementById("addSetBtn");
   const setsContainer = document.getElementById("setsContainer");
@@ -89,12 +89,21 @@ document.addEventListener("DOMContentLoaded", () => {
     setsContainer.querySelectorAll(".set-wrapper").forEach(setWrapper => {
       const canvas = setWrapper.querySelector("canvas");
       const markers = canvas && canvas.markers ? canvas.markers.map(m => ({ ...m })) : [];
-      setsData.push({ markers });
+
+      // 道具選択も保存（data-category をキーに）
+      const toolSelections = {};
+      setWrapper.querySelectorAll(".tool-select").forEach(select => {
+        const category = select.dataset.category;
+        toolSelections[category] = select.value;
+      });
+
+      setsData.push({ markers, tools: toolSelections });
     });
     return setsData;
   }
 
   function setCurrentDate(newDate) {
+    // 現在の日付のデータを保存してから切り替え
     saveSetsForDate(currentDate, getAllSetsData());
     currentDate = newDate;
     matchDate.value = currentDate;
@@ -102,6 +111,8 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   matchDate.addEventListener("change", () => setCurrentDate(matchDate.value));
+
+  // 追加ボタン
   addSetBtn.addEventListener("click", () => {
     addNewSet();
     saveSetsForDate(currentDate, getAllSetsData());
@@ -139,18 +150,33 @@ document.addEventListener("DOMContentLoaded", () => {
       const label = document.createElement("label");
       label.textContent = category + ": ";
       label.className = "tool-label block";
+
       const select = document.createElement("select");
       select.className = "tool-select rounded border px-2 py-1 w-full dark:bg-slate-700 dark:text-white";
+      select.dataset.category = category; // ← ここでカテゴリを data 属性として保持
+
       const emptyOpt = document.createElement("option");
       emptyOpt.value = "";
       emptyOpt.textContent = "選択してください";
       select.appendChild(emptyOpt);
+
       tools[category].forEach(item => {
         const opt = document.createElement("option");
         opt.value = item.name;
         opt.textContent = `${item.name}${item.feature ? " (" + item.feature + ")" : ""}`;
         select.appendChild(opt);
       });
+
+      // 既存データがあれば復元（data-category をキーに）
+      if (existingSet && existingSet.tools && existingSet.tools[category]) {
+        select.value = existingSet.tools[category];
+      }
+
+      // 変更したら保存
+      select.addEventListener("change", () => {
+        saveSetsForDate(currentDate, getAllSetsData());
+      });
+
       label.appendChild(select);
       toolSection.appendChild(label);
     });
@@ -175,6 +201,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const totalP = document.createElement("p");
     totalP.innerHTML = `合計: <span id="totalScore_${setIndex}">0</span>`;
     scoreBoard.appendChild(totalP);
+
     const resetBtn = document.createElement("button");
     resetBtn.textContent = "リセット";
     resetBtn.className = "px-2 py-1 bg-yellow-600 text-white rounded hover:bg-yellow-700";
@@ -184,11 +211,14 @@ document.addEventListener("DOMContentLoaded", () => {
       saveSetsForDate(currentDate, getAllSetsData());
     });
     scoreBoard.appendChild(resetBtn);
-    setWrapper.appendChild(scoreBoard);
 
+    setWrapper.appendChild(scoreBoard);
     setsContainer.appendChild(setWrapper);
 
     initializeCanvas(canvas, `#scoreList_${setIndex}`, `#totalScore_${setIndex}`, existingSet);
+
+    // 追加直後に保存しておく（ページを切り替える前に状態が確実に入るよう）
+    saveSetsForDate(currentDate, getAllSetsData());
   }
 
   /* ---------- canvas initialization ---------- */
@@ -208,7 +238,6 @@ document.addEventListener("DOMContentLoaded", () => {
     let startPos = null;
     let moved = false;
 
-    // touch-action は auto のまま
     canvas.style.touchAction = "auto";
 
     img.onload = () => {
@@ -289,17 +318,20 @@ document.addEventListener("DOMContentLoaded", () => {
       }
       dragIndex = null;
       startPos = null;
+      // 画像範囲外のマーカーは削除
       canvas.markers = canvas.markers.filter(m => m.x >= 0 && m.x <= img.width && m.y >= 0 && m.y <= img.height);
       drawCanvas(canvas, img, canvas.markers, canvas.scale, canvas.offsetX, canvas.offsetY);
       saveSetsForDate(currentDate, getAllSetsData());
     }
 
+    // mouse
     canvas.addEventListener("mousedown", startDrag);
     document.addEventListener("mousemove", onDrag);
     document.addEventListener("mouseup", endDrag);
 
+    // touch - passive:false on move so we can preventDefault while dragging
     canvas.addEventListener("touchstart", startDrag, { passive: true });
-    canvas.addEventListener("touchmove", onDrag, { passive: false }); // ← passive:false にしてドラッグ中のみ preventDefault
+    canvas.addEventListener("touchmove", onDrag, { passive: false });
     canvas.addEventListener("touchend", endDrag, { passive: true });
     canvas.addEventListener("touchcancel", endDrag, { passive: true });
   }
@@ -397,7 +429,10 @@ document.addEventListener("DOMContentLoaded", () => {
     return tempCtx.getImageData(Math.floor(x), Math.floor(y), 1, 1).data;
   }
 
-  function colorDistance([r, g, b], [tr, tg, tb]) { return Math.sqrt((r - tr) ** 2 + (g - tg) ** 2 + (b - tb) ** 2); }
+  function colorDistance([r, g, b], [tr, tg, tb]) {
+    return Math.sqrt((r - tr) ** 2 + (g - tg) ** 2 + (b - tb) ** 2);
+  }
+
   function getScoreFromColor([r, g, b, a]) {
     if (a === 0) return 0;
     const targets = [
@@ -405,23 +440,25 @@ document.addEventListener("DOMContentLoaded", () => {
       { color: [255, 0, 0], score: 9 },
       { color: [0, 0, 255], score: 7 },
       { color: [0, 0, 0], score: 5 },
-      { color: [255, 255, 255], score: 3 },
+      { color: [255, 255, 255], score: 3 }
     ];
-    let best = { score: 0, dist: Infinity };
+    let minDist = Infinity, bestScore = 0;
     targets.forEach(t => {
-      const dist = colorDistance([r, g, b], t.color);
-      if (dist < best.dist) best = { score: t.score, dist };
+      const d = colorDistance([r, g, b], t.color);
+      if (d < minDist) { minDist = d; bestScore = t.score; }
     });
-    return best.score;
+    return bestScore;
   }
 
-  /* ---------- initialize ---------- */
+  /* ---------- ensure current data saved on unload (safety) ---------- */
+  window.addEventListener("beforeunload", () => {
+    try {
+      saveSetsForDate(currentDate, getAllSetsData());
+    } catch (e) {
+      // ignore
+    }
+  });
+
+  /* ---------- init ---------- */
   loadSetsForDate(currentDate);
 });
-const canvas = document.getElementById("targetCanvas_0"); // 例
-const observer = new MutationObserver(() => {
-  if (canvas.style.touchAction === "none") {
-    canvas.style.touchAction = "auto";
-  }
-});
-observer.observe(canvas, { attributes: true, attributeFilter: ["style"] });
