@@ -96,6 +96,18 @@ header .menu button { cursor: pointer; }
   -ms-touch-action: manipulation;
   background: transparent;
 }
+.canvas-container {
+  /* 縦方向のスクロールは許可 */
+  touch-action: pan-y;
+}
+
+.canvas-container canvas {
+  /* canvas はタッチ操作（ドラッグ）優先にする */
+  touch-action: none;
+  user-select: none;
+  -webkit-user-drag: none;
+  -webkit-touch-callout: none;
+}
 
 /* ===== Score board ===== */
 .score-board {
