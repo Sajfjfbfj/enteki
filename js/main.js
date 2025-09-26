@@ -1,4 +1,4 @@
-/* matchSet.js -- Pixel スクロール対応済みフルバージョン */
+/* matchSet.js -- Pixelなどでもスクロール可能対応済み */
 document.addEventListener("DOMContentLoaded", () => {
   const addSetBtn = document.getElementById("addSetBtn");
   const setsContainer = document.getElementById("setsContainer");
@@ -161,7 +161,7 @@ document.addEventListener("DOMContentLoaded", () => {
     canvasContainer.className = "canvas-container";
     const canvas = document.createElement("canvas");
     canvas.id = `targetCanvas_${setIndex}`;
-    canvas.style.touchAction = "auto"; // ← Pixel対応で auto
+    canvas.style.touchAction = "auto"; // ← スクロール可能に
     canvasContainer.appendChild(canvas);
     setWrapper.appendChild(canvasContainer);
 
@@ -208,6 +208,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let startPos = null;
     let moved = false;
 
+    // touch-action は auto のまま
     canvas.style.touchAction = "auto";
 
     img.onload = () => {
@@ -297,12 +298,8 @@ document.addEventListener("DOMContentLoaded", () => {
     document.addEventListener("mousemove", onDrag);
     document.addEventListener("mouseup", endDrag);
 
-    // Pixel対応 → passive:false に変更
-    canvas.addEventListener("touchstart", startDrag, { passive: false });
-    canvas.addEventListener("touchmove", function(e) {
-      if (dragIndex !== null) e.preventDefault();
-      onDrag(e);
-    }, { passive: false });
+    canvas.addEventListener("touchstart", startDrag, { passive: true });
+    canvas.addEventListener("touchmove", onDrag, { passive: false }); // ← passive:false にしてドラッグ中のみ preventDefault
     canvas.addEventListener("touchend", endDrag, { passive: true });
     canvas.addEventListener("touchcancel", endDrag, { passive: true });
   }
@@ -421,4 +418,3 @@ document.addEventListener("DOMContentLoaded", () => {
   /* ---------- initialize ---------- */
   loadSetsForDate(currentDate);
 });
-
