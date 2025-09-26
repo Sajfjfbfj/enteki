@@ -223,3 +223,18 @@ function initScoreCanvas(id) {
   canvas.addEventListener("touchend", endPress);
   canvas.addEventListener("touchcancel", endPress);
 }
+function forceCanvasTouchAction() {
+  // ID が targetCanvas_0 の canvas を取得
+  const canvas = document.getElementById("targetCanvas_0");
+  if (canvas) {
+    // touch-action を auto に強制（!important付き）
+    canvas.style.setProperty("touch-action", "auto", "important");
+  }
+}
+
+// ページ読み込み時に実行
+window.addEventListener("DOMContentLoaded", forceCanvasTouchAction);
+
+// もし canvas が動的に生成される場合は、生成直後にも呼ぶ
+// 例: initScoreCanvas 内で
+// canvas.style.setProperty("touch-action", "auto", "important");
