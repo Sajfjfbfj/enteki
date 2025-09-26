@@ -154,3 +154,131 @@ body.dark .tool-select::placeholder { color:#9ca3af; }
   .tool-select { font-size:16px; padding:10px; }
   .score-select, .popup-score-select { font-size:20px; padding:10px 12px; min-width:96px; }
 }
+
+/* ===== Analysis Section ===== */
+.analysis-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.analysis-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.analysis-filters input,
+.analysis-filters select,
+.analysis-filters button {
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+  font-size: 1rem;
+  background-color: #fff;
+  transition: all 0.2s ease;
+}
+
+.analysis-filters button {
+  background-color: #1969e1;
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.analysis-filters button:hover {
+  background-color: #1051b0;
+}
+
+/* ===== Canvas + Chart container ===== */
+.analysis-display {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+@media(min-width: 768px) {
+  .analysis-display {
+    flex-direction: row;
+    gap: 24px;
+  }
+}
+
+#targetCanvas {
+  flex: 1 1 50%;
+  min-height: 280px;
+  border-radius: 12px;
+  background: #fefefe;
+  border: 1px solid #e2e8f0;
+}
+
+#scoreChart {
+  flex: 1 1 50%;
+  min-height: 280px;
+  border-radius: 12px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  padding: 8px;
+}
+
+/* ===== Shot Analysis / 立ちごとの分析 ===== */
+#shotAnalysisContainer {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+@media(min-width:768px) {
+  #shotAnalysisContainer {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+#shotAnalysisContainer .mb-2 {
+  padding: 12px;
+  border-radius: 10px;
+  background: #fefefe;
+  border: 1px solid #cbd5e1;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+#shotAnalysisContainer .mb-2:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+#shotAnalysisContainer strong {
+  display: block;
+  margin-bottom: 6px;
+}
+
+/* ===== Dark mode for analysis ===== */
+body.dark #targetCanvas,
+body.dark #scoreChart {
+  background: #1c1f29;
+  border-color: #374151;
+}
+
+body.dark #shotAnalysisContainer .mb-2 {
+  background: #1c1f29;
+  border-color: #374151;
+  color: #f6f7f8;
+}
+
+body.dark .analysis-filters input,
+body.dark .analysis-filters select {
+  background: #111721;
+  border-color: #374151;
+  color: #f6f7f8;
+}
+
+/* ===== Responsive tweaks for analysis ===== */
+@media(max-width:767px) {
+  #targetCanvas,
+  #scoreChart { min-height: 340px; }
+  .analysis-filters input,
+  .analysis-filters select,
+  .analysis-filters button { font-size: 16px; padding: 8px 10px; }
+}
