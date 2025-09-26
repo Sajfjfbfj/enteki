@@ -89,15 +89,7 @@ document.addEventListener("DOMContentLoaded", () => {
     setsContainer.querySelectorAll(".set-wrapper").forEach(setWrapper => {
       const canvas = setWrapper.querySelector("canvas");
       const markers = canvas && canvas.markers ? canvas.markers.map(m => ({ ...m })) : [];
-
-      // 道具状態を保存
-      const toolsState = {};
-      setWrapper.querySelectorAll(".tool-select").forEach(select => {
-        const category = select.parentElement.textContent.split(":")[0];
-        toolsState[category] = select.value;
-      });
-
-      setsData.push({ markers, toolsState });
+      setsData.push({ markers });
     });
     return setsData;
   }
@@ -147,31 +139,18 @@ document.addEventListener("DOMContentLoaded", () => {
       const label = document.createElement("label");
       label.textContent = category + ": ";
       label.className = "tool-label block";
-
       const select = document.createElement("select");
       select.className = "tool-select rounded border px-2 py-1 w-full dark:bg-slate-700 dark:text-white";
-
       const emptyOpt = document.createElement("option");
       emptyOpt.value = "";
       emptyOpt.textContent = "選択してください";
       select.appendChild(emptyOpt);
-
       tools[category].forEach(item => {
         const opt = document.createElement("option");
         opt.value = item.name;
         opt.textContent = `${item.name}${item.feature ? " (" + item.feature + ")" : ""}`;
         select.appendChild(opt);
       });
-
-      // 道具の復元
-      if (existingSet && existingSet.toolsState && existingSet.toolsState[category]) {
-        select.value = existingSet.toolsState[category];
-      }
-
-      select.addEventListener("change", () => {
-        saveSetsForDate(currentDate, getAllSetsData());
-      });
-
       label.appendChild(select);
       toolSection.appendChild(label);
     });
@@ -229,6 +208,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let startPos = null;
     let moved = false;
 
+    // touch-action は auto のまま
     canvas.style.touchAction = "auto";
 
     img.onload = () => {
@@ -287,7 +267,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const dy = pos.y - startPos.y;
       if (Math.abs(dx) > 5 || Math.abs(dy) > 5) moved = true;
       if (dragIndex !== null) {
-        if (e.type && e.type.startsWith("touch")) e.preventDefault();
+        if (e.type && e.type.startsWith("touch")) e.preventDefault(); // ドラッグ中のみスクロール停止
         canvas.markers[dragIndex].x = pos.x;
         canvas.markers[dragIndex].y = pos.y;
         drawCanvas(canvas, img, canvas.markers, canvas.scale, canvas.offsetX, canvas.offsetY);
@@ -319,7 +299,7 @@ document.addEventListener("DOMContentLoaded", () => {
     document.addEventListener("mouseup", endDrag);
 
     canvas.addEventListener("touchstart", startDrag, { passive: true });
-    canvas.addEventListener("touchmove", onDrag, { passive: false });
+    canvas.addEventListener("touchmove", onDrag, { passive: false }); // ← passive:false にしてドラッグ中のみ preventDefault
     canvas.addEventListener("touchend", endDrag, { passive: true });
     canvas.addEventListener("touchcancel", endDrag, { passive: true });
   }
@@ -380,47 +360,68 @@ document.addEventListener("DOMContentLoaded", () => {
       [0, 3, 5, 7, 9, 10].forEach(v => {
         const opt = document.createElement("option");
         opt.value = v;
-        opt.textContent = v;
+        opt.textContent = v + "点";
         select.appendChild(opt);
+      });
+      select.addEventListener("change", () => {
+        const idx = Array.from(list.children).indexOf(li);
+        if (idx >= 0) {
+          markers[idx].score = parseInt(select.value);
+          drawCanvas(canvas, canvas.img, markers, canvas.scale, canvas.offsetX, canvas.offsetY);
+          saveSetsForDate(currentDate, getAllSetsData());
+        }
       });
       li.appendChild(select);
       list.appendChild(li);
     }
-    list.querySelectorAll(".score-item").forEach((li, i) => {
-      li.querySelector(".arrow-label").textContent = `矢${i + 1}:`;
-      const select = li.querySelector("select");
-      select.value = markers[i].score;
-      select.addEventListener("change", () => {
-        markers[i].score = Number(select.value);
-        document.querySelector(totalScoreSelector).textContent = markers.reduce((a, m) => a + m.score, 0);
-        saveSetsForDate(currentDate, getAllSetsData());
-      });
+    markers.forEach((m, i) => {
+      total += (m.score || 0);
+      const li = list.children[i];
+      li.querySelector(".arrow-label").textContent = `矢${i + 1}: `;
+      li.querySelector("select.score-select").value = m.score ?? 0;
     });
-    document.querySelector(totalScoreSelector).textContent = markers.reduce((a, m) => a + m.score, 0);
+    while (list.children.length > markers.length) {
+      list.removeChild(list.lastChild);
+    }
+    const totalElem = document.querySelector(totalScoreSelector);
+    if (totalElem) totalElem.textContent = total;
   }
 
+  /* ---------- helper ---------- */
   function getImagePixelColorOnImage(img, x, y) {
     const tempCanvas = document.createElement("canvas");
     tempCanvas.width = img.width;
     tempCanvas.height = img.height;
-    const ctx = tempCanvas.getContext("2d");
-    ctx.drawImage(img, 0, 0);
-    const p = ctx.getImageData(Math.floor(x), Math.floor(y), 1, 1).data;
-    return { r: p[0], g: p[1], b: p[2], a: p[3] };
+    const tempCtx = tempCanvas.getContext("2d");
+    tempCtx.drawImage(img, 0, 0);
+    return tempCtx.getImageData(Math.floor(x), Math.floor(y), 1, 1).data;
   }
 
-  function getScoreFromColor(pixel) {
-    // ここは自由にカスタム可能
-    if (!pixel) return 0;
-    if (pixel.r === 255 && pixel.g === 255 && pixel.b === 0) return 10;
-    if (pixel.r === 255 && pixel.g === 0 && pixel.b === 0) return 9;
-    if (pixel.r === 0 && pixel.g === 0 && pixel.b === 255) return 7;
-    if (pixel.r === 0 && pixel.g === 0 && pixel.b === 0) return 5;
-    if (pixel.r === 255 && pixel.g === 255 && pixel.b === 255) return 3;
-    return 0;
+  function colorDistance([r, g, b], [tr, tg, tb]) { return Math.sqrt((r - tr) ** 2 + (g - tg) ** 2 + (b - tb) ** 2); }
+  function getScoreFromColor([r, g, b, a]) {
+    if (a === 0) return 0;
+    const targets = [
+      { color: [255, 255, 0], score: 10 },
+      { color: [255, 0, 0], score: 9 },
+      { color: [0, 0, 255], score: 7 },
+      { color: [0, 0, 0], score: 5 },
+      { color: [255, 255, 255], score: 3 },
+    ];
+    let best = { score: 0, dist: Infinity };
+    targets.forEach(t => {
+      const dist = colorDistance([r, g, b], t.color);
+      if (dist < best.dist) best = { score: t.score, dist };
+    });
+    return best.score;
   }
 
-  /* ---------- initial load ---------- */
+  /* ---------- initialize ---------- */
   loadSetsForDate(currentDate);
 });
-
+const canvas = document.getElementById("targetCanvas_0"); // 例
+const observer = new MutationObserver(() => {
+  if (canvas.style.touchAction === "none") {
+    canvas.style.touchAction = "auto";
+  }
+});
+observer.observe(canvas, { attributes: true, attributeFilter: ["style"] });
