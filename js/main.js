@@ -161,17 +161,9 @@ document.addEventListener("DOMContentLoaded", () => {
     canvasContainer.className = "canvas-container";
     const canvas = document.createElement("canvas");
     canvas.id = `targetCanvas_${setIndex}`;
-    canvas.style.touchAction = "auto"; // ← 初期値としてスクロール可能
+    canvas.style.touchAction = "auto"; // ← スクロール可能に
     canvasContainer.appendChild(canvas);
     setWrapper.appendChild(canvasContainer);
-
-    // 強制 touch-action 保護用 MutationObserver
-    const observer = new MutationObserver(() => {
-      if (canvas.style.touchAction !== "auto") {
-        canvas.style.setProperty("touch-action", "auto", "important");
-      }
-    });
-    observer.observe(canvas, { attributes: true, attributeFilter: ["style"] });
 
     // scoreboard
     const scoreBoard = document.createElement("div");
@@ -215,6 +207,9 @@ document.addEventListener("DOMContentLoaded", () => {
     let dragIndex = null;
     let startPos = null;
     let moved = false;
+
+    // touch-action は auto のまま
+    canvas.style.touchAction = "auto";
 
     img.onload = () => {
       resizeCanvas();
@@ -304,7 +299,7 @@ document.addEventListener("DOMContentLoaded", () => {
     document.addEventListener("mouseup", endDrag);
 
     canvas.addEventListener("touchstart", startDrag, { passive: true });
-    canvas.addEventListener("touchmove", onDrag, { passive: false }); 
+    canvas.addEventListener("touchmove", onDrag, { passive: false }); // ← passive:false にしてドラッグ中のみ preventDefault
     canvas.addEventListener("touchend", endDrag, { passive: true });
     canvas.addEventListener("touchcancel", endDrag, { passive: true });
   }
@@ -346,7 +341,87 @@ document.addEventListener("DOMContentLoaded", () => {
     updateScoreBoard(canvas, `#scoreList_${canvas.id.split("_")[1]}`, `#totalScore_${canvas.id.split("_")[1]}`, markers);
   }
 
+  function updateScoreBoard(canvas, scoreListSelector, totalScoreSelector, markers = null) {
+    const list = document.querySelector(scoreListSelector);
+    if (!list) return;
+    markers = markers || canvas.markers;
+    let total = 0;
+    while (list.children.length < markers.length) {
+      const li = document.createElement("li");
+      li.className = "score-item";
+      const span = document.createElement("span");
+      span.className = "arrow-label";
+      li.appendChild(span);
+      const select = document.createElement("select");
+      select.className = "score-select";
+      select.style.fontSize = "18px";
+      select.style.padding = "6px 10px";
+      select.style.minWidth = "84px";
+      [0, 3, 5, 7, 9, 10].forEach(v => {
+        const opt = document.createElement("option");
+        opt.value = v;
+        opt.textContent = v + "点";
+        select.appendChild(opt);
+      });
+      select.addEventListener("change", () => {
+        const idx = Array.from(list.children).indexOf(li);
+        if (idx >= 0) {
+          markers[idx].score = parseInt(select.value);
+          drawCanvas(canvas, canvas.img, markers, canvas.scale, canvas.offsetX, canvas.offsetY);
+          saveSetsForDate(currentDate, getAllSetsData());
+        }
+      });
+      li.appendChild(select);
+      list.appendChild(li);
+    }
+    markers.forEach((m, i) => {
+      total += (m.score || 0);
+      const li = list.children[i];
+      li.querySelector(".arrow-label").textContent = `矢${i + 1}: `;
+      li.querySelector("select.score-select").value = m.score ?? 0;
+    });
+    while (list.children.length > markers.length) {
+      list.removeChild(list.lastChild);
+    }
+    const totalElem = document.querySelector(totalScoreSelector);
+    if (totalElem) totalElem.textContent = total;
+  }
+
+  /* ---------- helper ---------- */
+  function getImagePixelColorOnImage(img, x, y) {
+    const tempCanvas = document.createElement("canvas");
+    tempCanvas.width = img.width;
+    tempCanvas.height = img.height;
+    const tempCtx = tempCanvas.getContext("2d");
+    tempCtx.drawImage(img, 0, 0);
+    return tempCtx.getImageData(Math.floor(x), Math.floor(y), 1, 1).data;
+  }
+
+  function colorDistance([r, g, b], [tr, tg, tb]) { return Math.sqrt((r - tr) ** 2 + (g - tg) ** 2 + (b - tb) ** 2); }
+  function getScoreFromColor([r, g, b, a]) {
+    if (a === 0) return 0;
+    const targets = [
+      { color: [255, 255, 0], score: 10 },
+      { color: [255, 0, 0], score: 9 },
+      { color: [0, 0, 255], score: 7 },
+      { color: [0, 0, 0], score: 5 },
+      { color: [255, 255, 255], score: 3 },
+    ];
+    let best = { score: 0, dist: Infinity };
+    targets.forEach(t => {
+      const dist = colorDistance([r, g, b], t.color);
+      if (dist < best.dist) best = { score: t.score, dist };
+    });
+    return best.score;
+  }
+
   /* ---------- initialize ---------- */
   loadSetsForDate(currentDate);
-
 });
+const canvas = document.getElementById("targetCanvas_0"); // 例
+const observer = new MutationObserver(() => {
+  if (canvas.style.touchAction === "none") {
+    canvas.style.touchAction = "auto";
+  }
+});
+observer.observe(canvas, { attributes: true, attributeFilter: ["style"] });
