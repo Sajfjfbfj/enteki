@@ -1,10 +1,59 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
+    <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="apple-touch-icon" sizes="57x57" href="/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#1969e1">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/ms-icon-144x144.png">
   <meta charset="UTF-8" />
   <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
   <link rel="stylesheet" href="css/style.css">
   <title>MATOMA|分析</title>
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="apple-touch-icon" sizes="57x57" href="/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-icon-180x180.png">
+
+  <link rel="icon" type="image/png" sizes="192x192" href="/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+
+  <link rel="manifest" href="/manifest.json">
+
+  <meta name="theme-color" content="#1969e1">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/ms-icon-144x144.png">
+
+  <title>MATOMA|矢所分析</title>
 
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
@@ -35,7 +84,9 @@
   <!-- Google Fonts & Icons -->
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&display=swap" rel="stylesheet"/>
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
-  <link rel="stylesheet" href="css/styles.css" />
+
+  <!-- Intro.js CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/intro.js/minified/introjs.min.css">
 </head>
 
 <body class="bg-background-light dark:bg-background-dark font-display text-slate-800 dark:text-slate-200">
@@ -56,19 +107,29 @@
     </div>
   </header>
 
+  <!-- 「初めての方へ」ボタン -->
+  <div class="hidden md:block fixed bottom-4 right-4 z-50">
+    <button id="tutorialBtn" class="px-3 py-2 text-sm sm:text-base bg-primary text-white rounded-lg shadow-lg hover:bg-primary/80">
+      初めての方へ
+    </button>
+  </div>
+  <div class="md:hidden w-full py-2 bg-background-light dark:bg-background-dark shadow-sm">
+    <div class="container mx-auto px-4 flex justify-center">
+      <button id="tutorialBtnMobile" class="px-4 py-2 text-base bg-primary text-white rounded-lg shadow-lg hover:bg-primary/80">
+        初めての方へ
+      </button>
+    </div>
+  </div>
+
   <!-- メインコンテンツ -->
-  <main class="flex-grow container mx-auto px-4 py-6">
+  <main class="flex-grow container mx-auto px-4 py-6 space-y-8">
 
-    <!-- 的分析セクション -->
-    <section>
-      <h2 class="text-xl font-bold mb-4 text-slate-900 dark:text-white">的分析</h2>
-
-      <!-- 日付・タブ・道具フィルター -->
+    <!-- 日付・タブ・道具フィルター -->
+    <section class="bg-white dark:bg-slate-900 p-4 rounded-xl shadow-lg" data-intro="日付・タブ・道具フィルターです。分析したい日付や道具を選択できます。">
       <div class="flex flex-wrap gap-2 mb-4 items-center">
         <input id="matchDate" type="date" class="p-2 border rounded" />
         <button id="dailyTab" class="px-4 py-2 font-bold rounded bg-primary text-white">日別</button>
         <button id="monthTab" class="px-4 py-2 font-bold rounded bg-slate-300 dark:bg-slate-700 text-slate-800 dark:text-slate-200">過去30日</button>
-
         <select id="toolCategorySelect" class="p-2 border rounded">
           <option value="">-- カテゴリ --</option>
           <option value="弓">弓</option>
@@ -76,39 +137,34 @@
           <option value="弦">弦</option>
           <option value="弽">弽</option>
         </select>
-
         <select id="toolNameSelect" class="p-2 border rounded">
           <option value="">-- 道具を選択 --</option>
         </select>
-
         <button id="filterToolBtn" class="px-4 py-2 bg-primary text-white rounded">分析</button>
       </div>
-
-      <div class="bg-white dark:bg-slate-900 rounded-xl shadow-lg p-4 flex flex-col md:flex-row gap-6">
-        <!-- 的キャンバス -->
-        <canvas id="targetCanvas" class="w-full md:w-1/2 h-64 bg-slate-100 dark:bg-slate-800 rounded-xl"></canvas>
-
-        <!-- 得点分布グラフ -->
-        <div class="w-full md:w-1/2">
-          <h3 class="font-bold mb-2 text-slate-900 dark:text-white">得点分布</h3>
-          <canvas id="scoreChart" class="w-full h-64 bg-white dark:bg-slate-900 rounded-xl"></canvas>
-        </div>
-      </div>
-
-      <!-- 立ちごとの分析表示 -->
-      <div class="bg-white dark:bg-slate-900 rounded-xl shadow-lg p-4 mt-6">
-        <h3 class="font-bold mb-2 text-slate-900 dark:text-white">立ちごとの得点分析</h3>
-        <div id="shotAnalysisContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
-      </div>
-
     </section>
 
+    <!-- 的キャンバスと得点分布 -->
+    <section class="bg-white dark:bg-slate-900 p-4 rounded-xl shadow-lg flex flex-col md:flex-row gap-6" data-intro="ここに的キャンバスと得点分布グラフが表示されます。">
+      <canvas id="targetCanvas" class="w-full md:w-1/2 h-64 bg-slate-100 dark:bg-slate-800 rounded-xl"></canvas>
+      <div class="w-full md:w-1/2">
+        <h3 class="font-bold mb-2 text-slate-900 dark:text-white">得点分布</h3>
+        <canvas id="scoreChart" class="w-full h-64 bg-white dark:bg-slate-900 rounded-xl"></canvas>
+      </div>
+    </section>
+
+    <!-- 立ちごとの分析 -->
+    <section class="bg-white dark:bg-slate-900 p-4 rounded-xl shadow-lg" data-intro="ここに立ちごとの得点分析が表示されます。">
+      <h3 class="font-bold mb-2 text-slate-900 dark:text-white">立ちごとの得点分析</h3>
+      <div id="shotAnalysisContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+    </section>
   </main>
 </div>
 
 <!-- JS -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="js/analysis.js"></script>
+<script src="https://unpkg.com/intro.js/minified/intro.min.js"></script>
 <script>
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
@@ -117,7 +173,49 @@ if ('serviceWorker' in navigator) {
       .catch(err => console.error('Service Worker registration failed:', err));
   });
 }
-</script>
 
+// 初回Intro.js
+document.addEventListener("DOMContentLoaded", () => {
+  const FIRST_VISIT_KEY = "matomaIntroShown";
+  const isFirstVisit = !localStorage.getItem(FIRST_VISIT_KEY);
+
+  const steps = [
+    { element: "#matchDate", intro: "ここで日付を選択できます。" },
+    { element: "#dailyTab", intro: "日別表示に切り替えます。" },
+    { element: "#monthTab", intro: "過去30日表示に切り替えます。" },
+    { element: "#toolCategorySelect", intro: "分析したい道具のカテゴリを選択します。" },
+    { element: "#toolNameSelect", intro: "分析したい道具を選択します。" },
+    { element: "#filterToolBtn", intro: "選択した条件で分析を実行します。" },
+    { element: "#targetCanvas", intro: "的キャンバスです。矢の位置を視覚的に確認できます。" },
+    { element: "#scoreChart", intro: "得点分布グラフです。得点の偏りを確認できます。" },
+    { element: "#shotAnalysisContainer", intro: "立ちごとの得点分析がここに表示されます。" }
+  ];
+
+  function startIntro() {
+    introJs().setOptions({
+  steps,
+  showStepNumbers: true,
+  exitOnOverlayClick: false,
+  nextLabel: "次へ",
+  prevLabel: "戻る",
+  doneLabel: "完了",
+  tooltipPosition: "auto",    // autoで画面内に最適配置
+  scrollToElement: true,      // 対象要素までスクロール
+  disableInteraction: false,  // ツールチップ以外の操作は可能
+}).start();
+
+  }
+
+  if (isFirstVisit) {
+    startIntro();
+    localStorage.setItem(FIRST_VISIT_KEY, "true");
+  }
+
+  const btnPC = document.getElementById("tutorialBtn");
+  if (btnPC) btnPC.addEventListener("click", startIntro);
+  const btnSP = document.getElementById("tutorialBtnMobile");
+  if (btnSP) btnSP.addEventListener("click", startIntro);
+});
+</script>
 </body>
 </html>

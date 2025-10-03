@@ -282,3 +282,137 @@ body.dark .analysis-filters select {
   .analysis-filters select,
   .analysis-filters button { font-size: 16px; padding: 8px 10px; }
 }
+/* ===== 初めての方へボタン ===== */
+#tutorialBtn {
+  position: fixed;
+  bottom: calc(env(safe-area-inset-bottom, 1rem) + 1rem);
+  right: 1rem;
+  z-index: 9999;
+  font-weight: 700;
+  cursor: pointer;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #1969e1, #2589d0);
+  color: #fff;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.15);
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.8rem 1.2rem;
+  font-size: 1rem;
+}
+
+/* ホバー時 */
+#tutorialBtn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 22px rgba(0,0,0,0.25);
+  background: linear-gradient(135deg, #2589d0, #1969e1);
+}
+
+/* スマホ用に幅を広げる */
+@media(max-width: 767px){
+  #tutorialBtn {
+    width: calc(100% - 2rem);
+    left: 1rem;
+    right: 1rem;
+    font-size: 1.1rem;
+    padding: 1rem 0;
+    justify-content: center;
+  }
+}
+/* ================================
+   Intro.js カスタムスタイル（MATOMA用）
+================================ */
+
+/* ツールチップ全体 */
+.introjs-tooltip {
+  background: linear-gradient(135deg, #1969e1, #2589d0);
+  color: #fff;
+  border-radius: 12px;
+  padding: 16px;
+  font-size: 0.95rem;
+  max-width: 320px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.15);
+  font-family: "Manrope", "Yu Gothic", "Hiragino Maru Gothic ProN", sans-serif;
+}
+
+/* ツールチップ内の文章 */
+.introjs-tooltiptext {
+  margin-bottom: 8px;
+  line-height: 1.4;
+}
+
+/* ボタン */
+.introjs-nextbutton,
+.introjs-prevbutton,
+.introjs-donebutton,
+.introjs-skipbutton {
+  background: #fff;
+  color: #1969e1;
+  border-radius: 8px;
+  padding: 6px 14px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.12);
+  transition: all 0.2s ease;
+}
+
+.introjs-nextbutton:hover,
+.introjs-prevbutton:hover,
+.introjs-donebutton:hover,
+.introjs-skipbutton:hover {
+  background: #e6f0ff;
+}
+
+/* ステップ対象の強調枠 */
+.introjs-helperLayer {
+  border: 2px solid #1969e1;
+  border-radius: 12px;
+  box-shadow: 0 0 20px rgba(25,105,225,0.5);
+  background: transparent;
+}
+
+/* オーバーレイ背景 */
+.introjs-overlay {
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(2px);
+}
+
+/* ダークモード対応 */
+body.dark .introjs-tooltip {
+  background: linear-gradient(135deg, #111721, #1c1f29);
+  color: #f6f7f8;
+}
+
+body.dark .introjs-nextbutton,
+body.dark .introjs-prevbutton,
+body.dark .introjs-donebutton,
+body.dark .introjs-skipbutton {
+  background: #1969e1;
+  color: #fff;
+}
+
+body.dark .introjs-nextbutton:hover,
+body.dark .introjs-prevbutton:hover,
+body.dark .introjs-donebutton:hover,
+body.dark .introjs-skipbutton:hover {
+  background: #2589d0;
+}
+
+/* ステップ番号のスタイル */
+.introjs-tooltip .introjs-tooltipbuttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+/* ポジション調整：モバイルでも自然に表示 */
+@media(max-width:767px){
+  .introjs-tooltip {
+    font-size: 0.9rem;
+    padding: 12px;
+    max-width: 90%;
+  }
+}
