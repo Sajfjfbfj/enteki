@@ -1,6 +1,6 @@
 {
-  "name": "遠的採点簿",
-  "short_name": "遠的採点簿",
+  "name": "MATOMA",
+  "short_name": "的真",
   "description": "日別・月別の矢所分析や遠的の点数管理ができる弓道管理アプリ",
   "start_url": "/index.html",
   "display": "standalone",
