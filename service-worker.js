@@ -1,6 +1,6 @@
-// service-worker.js（完全版：自動更新＋クルクル防止＋柔軟キャッシュ）
-const CACHE_NAME = "kyudo-cache-v1.0.6"; // バージョン更新でキャッシュ切替
-const OFFLINE_URL = "/offline.html";     // オフライン時に表示するページ
+// service-worker.js（強制反映対応）
+const CACHE_NAME = "kyudo-cache-v1.0.6"; // バージョンを上げる
+const OFFLINE_URL = "/offline.html";
 
 // キャッシュ対象リスト（変更なし）
 const urlsToCache = [
@@ -36,26 +36,24 @@ self.addEventListener("install", event => {
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => cache.addAll(urlsToCache))
   );
-  self.skipWaiting();
+  self.skipWaiting(); // すぐに新しい SW をアクティブ化
 });
 
 // --- 有効化（古いキャッシュ削除） ---
 self.addEventListener("activate", event => {
   event.waitUntil(
     caches.keys().then(keys =>
-      Promise.all(keys.map(key => {
-        if (key !== CACHE_NAME) return caches.delete(key);
-      }))
+      Promise.all(keys.map(key => key !== CACHE_NAME && caches.delete(key)))
     )
   );
-  self.clients.claim();
+  self.clients.claim(); // ページに即座に反映
 });
 
 // --- fetch ---
 self.addEventListener("fetch", event => {
   const { request } = event;
 
-  // HTMLファイルは「ネットワーク優先 → キャッシュ → オフラインページ」
+  // HTMLはネットワーク優先
   if (request.mode === "navigate") {
     event.respondWith(
       fetch(request).then(res => {
@@ -68,17 +66,16 @@ self.addEventListener("fetch", event => {
     return;
   }
 
-  // CSS/JS/画像は「キャッシュ優先 → ネットワーク更新」
+  // CSS/JS/画像はキャッシュ優先
   event.respondWith(
     caches.match(request).then(cacheRes => {
-      const fetchPromise = fetch(request).then(fetchRes => {
-        if (fetchRes && fetchRes.status === 200) {
-          caches.open(CACHE_NAME).then(cache => cache.put(request, fetchRes.clone()));
-        }
-        return fetchRes;
-      }).catch(() => null);
-
-      // キャッシュがある場合は即返す。なければ fetch 結果を返す
+      const fetchPromise = fetch(request, { cache: "reload" }) // 強制更新
+        .then(fetchRes => {
+          if (fetchRes && fetchRes.status === 200) {
+            caches.open(CACHE_NAME).then(cache => cache.put(request, fetchRes.clone()));
+          }
+          return fetchRes;
+        }).catch(() => null);
       return cacheRes || fetchPromise || new Response("Offline", { status: 503 });
     })
   );
