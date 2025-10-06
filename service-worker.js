@@ -1,8 +1,8 @@
 // service-worker.js（完全版：自動更新＋クルクル防止＋柔軟キャッシュ）
-const CACHE_NAME = "kyudo-cache-v1.0.5"; // バージョン更新でキャッシュ切替
+const CACHE_NAME = "kyudo-cache-v1.0.6"; // バージョン更新でキャッシュ切替
 const OFFLINE_URL = "/offline.html";     // オフライン時に表示するページ
 
-// キャッシュ対象リスト
+// キャッシュ対象リスト（変更なし）
 const urlsToCache = [
   "/", "/index.html", "/yadokoro.html", "/help.html", "/tools.html",
   "/css/style.css",
@@ -78,6 +78,7 @@ self.addEventListener("fetch", event => {
         return fetchRes;
       }).catch(() => null);
 
+      // キャッシュがある場合は即返す。なければ fetch 結果を返す
       return cacheRes || fetchPromise || new Response("Offline", { status: 503 });
     })
   );
