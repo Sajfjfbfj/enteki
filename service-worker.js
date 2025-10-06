@@ -1,8 +1,7 @@
-// service-worker.js（強制反映対応）
-const CACHE_NAME = "kyudo-cache-v1.0.6"; // バージョンを上げる
+// service-worker.js（最速で最新反映対応）
+const CACHE_NAME = "kyudo-cache-v1.0.7"; // 毎回更新時にバージョンを上げる
 const OFFLINE_URL = "/offline.html";
 
-// キャッシュ対象リスト（変更なし）
 const urlsToCache = [
   "/", "/index.html", "/yadokoro.html", "/help.html", "/tools.html",
   "/css/style.css",
@@ -36,7 +35,7 @@ self.addEventListener("install", event => {
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => cache.addAll(urlsToCache))
   );
-  self.skipWaiting(); // すぐに新しい SW をアクティブ化
+  self.skipWaiting();
 });
 
 // --- 有効化（古いキャッシュ削除） ---
@@ -46,17 +45,17 @@ self.addEventListener("activate", event => {
       Promise.all(keys.map(key => key !== CACHE_NAME && caches.delete(key)))
     )
   );
-  self.clients.claim(); // ページに即座に反映
+  self.clients.claim();
 });
 
 // --- fetch ---
 self.addEventListener("fetch", event => {
   const { request } = event;
 
-  // HTMLはネットワーク優先
+  // HTMLは絶対最新取得 → キャッシュに保存 → ページに反映
   if (request.mode === "navigate") {
     event.respondWith(
-      fetch(request).then(res => {
+      fetch(request, { cache: "reload" }).then(res => {
         caches.open(CACHE_NAME).then(cache => cache.put(request, res.clone()));
         return res;
       }).catch(() =>
@@ -66,17 +65,24 @@ self.addEventListener("fetch", event => {
     return;
   }
 
-  // CSS/JS/画像はキャッシュ優先
+  // CSS/JS/画像も必ず最新を取得（キャッシュ優先も残す）
   event.respondWith(
     caches.match(request).then(cacheRes => {
-      const fetchPromise = fetch(request, { cache: "reload" }) // 強制更新
+      const fetchPromise = fetch(request, { cache: "reload" })
         .then(fetchRes => {
           if (fetchRes && fetchRes.status === 200) {
             caches.open(CACHE_NAME).then(cache => cache.put(request, fetchRes.clone()));
           }
           return fetchRes;
         }).catch(() => null);
-      return cacheRes || fetchPromise || new Response("Offline", { status: 503 });
+      return fetchPromise || cacheRes || new Response("Offline", { status: 503 });
     })
   );
+});
+
+// --- ページを自動更新 ---
+self.addEventListener("message", event => {
+  if (event.data && event.data.type === "SKIP_WAITING") {
+    self.skipWaiting();
+  }
 });
