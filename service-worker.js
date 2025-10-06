@@ -1,5 +1,5 @@
 // service-worker.js（改良版：自動更新＆くるくる防止）
-const CACHE_NAME = "kyudo-cache-v1.0.4"; // 新バージョン
+const CACHE_NAME = "kyudo-cache-v1.0.5"; // 新バージョン
 const urlsToCache = [
   "/", "/index.html", "/yadokoro.html", "/help.html", "/tools.html",
   "/css/style.css?v=1.0.4",
