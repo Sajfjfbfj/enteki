@@ -1,8 +1,8 @@
-// service-worker.js（強制反映対応）
-const CACHE_NAME = "kyudo-cache-v1.0.6"; // バージョンを上げる
+// service-worker.js（最速即時反映＋キャッシュ安全処理＋更新検知）
+const CACHE_NAME = "kyudo-cache-v1.0.6"; // ★バージョンを上げると確実更新
 const OFFLINE_URL = "/offline.html";
 
-// キャッシュ対象リスト（変更なし）
+// === キャッシュ対象 ===
 const urlsToCache = [
   "/", "/index.html", "/yadokoro.html", "/help.html", "/tools.html",
   "/css/style.css",
@@ -31,51 +31,68 @@ const urlsToCache = [
   OFFLINE_URL
 ];
 
-// --- インストール ---
+// === install ===
 self.addEventListener("install", event => {
+  self.skipWaiting(); // 即座に新SW適用
   event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => cache.addAll(urlsToCache))
+    (async () => {
+      const cache = await caches.open(CACHE_NAME);
+      for (const url of urlsToCache) {
+        try {
+          const res = await fetch(url, { cache: "no-cache" });
+          if (res.ok) await cache.put(url, res.clone());
+        } catch (err) {
+          console.warn("❌ キャッシュ失敗:", url);
+        }
+      }
+    })()
   );
-  self.skipWaiting(); // すぐに新しい SW をアクティブ化
 });
 
-// --- 有効化（古いキャッシュ削除） ---
+// === activate ===
 self.addEventListener("activate", event => {
   event.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(keys.map(key => key !== CACHE_NAME && caches.delete(key)))
-    )
+    (async () => {
+      const keys = await caches.keys();
+      await Promise.all(
+        keys.map(key => key !== CACHE_NAME && caches.delete(key))
+      );
+      await self.clients.claim();
+
+      // ★新バージョンが有効化されたら全タブ自動リロード！
+      const clients = await self.clients.matchAll({ type: "window" });
+      clients.forEach(client => client.navigate(client.url));
+    })()
   );
-  self.clients.claim(); // ページに即座に反映
 });
 
-// --- fetch ---
+// === fetch ===
 self.addEventListener("fetch", event => {
   const { request } = event;
 
-  // HTMLはネットワーク優先
+  // HTMLはネットワーク優先 → キャッシュ → オフライン
   if (request.mode === "navigate") {
     event.respondWith(
-      fetch(request).then(res => {
-        caches.open(CACHE_NAME).then(cache => cache.put(request, res.clone()));
-        return res;
-      }).catch(() =>
-        caches.match(request).then(res => res || caches.match(OFFLINE_URL))
-      )
+      fetch(request)
+        .then(res => {
+          caches.open(CACHE_NAME).then(cache => cache.put(request, res.clone()));
+          return res;
+        })
+        .catch(() => caches.match(request).then(r => r || caches.match(OFFLINE_URL)))
     );
     return;
   }
 
-  // CSS/JS/画像はキャッシュ優先
+  // その他はキャッシュ優先＋バックグラウンド更新
   event.respondWith(
     caches.match(request).then(cacheRes => {
-      const fetchPromise = fetch(request, { cache: "reload" }) // 強制更新
-        .then(fetchRes => {
-          if (fetchRes && fetchRes.status === 200) {
-            caches.open(CACHE_NAME).then(cache => cache.put(request, fetchRes.clone()));
-          }
-          return fetchRes;
-        }).catch(() => null);
+      const fetchPromise = fetch(request, { cache: "no-cache" })
+        .then(res => {
+          if (res && res.status === 200)
+            caches.open(CACHE_NAME).then(cache => cache.put(request, res.clone()));
+          return res;
+        })
+        .catch(() => null);
       return cacheRes || fetchPromise || new Response("Offline", { status: 503 });
     })
   );
