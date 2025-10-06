@@ -24,7 +24,7 @@
   <meta name="msapplication-TileColor" content="#ffffff">
   <meta name="msapplication-TileImage" content="/ms-icon-144x144.png">
 
-  <title>MATOMA|遠的</title>
+  <title>MATOMA | 遠的</title>
 
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
@@ -65,6 +65,7 @@
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/styles.css">
 </head>
+
 <body class="bg-background-light dark:bg-background-dark font-display text-slate-800 dark:text-slate-200">
 <div class="flex flex-col min-h-screen">
 
@@ -129,14 +130,13 @@
         <!-- JSで立ちセット追加 -->
       </div>
 
-    <!-- 下部の追加ボタン -->
-<div class="mt-4 flex justify-center">
-  <button id="addSetBtnBottom" class="mb-4 w-full md:w-auto flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg border-2 border-primary/50 text-primary font-bold hover:bg-primary/10 transition-colors">
-    <span class="material-symbols-outlined">add</span>
-    <span>立ち追加</span>
-  </button>
-</div>
-
+      <!-- 下部の追加ボタン -->
+      <div class="mt-4 flex justify-center">
+        <button id="addSetBtnBottom" class="mb-4 w-full md:w-auto flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg border-2 border-primary/50 text-primary font-bold hover:bg-primary/10 transition-colors">
+          <span class="material-symbols-outlined">add</span>
+          <span>立ち追加</span>
+        </button>
+      </div>
     </section>
   </main>
 </div>
@@ -158,6 +158,96 @@ if ('serviceWorker' in navigator) {
   });
 }
 
+document.addEventListener("DOMContentLoaded", () => {
+  const FIRST_VISIT_KEY = "matomaShepherdShownIndex";
+  const isFirstVisit = !localStorage.getItem(FIRST_VISIT_KEY);
+
+  const tour = new Shepherd.Tour({
+    useModalOverlay: true,
+    defaultStepOptions: {
+      scrollTo: { behavior: 'smooth', block: 'center' },
+      cancelIcon: { enabled: true }
+    }
+  });
+
+  // ===== ステップ定義 =====
+  tour.addStep({
+    title: 'ようこそ！',
+    text: 'ここはMATOMA遠的のホーム画面です。日々の射を記録できます。',
+    attachTo: { element: 'header', on: 'bottom' },
+    buttons: [{ text: '次へ', action: tour.next }]
+  });
+
+  tour.addStep({
+    title: '日付選択',
+    text: 'ここで記録したい日付を選択します。',
+    attachTo: { element: '#matchDateSection', on: 'top' },
+    buttons: [
+      { text: '戻る', action: tour.back },
+      { text: '次へ', action: tour.next }
+    ]
+  });
+
+  tour.addStep({
+    title: '日別集計',
+    text: '選択した日の立ち数や合計点が自動で集計されます。',
+    attachTo: { element: '#dailySummary', on: 'top' },
+    buttons: [
+      { text: '戻る', action: tour.back },
+      { text: '次へ', action: tour.next }
+    ]
+  });
+
+  tour.addStep({
+    title: '立ちセット追加',
+    text: '「立ち追加」ボタンで新しい立ちを登録します。押すと次の説明に進みます。',
+    attachTo: { element: '#addSetBtn', on: 'bottom' },
+    buttons: [{ text: '戻る', action: tour.back }]
+  });
+
+  tour.addStep({
+    title: '立ちセットエリア',
+    text: 'ここに追加した立ちセットが表示されます。',
+    attachTo: { element: '#setsContainer', on: 'top' },
+    buttons: [
+      { text: '戻る', action: tour.back },
+      { text: '次へ', action: tour.next }
+    ]
+  });
+
+  tour.addStep({
+    title: '矢所の操作',
+    text: '矢所をタップすると点数が自動で付き、再タップで修正可能です。外側にスクロールすると削除されます。<br><br>道具管理で追加した弓・矢・弦などもここで選択できます。',
+    attachTo: { element: 'body', on: 'center' },
+    buttons: [
+      { text: '戻る', action: tour.back },
+      { text: '完了', action: tour.complete }
+    ]
+  });
+
+  function startTour() { tour.start(); }
+
+  // 初回アクセス時に自動開始
+  if (isFirstVisit) {
+    startTour();
+    localStorage.setItem(FIRST_VISIT_KEY, "true");
+  }
+
+  // 「立ち追加」押下で次へ
+  document.getElementById("addSetBtn")?.addEventListener("click", () => {
+    const container = document.getElementById("setsContainer");
+    const newSet = document.createElement("div");
+    newSet.className = "p-4 rounded-lg bg-white dark:bg-slate-800 shadow";
+    newSet.textContent = "新しい立ちセットが追加されました。";
+    container.appendChild(newSet);
+    if (tour.isActive()) tour.next();
+  });
+
+  // 手動起動ボタン
+  ["tutorialBtn", "tutorialBtnMobile"].forEach(id => {
+    document.getElementById(id)?.addEventListener("click", startTour);
+  });
+});
 </script>
 </body>
 </html>
