@@ -1,5 +1,5 @@
-// service-worker.js（安全版＋自動更新）
-const CACHE_NAME = "kyudo-cache-v2.0.0";
+// service-worker.js（即時反映＆安全版）
+const CACHE_NAME = "kyudo-cache-v2.0.1"; // ← バージョン番号を上げて更新を強制
 const OFFLINE_URL = "/offline.html";
 
 const urlsToCache = [
@@ -17,13 +17,14 @@ const urlsToCache = [
 
 // install
 self.addEventListener("install", event => {
-  self.skipWaiting();
+  self.skipWaiting(); // 即アクティブ化
   event.waitUntil(
     (async () => {
       const cache = await caches.open(CACHE_NAME);
       for (const url of urlsToCache) {
         try {
-          const res = await fetch(url, { cache: "no-cache" });
+          // キャッシュ完全無効で取得
+          const res = await fetch(url, { cache: "reload" });
           if (res.ok) await cache.put(url, res.clone());
         } catch (e) {
           console.warn("Skip caching:", url);
@@ -37,10 +38,15 @@ self.addEventListener("install", event => {
 self.addEventListener("activate", event => {
   event.waitUntil(
     (async () => {
+      // 古いキャッシュ削除
       const keys = await caches.keys();
       await Promise.all(keys.map(k => k !== CACHE_NAME && caches.delete(k)));
+
+      // 全タブを強制リロード
       const clients = await self.clients.matchAll({ type: "window" });
-      clients.forEach(c => c.navigate(c.url));
+      for (const client of clients) {
+        client.navigate(client.url);
+      }
     })()
   );
 });
@@ -48,9 +54,11 @@ self.addEventListener("activate", event => {
 // fetch
 self.addEventListener("fetch", event => {
   const { request } = event;
+
+  // HTMLナビゲーションリクエスト
   if (request.mode === "navigate") {
     event.respondWith(
-      fetch(request)
+      fetch(request, { cache: "reload" })
         .then(res => {
           caches.open(CACHE_NAME).then(cache => cache.put(request, res.clone()));
           return res;
@@ -59,15 +67,19 @@ self.addEventListener("fetch", event => {
     );
     return;
   }
+
+  // その他リソース（JS・CSS・画像）
   event.respondWith(
     caches.match(request).then(cacheRes =>
       cacheRes ||
-      fetch(request, { cache: "no-cache" }).then(res => {
-        if (res && res.status === 200) {
-          caches.open(CACHE_NAME).then(cache => cache.put(request, res.clone()));
-        }
-        return res;
-      }).catch(() => new Response("Offline", { status: 503 }))
+      fetch(request, { cache: "reload" })
+        .then(res => {
+          if (res && res.status === 200) {
+            caches.open(CACHE_NAME).then(cache => cache.put(request, res.clone()));
+          }
+          return res;
+        })
+        .catch(() => new Response("Offline", { status: 503 }))
     )
   );
 });
