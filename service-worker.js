@@ -1,5 +1,5 @@
 // service-worker.js（安全版＋自動更新）
-const CACHE_NAME = "kyudo-cache-v1.0.8";
+const CACHE_NAME = "kyudo-cache-v2.0.0";
 const OFFLINE_URL = "/offline.html";
 
 const urlsToCache = [
