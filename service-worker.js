@@ -27,7 +27,6 @@ const urlsToCache = [
   "/favicon-16x16.png",
   "/manifest.json",
   "/ms-icon-144x144.png",
-  OFFLINE_URL
 ];
 
 // --- インストール ---
