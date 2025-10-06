@@ -46,8 +46,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&display=swap" rel="stylesheet"/>
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
 
-  <!-- Shepherd.js CSS -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/shepherd.js/dist/css/shepherd.css">
+  <!-- Intro.js CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/intro.js/minified/introjs.min.css">
 
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/styles.css">
@@ -86,14 +86,17 @@
 
   <!-- メインコンテンツ -->
   <main class="flex-grow container mx-auto px-4 py-6 space-y-8">
+
     <h1 id="pageTitle" class="text-2xl font-bold mb-4 text-slate-900 dark:text-white">弓道道具管理ページ</h1>
-    <p id="message" class="text-slate-600 dark:text-slate-400 mb-4"></p>
 
-    <button id="editBtn" class="px-4 py-2 rounded-lg bg-primary text-white font-bold hover:bg-primary/80">編集</button>
+    <p id="message" class="text-slate-600 dark:text-slate-400 mb-4" data-intro="登録した内容が出ます。"></p>
 
-    <div id="editArea" class="mt-4 space-y-6 hidden"></div>
+    <button id="editBtn" class="px-4 py-2 rounded-lg bg-primary text-white font-bold hover:bg-primary/80" data-intro="ここを押すと道具を編集できます。">編集</button>
 
-    <button id="saveToolsBtn" class="mt-4 px-4 py-2 rounded-lg bg-green-600 text-white font-bold hover:bg-green-700 hidden">保存</button>
+    <div id="editArea" class="mt-4 space-y-6 hidden" data-intro="ここで道具を追加・削除できます。"></div>
+
+    <button id="saveToolsBtn" class="mt-4 px-4 py-2 rounded-lg bg-green-600 text-white font-bold hover:bg-green-700 hidden" data-intro="編集後にここで保存します。">保存</button>
+
   </main>
 </div>
 
@@ -102,12 +105,11 @@
   <div class="bg-primary text-white px-6 py-3 rounded-lg shadow-lg opacity-0 transition-opacity duration-300"></div>
 </div>
 
-<!-- JS -->
 <script src="js/tools.js"></script>
 <script src="js/page.js"></script>
 
-<!-- Shepherd.js -->
-<script src="https://cdn.jsdelivr.net/npm/shepherd.js/dist/js/shepherd.min.js"></script>
+<!-- Intro.js -->
+<script src="https://unpkg.com/intro.js/minified/intro.min.js"></script>
 
 <script>
 if ('serviceWorker' in navigator) {
@@ -118,73 +120,42 @@ if ('serviceWorker' in navigator) {
   });
 }
 
+// Intro.js 初回表示 & ボタンクリック
 document.addEventListener("DOMContentLoaded", () => {
-  const FIRST_VISIT_KEY = "matomaShepherdShownTools";
+  const FIRST_VISIT_KEY = "matomaIntroShownTools";
   const isFirstVisit = !localStorage.getItem(FIRST_VISIT_KEY);
 
-  const tour = new Shepherd.Tour({
-    useModalOverlay: true,
-    defaultStepOptions: {
-      scrollTo: { behavior: 'smooth', block: 'center' },
-      cancelIcon: { enabled: true }
-    }
-  });
+  const steps = [
+    { element: "#message", intro: "登録した内容が出ます。" },
+    { element: "#editBtn", intro: "ここを押すと道具を編集できます。" },
+    { element: "#editArea", intro: "ここで道具を追加・削除できます。" },
+    { element: "#saveToolsBtn", intro: "編集後にここで保存します。" }
+  ];
 
-  // ステップ定義（説明は元のまま）
-  tour.addStep({ 
-    title: '登録内容表示', 
-    text: '登録した内容が出ます。', 
-    attachTo: { element: '#message', on: 'bottom' }, 
-    buttons: [{ text: '次へ', action: tour.next }] 
-  });
+  function startIntro() {
+    introJs().setOptions({
+  steps,
+  showStepNumbers: true,
+  exitOnOverlayClick: false,
+  nextLabel: "次へ",
+  prevLabel: "戻る",
+  doneLabel: "完了",
+  tooltipPosition: "auto",    // autoで画面内に最適配置
+  scrollToElement: true,      // 対象要素までスクロール
+  disableInteraction: false,  // ツールチップ以外の操作は可能
+}).start();
 
-  tour.addStep({ 
-    title: '編集ボタン', 
-    text: 'ここを押すと道具を編集できます。', 
-    attachTo: { element: '#editBtn', on: 'bottom' }, 
-    buttons: [{ text: '戻る', action: tour.back }, { text: '次へ', action: tour.next }] 
-  });
-
-  tour.addStep({ 
-    title: '編集エリア', 
-    text: 'ここで道具を追加・削除できます。', 
-    attachTo: { element: '#editArea', on: 'bottom' }, 
-    buttons: [{ text: '戻る', action: tour.back }, { text: '次へ', action: tour.next }] 
-  });
-
-  tour.addStep({ 
-    title: '保存ボタン', 
-    text: '編集後にここで保存します。', 
-    attachTo: { element: '#saveToolsBtn', on: 'bottom' }, 
-    buttons: [{ text: '戻る', action: tour.back }, { text: '完了', action: tour.complete }] 
-  });
-
-  function startTour() { tour.start(); }
+  }
 
   if (isFirstVisit) {
-    startTour();
+    startIntro();
     localStorage.setItem(FIRST_VISIT_KEY, "true");
   }
 
-  // 手動起動ボタン
-  ["tutorialBtn", "tutorialBtnMobile"].forEach(id => {
-    document.getElementById(id)?.addEventListener("click", startTour);
-  });
-
-  // 自動で次に進むボタン（編集・保存でステップ進行）
-  ["editBtn", "saveToolsBtn"].forEach(id => {
-    document.getElementById(id)?.addEventListener("click", () => {
-      if (id === "editBtn") {
-        document.getElementById("editArea").classList.remove("hidden");
-        document.getElementById("saveToolsBtn").classList.remove("hidden");
-      }
-      if (tour.isActive()) tour.next();
-    });
-  });
-
+  document.getElementById("tutorialBtn")?.addEventListener("click", startIntro);
+  document.getElementById("tutorialBtnMobile")?.addEventListener("click", startIntro);
 });
 </script>
-
 
 </body>
 </html>

@@ -7,7 +7,7 @@ body {
   font-family: "Manrope", "Yu Gothic", "Hiragino Maru Gothic ProN", sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background: var(--bg, #f6f7f8);
+  background: var(--bg, #f4f4f4);
   color: var(--text, #222);
 }
 
@@ -20,17 +20,16 @@ header .menu button { cursor: pointer; }
 
 /* ===== Set wrapper / card ===== */
 .set-wrapper {
-  background: linear-gradient(145deg, #ffffff, #f0f4fb);
+  background: #ffffff;
   margin: 18px 0;
   padding: 18px;
   border-radius: 12px;
-  box-shadow: 0 6px 18px rgba(0,0,0,0.06);
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
 @media(min-width: 768px) { .set-wrapper { flex-direction: row; align-items: flex-start; } }
-.set-wrapper h2 { font-size: 1.1rem; margin: 0 0 6px 0; color: #153057; }
+.set-wrapper h2 { font-size: 1.1rem; margin: 0 0 6px 0; color: #1f2937; }
 
 /* ===== Tools / select ===== */
 .tools {
@@ -38,17 +37,16 @@ header .menu button { cursor: pointer; }
   flex-direction: column;
   gap: 12px;
   min-width: 220px;
-  background: #fefefe;
+  background: #f9f9f9;
   padding: 16px;
   border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.06);
 }
 .tool-label {
   display: flex;
   flex-direction: column;
   gap: 6px;
   font-size: 0.95rem;
-  color: #1f2d3d;
+  color: #1f2937;
 }
 .tool-select {
   padding: 8px 10px;
@@ -61,8 +59,8 @@ header .menu button { cursor: pointer; }
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 .tool-select:focus {
-  border-color: #1969e1;
-  box-shadow: 0 0 0 2px rgba(25,105,225,0.2);
+  border-color: #4b5563;
+  box-shadow: 0 0 0 2px rgba(75,85,99,0.2);
   outline: none;
 }
 @media (max-width: 767px) {
@@ -72,23 +70,23 @@ header .menu button { cursor: pointer; }
 
 /* ===== Canvas container ===== */
 .canvas-container {
-  background: #fff;
+  background: #f9f9f9;
   border-radius: 10px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid #d1d5db;
   position: relative;
   flex: 1 1 60%;
   min-height: 280px;
   display: flex;
   align-items: center;
   justify-content: center;
-  touch-action: auto !important; /* 縦方向スクロールは確実に有効 */
+  touch-action: auto !important;
 }
 
 .canvas-container canvas {
   display: block;
   width: 100%;
   height: 100%;
-  touch-action: auto !important; /* canvas 上のドラッグ優先を確実に有効 */
+  touch-action: auto !important;
   user-select: none;
   -webkit-user-drag: none;
   -webkit-touch-callout: none;
@@ -115,11 +113,11 @@ canvas#targetCanvas_0{
 .score-select { border: 1px solid #b6c2d6; min-width: 88px; }
 .popup-score-select { border: 1px solid rgba(0,0,0,0.12); box-shadow: 0 6px 18px rgba(0,0,0,0.12); display: none; }
 .score-board p { font-weight: 700; font-size: 1.05rem; margin: 6px 0 0 0; }
-.score-board button { padding: 8px 10px; border-radius: 8px; border: none; background: #2b6cb0; color: white; cursor: pointer; }
+.score-board button { padding: 8px 10px; border-radius: 8px; border: none; background: #4b5563; color: white; cursor: pointer; }
 
 /* ===== Accessibility / focus ===== */
 .score-select:focus, .tool-select:focus, .popup-score-select:focus, #addSetBtn:focus {
-  outline: 3px solid rgba(25,105,225,0.18); outline-offset: 2px;
+  outline: 3px solid rgba(75,85,99,0.18); outline-offset: 2px;
 }
 
 /* ===== Daily summary ===== */
@@ -130,18 +128,29 @@ canvas#targetCanvas_0{
 #addSetBtn {
   display: flex; justify-content:center; align-items:center; position: relative;
   width:250px; margin:0 auto; padding:.9em 2em; overflow:hidden;
-  border:1px solid #2589d0; border-radius:5px; background-color:#fff; color:#2589d0;
+  border:1px solid #4b5563; border-radius:5px; background-color:#fff; color:#4b5563;
   font-size:1em; cursor:pointer; transition:color .3s ease;
 }
 #addSetBtn:hover { background-color: transparent; color:#fff; }
 #addSetBtn::before {
   position:absolute; top:0; left:0; z-index:-1; width:0; height:100%;
-  background-color:#2589d0; content:''; transition: width .3s ease;
+  background-color:#4b5563; content:''; transition: width .3s ease;
 }
 #addSetBtn:hover::before { width:100%; }
-
+#addSetBtnBottom {
+  display: flex; justify-content:center; align-items:center; position: relative;
+  width:250px; margin:0 auto; padding:.9em 2em; overflow:hidden;
+  border:1px solid #4b5563; border-radius:5px; background-color:#fff; color:#4b5563;
+  font-size:1em; cursor:pointer; transition:color .3s ease;
+}
+#addSetBtnBottom:hover { background-color: transparent; color:#fff; }
+#addSetBtnBottom::before {
+  position:absolute; top:0; left:0; z-index:-1; width:0; height:100%;
+  background-color:#4b5563; content:''; transition: width .3s ease;
+}
+#addSetBtnBottom:hover::before { width:100%; }
 /* ===== Dark mode ===== */
-body.dark .tools { background:#1c1f29; }
+body.dark .tools { background:#1c1c1c; }
 body.dark .tool-label { color:#d1d5db; }
 body.dark .tool-select { background:#111721; border-color:#374151; color:#f6f7f8; }
 body.dark .tool-select::placeholder { color:#9ca3af; }
@@ -156,20 +165,8 @@ body.dark .tool-select::placeholder { color:#9ca3af; }
 }
 
 /* ===== Analysis Section ===== */
-.analysis-section {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  margin-top: 16px;
-}
-
-.analysis-filters {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  align-items: center;
-}
-
+.analysis-section { display: flex; flex-direction: column; gap: 16px; margin-top: 16px; }
+.analysis-filters { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 .analysis-filters input,
 .analysis-filters select,
 .analysis-filters button {
@@ -180,35 +177,16 @@ body.dark .tool-select::placeholder { color:#9ca3af; }
   background-color: #fff;
   transition: all 0.2s ease;
 }
-
-.analysis-filters button {
-  background-color: #1969e1;
-  color: #fff;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.analysis-filters button:hover {
-  background-color: #1051b0;
-}
+.analysis-filters button { background-color: #4b5563; color: #fff; font-weight: 600; cursor: pointer; }
+.analysis-filters button:hover { background-color: #374151; }
 
 /* ===== Canvas + Chart container ===== */
-.analysis-display {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-@media(min-width: 768px) {
-  .analysis-display {
-    flex-direction: row;
-    gap: 24px;
-  }
-}
+.analysis-display { display: flex; flex-direction: column; gap: 16px; }
+@media(min-width: 768px) { .analysis-display { flex-direction: row; gap: 24px; } }
 
 #targetCanvas {
   flex: 1 1 50%;
-  min-height: 280px;
+  min-height: 500px; /* ここは絶対 */
   border-radius: 12px;
   background: #fefefe;
   border: 1px solid #e2e8f0;
@@ -223,65 +201,36 @@ body.dark .tool-select::placeholder { color:#9ca3af; }
   padding: 8px;
 }
 
-/* ===== Shot Analysis / 立ちごとの分析 ===== */
-#shotAnalysisContainer {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 12px;
-}
-
-@media(min-width:768px) {
-  #shotAnalysisContainer {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-#shotAnalysisContainer .mb-2 {
-  padding: 12px;
-  border-radius: 10px;
-  background: #fefefe;
-  border: 1px solid #cbd5e1;
-  transition: transform 0.2s, box-shadow 0.2s;
-}
-
-#shotAnalysisContainer .mb-2:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-}
-
-#shotAnalysisContainer strong {
-  display: block;
-  margin-bottom: 6px;
-}
-
-/* ===== Dark mode for analysis ===== */
+/* ===== Dark mode for canvas/chart ===== */
 body.dark #targetCanvas,
 body.dark #scoreChart {
-  background: #1c1f29;
+  background: #1b1b1b;
   border-color: #374151;
 }
 
-body.dark #shotAnalysisContainer .mb-2 {
-  background: #1c1f29;
-  border-color: #374151;
-  color: #f6f7f8;
+/* ===== Shot Analysis / 立ちごとの分析 ===== */
+#shotAnalysisContainer { display: grid; grid-template-columns: 1fr; gap: 12px; }
+@media(min-width:768px) { #shotAnalysisContainer { grid-template-columns: repeat(2, 1fr); } }
+#shotAnalysisContainer .mb-2 {
+  padding: 12px; border-radius: 10px; background: #f9f9f9; border: 1px solid #d1d5db;
+  transition: transform 0.2s, box-shadow 0.2s;
 }
+#shotAnalysisContainer .mb-2:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+#shotAnalysisContainer strong { display: block; margin-bottom: 6px; }
 
+/* ===== Dark mode for analysis ===== */
+body.dark #shotAnalysisContainer .mb-2 { background: #1c1c1c; border-color: #374151; color: #f6f7f8; }
 body.dark .analysis-filters input,
-body.dark .analysis-filters select {
-  background: #111721;
-  border-color: #374151;
-  color: #f6f7f8;
-}
+body.dark .analysis-filters select { background: #111721; border-color: #374151; color: #f6f7f8; }
 
 /* ===== Responsive tweaks for analysis ===== */
 @media(max-width:767px) {
-  #targetCanvas,
-  #scoreChart { min-height: 340px; }
+  #targetCanvas, #scoreChart { min-height: 340px; }
   .analysis-filters input,
   .analysis-filters select,
   .analysis-filters button { font-size: 16px; padding: 8px 10px; }
 }
+
 /* ===== 初めての方へボタン ===== */
 #tutorialBtn {
   position: fixed;
@@ -292,7 +241,7 @@ body.dark .analysis-filters select {
   cursor: pointer;
   border: none;
   border-radius: 12px;
-  background: linear-gradient(135deg, #1969e1, #2589d0);
+  background: #4b5563;
   color: #fff;
   box-shadow: 0 6px 18px rgba(0,0,0,0.15);
   transition: all 0.3s ease;
@@ -302,117 +251,7 @@ body.dark .analysis-filters select {
   padding: 0.8rem 1.2rem;
   font-size: 1rem;
 }
-
-/* ホバー時 */
-#tutorialBtn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 22px rgba(0,0,0,0.25);
-  background: linear-gradient(135deg, #2589d0, #1969e1);
-}
-
-/* スマホ用に幅を広げる */
+#tutorialBtn:hover { transform: translateY(-2px); box-shadow: 0 8px 22px rgba(0,0,0,0.25); background: #374151; }
 @media(max-width: 767px){
-  #tutorialBtn {
-    width: calc(100% - 2rem);
-    left: 1rem;
-    right: 1rem;
-    font-size: 1.1rem;
-    padding: 1rem 0;
-    justify-content: center;
-  }
-}
-/* ================================
-   Intro.js カスタムスタイル（MATOMA用）
-================================ */
-
-/* ツールチップ全体 */
-.introjs-tooltip {
-  background: linear-gradient(135deg, #1969e1, #2589d0);
-  color: #fff;
-  border-radius: 12px;
-  padding: 16px;
-  font-size: 0.95rem;
-  max-width: 320px;
-  box-shadow: 0 6px 18px rgba(0,0,0,0.15);
-  font-family: "Manrope", "Yu Gothic", "Hiragino Maru Gothic ProN", sans-serif;
-}
-
-/* ツールチップ内の文章 */
-.introjs-tooltiptext {
-  margin-bottom: 8px;
-  line-height: 1.4;
-}
-
-/* ボタン */
-.introjs-nextbutton,
-.introjs-prevbutton,
-.introjs-donebutton,
-.introjs-skipbutton {
-  background: #fff;
-  color: #1969e1;
-  border-radius: 8px;
-  padding: 6px 14px;
-  font-weight: 600;
-  cursor: pointer;
-  box-shadow: 0 3px 10px rgba(0,0,0,0.12);
-  transition: all 0.2s ease;
-}
-
-.introjs-nextbutton:hover,
-.introjs-prevbutton:hover,
-.introjs-donebutton:hover,
-.introjs-skipbutton:hover {
-  background: #e6f0ff;
-}
-
-/* ステップ対象の強調枠 */
-.introjs-helperLayer {
-  border: 2px solid #1969e1;
-  border-radius: 12px;
-  box-shadow: 0 0 20px rgba(25,105,225,0.5);
-  background: transparent;
-}
-
-/* オーバーレイ背景 */
-.introjs-overlay {
-  background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(2px);
-}
-
-/* ダークモード対応 */
-body.dark .introjs-tooltip {
-  background: linear-gradient(135deg, #111721, #1c1f29);
-  color: #f6f7f8;
-}
-
-body.dark .introjs-nextbutton,
-body.dark .introjs-prevbutton,
-body.dark .introjs-donebutton,
-body.dark .introjs-skipbutton {
-  background: #1969e1;
-  color: #fff;
-}
-
-body.dark .introjs-nextbutton:hover,
-body.dark .introjs-prevbutton:hover,
-body.dark .introjs-donebutton:hover,
-body.dark .introjs-skipbutton:hover {
-  background: #2589d0;
-}
-
-/* ステップ番号のスタイル */
-.introjs-tooltip .introjs-tooltipbuttons {
-  display: flex;
-  justify-content: flex-end;
-  gap: 6px;
-  margin-top: 8px;
-}
-
-/* ポジション調整：モバイルでも自然に表示 */
-@media(max-width:767px){
-  .introjs-tooltip {
-    font-size: 0.9rem;
-    padding: 12px;
-    max-width: 90%;
-  }
+  #tutorialBtn { width: calc(100% - 2rem); left: 1rem; right: 1rem; font-size: 1.1rem; padding: 1rem 0; justify-content: center; }
 }

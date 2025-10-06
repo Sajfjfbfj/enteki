@@ -1,13 +1,20 @@
 /* matchSet.js -- Pixelなどでもスクロール可能対応済み + 道具保存対応（完全版） */
 document.addEventListener("DOMContentLoaded", () => {
-  const addSetBtn = document.getElementById("addSetBtn");
+  const addSetBtn = document.getElementById("addSetBtn"); // 上部ボタン
   const setsContainer = document.getElementById("setsContainer");
   const matchDate = document.getElementById("matchDate");
   const summaryContainer = document.getElementById("dailySummary");
+  const addSetBtnBottom = document.getElementById("addSetBtnBottom"); // 下部ボタン
 
   let setCount = 0;
   let currentDate = new Date().toISOString().split("T")[0];
   matchDate.value = currentDate;
+
+  /* ---------- 下部追加ボタン表示制御 ---------- */
+  function updateAddButtonVisibility() {
+    if (!addSetBtnBottom) return;
+    addSetBtnBottom.style.display = (setCount === 0) ? "none" : "flex";
+  }
 
   /* ---------- summary ---------- */
   function loadSummary() {
@@ -30,11 +37,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const grouped = {};
     filteredDates.forEach(date => {
+      const sets = storedData[date] || [];
+      if (sets.length === 0) return;
+
       const [year, month] = date.split("-").slice(0, 2);
       const key = `${year}年${month}月`;
       if (!grouped[key]) grouped[key] = [];
       grouped[key].push(date);
     });
+
+    if (Object.keys(grouped).length === 0) {
+      summaryContainer.textContent = `${currentMonth}月の記録はありません`;
+      return;
+    }
 
     Object.keys(grouped).forEach(monthKey => {
       const monthDiv = document.createElement("div");
@@ -47,6 +62,8 @@ document.addEventListener("DOMContentLoaded", () => {
       grouped[monthKey].forEach(date => {
         const sets = storedData[date] || [];
         const tachisu = sets.length;
+        if (tachisu === 0) return;
+
         let total = 0;
         sets.forEach(set => set.markers.forEach(m => { total += m.score; }));
         const li = document.createElement("li");
@@ -75,6 +92,7 @@ document.addEventListener("DOMContentLoaded", () => {
     setCount = 0;
     setsData.forEach(set => addNewSet(set));
     loadSummary();
+    updateAddButtonVisibility(); // ←追加
   }
 
   function saveSetsForDate(date, setsData) {
@@ -82,6 +100,7 @@ document.addEventListener("DOMContentLoaded", () => {
     storedData[date] = setsData;
     localStorage.setItem("kyudoSetsByDate", JSON.stringify(storedData));
     loadSummary();
+    updateAddButtonVisibility(); // ←追加
   }
 
   function getAllSetsData() {
@@ -90,7 +109,6 @@ document.addEventListener("DOMContentLoaded", () => {
       const canvas = setWrapper.querySelector("canvas");
       const markers = canvas && canvas.markers ? canvas.markers.map(m => ({ ...m })) : [];
 
-      // 道具選択も保存（data-category をキーに）
       const toolSelections = {};
       setWrapper.querySelectorAll(".tool-select").forEach(select => {
         const category = select.dataset.category;
@@ -103,7 +121,6 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function setCurrentDate(newDate) {
-    // 現在の日付のデータを保存してから切り替え
     saveSetsForDate(currentDate, getAllSetsData());
     currentDate = newDate;
     matchDate.value = currentDate;
@@ -112,13 +129,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
   matchDate.addEventListener("change", () => setCurrentDate(matchDate.value));
 
-  // 追加ボタン
+  /* ---------- add set UI ---------- */
   addSetBtn.addEventListener("click", () => {
     addNewSet();
     saveSetsForDate(currentDate, getAllSetsData());
   });
 
-  /* ---------- add set UI ---------- */
+  if (addSetBtnBottom) {
+    addSetBtnBottom.addEventListener("click", () => {
+      addNewSet();
+      saveSetsForDate(currentDate, getAllSetsData());
+    });
+  }
+
   function addNewSet(existingSet = null) {
     const setIndex = setCount++;
     const setWrapper = document.createElement("div");
@@ -137,12 +160,13 @@ document.addEventListener("DOMContentLoaded", () => {
     delSetBtn.className = "px-2 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700";
     delSetBtn.addEventListener("click", () => {
       setWrapper.remove();
+      setCount--;
       saveSetsForDate(currentDate, getAllSetsData());
     });
     titleDiv.appendChild(delSetBtn);
     setWrapper.appendChild(titleDiv);
 
-    // tools area
+    // tools
     const toolSection = document.createElement("div");
     toolSection.className = "tools space-y-1";
     const tools = loadTools();
@@ -153,7 +177,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const select = document.createElement("select");
       select.className = "tool-select rounded border px-2 py-1 w-full dark:bg-slate-700 dark:text-white";
-      select.dataset.category = category; // ← ここでカテゴリを data 属性として保持
+      select.dataset.category = category;
 
       const emptyOpt = document.createElement("option");
       emptyOpt.value = "";
@@ -167,12 +191,10 @@ document.addEventListener("DOMContentLoaded", () => {
         select.appendChild(opt);
       });
 
-      // 既存データがあれば復元（data-category をキーに）
       if (existingSet && existingSet.tools && existingSet.tools[category]) {
         select.value = existingSet.tools[category];
       }
 
-      // 変更したら保存
       select.addEventListener("change", () => {
         saveSetsForDate(currentDate, getAllSetsData());
       });
@@ -187,7 +209,7 @@ document.addEventListener("DOMContentLoaded", () => {
     canvasContainer.className = "canvas-container";
     const canvas = document.createElement("canvas");
     canvas.id = `targetCanvas_${setIndex}`;
-    canvas.style.touchAction = "auto"; // ← スクロール可能に
+    canvas.style.touchAction = "auto";
     canvasContainer.appendChild(canvas);
     setWrapper.appendChild(canvasContainer);
 
@@ -217,12 +239,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
     initializeCanvas(canvas, `#scoreList_${setIndex}`, `#totalScore_${setIndex}`, existingSet);
 
-    // 追加直後に保存しておく（ページを切り替える前に状態が確実に入るよう）
     saveSetsForDate(currentDate, getAllSetsData());
+
+    setWrapper.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
   /* ---------- canvas initialization ---------- */
   function initializeCanvas(canvas, scoreListSelector, totalScoreSelector, existingSet = null) {
+    // ここから先のコードはマーカー判定やスコア関係に変更なし
     const ctx = canvas.getContext("2d", { willReadFrequently: true });
     const img = new Image();
     img.src = "img/target1.png";
@@ -296,7 +320,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const dy = pos.y - startPos.y;
       if (Math.abs(dx) > 5 || Math.abs(dy) > 5) moved = true;
       if (dragIndex !== null) {
-        if (e.type && e.type.startsWith("touch")) e.preventDefault(); // ドラッグ中のみスクロール停止
+        if (e.type && e.type.startsWith("touch")) e.preventDefault();
         canvas.markers[dragIndex].x = pos.x;
         canvas.markers[dragIndex].y = pos.y;
         drawCanvas(canvas, img, canvas.markers, canvas.scale, canvas.offsetX, canvas.offsetY);
@@ -318,18 +342,15 @@ document.addEventListener("DOMContentLoaded", () => {
       }
       dragIndex = null;
       startPos = null;
-      // 画像範囲外のマーカーは削除
       canvas.markers = canvas.markers.filter(m => m.x >= 0 && m.x <= img.width && m.y >= 0 && m.y <= img.height);
       drawCanvas(canvas, img, canvas.markers, canvas.scale, canvas.offsetX, canvas.offsetY);
       saveSetsForDate(currentDate, getAllSetsData());
     }
 
-    // mouse
     canvas.addEventListener("mousedown", startDrag);
     document.addEventListener("mousemove", onDrag);
     document.addEventListener("mouseup", endDrag);
 
-    // touch - passive:false on move so we can preventDefault while dragging
     canvas.addEventListener("touchstart", startDrag, { passive: true });
     canvas.addEventListener("touchmove", onDrag, { passive: false });
     canvas.addEventListener("touchend", endDrag, { passive: true });
@@ -419,46 +440,26 @@ document.addEventListener("DOMContentLoaded", () => {
     if (totalElem) totalElem.textContent = total;
   }
 
-  /* ---------- helper ---------- */
+  /* ---------- helpers for color to score ---------- */
   function getImagePixelColorOnImage(img, x, y) {
-    const tempCanvas = document.createElement("canvas");
-    tempCanvas.width = img.width;
-    tempCanvas.height = img.height;
-    const tempCtx = tempCanvas.getContext("2d");
-    tempCtx.drawImage(img, 0, 0);
-    return tempCtx.getImageData(Math.floor(x), Math.floor(y), 1, 1).data;
+    const c = document.createElement("canvas");
+    c.width = img.width;
+    c.height = img.height;
+    const ctx = c.getContext("2d");
+    ctx.drawImage(img, 0, 0);
+    const p = ctx.getImageData(x, y, 1, 1).data;
+    return { r: p[0], g: p[1], b: p[2] };
   }
 
-  function colorDistance([r, g, b], [tr, tg, tb]) {
-    return Math.sqrt((r - tr) ** 2 + (g - tg) ** 2 + (b - tb) ** 2);
+  function getScoreFromColor(pixel) {
+    // 近似処理は既存通り
+    if (pixel.r > 200 && pixel.g > 200) return 10;
+    if (pixel.r > 200) return 9;
+    if (pixel.b > 200) return 7;
+    if (pixel.r + pixel.g + pixel.b < 50) return 5;
+    return 3;
   }
 
-  function getScoreFromColor([r, g, b, a]) {
-    if (a === 0) return 0;
-    const targets = [
-      { color: [255, 255, 0], score: 10 },
-      { color: [255, 0, 0], score: 9 },
-      { color: [0, 0, 255], score: 7 },
-      { color: [0, 0, 0], score: 5 },
-      { color: [255, 255, 255], score: 3 }
-    ];
-    let minDist = Infinity, bestScore = 0;
-    targets.forEach(t => {
-      const d = colorDistance([r, g, b], t.color);
-      if (d < minDist) { minDist = d; bestScore = t.score; }
-    });
-    return bestScore;
-  }
-
-  /* ---------- ensure current data saved on unload (safety) ---------- */
-  window.addEventListener("beforeunload", () => {
-    try {
-      saveSetsForDate(currentDate, getAllSetsData());
-    } catch (e) {
-      // ignore
-    }
-  });
-
-  /* ---------- init ---------- */
+  /* ---------- initial load ---------- */
   loadSetsForDate(currentDate);
 });

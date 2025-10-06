@@ -1,33 +1,6 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <link rel="apple-touch-icon" sizes="57x57" href="/apple-icon-57x57.png">
-  <link rel="apple-touch-icon" sizes="60x60" href="/apple-icon-60x60.png">
-  <link rel="apple-touch-icon" sizes="72x72" href="/apple-icon-72x72.png">
-  <link rel="apple-touch-icon" sizes="76x76" href="/apple-icon-76x76.png">
-  <link rel="apple-touch-icon" sizes="114x114" href="/apple-icon-114x114.png">
-  <link rel="apple-touch-icon" sizes="120x120" href="/apple-icon-120x120.png">
-  <link rel="apple-touch-icon" sizes="144x144" href="/apple-icon-144x144.png">
-  <link rel="apple-touch-icon" sizes="152x152" href="/apple-icon-152x152.png">
-  <link rel="apple-touch-icon" sizes="180x180" href="/apple-icon-180x180.png">
-  <link rel="icon" type="image/png" sizes="192x192" href="/android-icon-192x192.png">
-  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
-  <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
-  <link rel="manifest" href="/manifest.json">
-  <meta name="theme-color" content="#1969e1">
-  <meta name="msapplication-TileColor" content="#ffffff">
-  <meta name="msapplication-TileImage" content="/ms-icon-144x144.png">
-  <meta charset="UTF-8" />
-  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-  <link rel="stylesheet" href="css/style.css">
-  <title>MATOMA|分析</title>
-
-<!DOCTYPE html>
-<html lang="ja">
-<head>
   <meta charset="UTF-8" />
   <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
   <link rel="stylesheet" href="css/style.css">
@@ -85,10 +58,9 @@
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&display=swap" rel="stylesheet"/>
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
 
-  <!-- Intro.js CSS -->
-  <link rel="stylesheet" href="https://unpkg.com/intro.js/minified/introjs.min.css">
+  <!-- Shepherd.js CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/shepherd.js/dist/css/shepherd.css"/>
 </head>
-
 <body class="bg-background-light dark:bg-background-dark font-display text-slate-800 dark:text-slate-200">
 <div class="flex flex-col min-h-screen">
 
@@ -125,7 +97,7 @@
   <main class="flex-grow container mx-auto px-4 py-6 space-y-8">
 
     <!-- 日付・タブ・道具フィルター -->
-    <section class="bg-white dark:bg-slate-900 p-4 rounded-xl shadow-lg" data-intro="日付・タブ・道具フィルターです。分析したい日付や道具を選択できます。">
+    <section class="bg-white dark:bg-slate-900 p-4 rounded-xl shadow-lg" data-step="1">
       <div class="flex flex-wrap gap-2 mb-4 items-center">
         <input id="matchDate" type="date" class="p-2 border rounded" />
         <button id="dailyTab" class="px-4 py-2 font-bold rounded bg-primary text-white">日別</button>
@@ -145,7 +117,7 @@
     </section>
 
     <!-- 的キャンバスと得点分布 -->
-    <section class="bg-white dark:bg-slate-900 p-4 rounded-xl shadow-lg flex flex-col md:flex-row gap-6" data-intro="ここに的キャンバスと得点分布グラフが表示されます。">
+    <section class="bg-white dark:bg-slate-900 p-4 rounded-xl shadow-lg flex flex-col md:flex-row gap-6" data-step="2">
       <canvas id="targetCanvas" class="w-full md:w-1/2 h-64 bg-slate-100 dark:bg-slate-800 rounded-xl"></canvas>
       <div class="w-full md:w-1/2">
         <h3 class="font-bold mb-2 text-slate-900 dark:text-white">得点分布</h3>
@@ -154,7 +126,7 @@
     </section>
 
     <!-- 立ちごとの分析 -->
-    <section class="bg-white dark:bg-slate-900 p-4 rounded-xl shadow-lg" data-intro="ここに立ちごとの得点分析が表示されます。">
+    <section class="bg-white dark:bg-slate-900 p-4 rounded-xl shadow-lg" data-step="3">
       <h3 class="font-bold mb-2 text-slate-900 dark:text-white">立ちごとの得点分析</h3>
       <div id="shotAnalysisContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
     </section>
@@ -164,7 +136,7 @@
 <!-- JS -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="js/analysis.js"></script>
-<script src="https://unpkg.com/intro.js/minified/intro.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/shepherd.js/dist/js/shepherd.min.js"></script>
 <script>
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
@@ -174,47 +146,38 @@ if ('serviceWorker' in navigator) {
   });
 }
 
-// 初回Intro.js
+// Shepherd.jsによるチュートリアル
 document.addEventListener("DOMContentLoaded", () => {
   const FIRST_VISIT_KEY = "matomaIntroShown";
   const isFirstVisit = !localStorage.getItem(FIRST_VISIT_KEY);
 
-  const steps = [
-    { element: "#matchDate", intro: "ここで日付を選択できます。" },
-    { element: "#dailyTab", intro: "日別表示に切り替えます。" },
-    { element: "#monthTab", intro: "過去30日表示に切り替えます。" },
-    { element: "#toolCategorySelect", intro: "分析したい道具のカテゴリを選択します。" },
-    { element: "#toolNameSelect", intro: "分析したい道具を選択します。" },
-    { element: "#filterToolBtn", intro: "選択した条件で分析を実行します。" },
-    { element: "#targetCanvas", intro: "的キャンバスです。矢の位置を視覚的に確認できます。" },
-    { element: "#scoreChart", intro: "得点分布グラフです。得点の偏りを確認できます。" },
-    { element: "#shotAnalysisContainer", intro: "立ちごとの得点分析がここに表示されます。" }
-  ];
+  const tour = new Shepherd.Tour({
+    useModalOverlay: true,
+    defaultStepOptions: {
+      scrollTo: { behavior: 'smooth', block: 'center' },
+      cancelIcon: { enabled: true }
+    }
+  });
 
-  function startIntro() {
-    introJs().setOptions({
-  steps,
-  showStepNumbers: true,
-  exitOnOverlayClick: false,
-  nextLabel: "次へ",
-  prevLabel: "戻る",
-  doneLabel: "完了",
-  tooltipPosition: "auto",    // autoで画面内に最適配置
-  scrollToElement: true,      // 対象要素までスクロール
-  disableInteraction: false,  // ツールチップ以外の操作は可能
-}).start();
+  tour.addStep({ title: '日付選択', text: 'ここで日付を選択できます。', attachTo: { element: '#matchDate', on: 'bottom' }, buttons: [{ text: '次へ', action: tour.next }] });
+  tour.addStep({ title: '日別表示', text: '日別表示に切り替えます。', attachTo: { element: '#dailyTab', on: 'bottom' }, buttons: [{ text: '戻る', action: tour.back }, { text: '次へ', action: tour.next }] });
+  tour.addStep({ title: '過去30日表示', text: '過去30日表示に切り替えます。', attachTo: { element: '#monthTab', on: 'bottom' }, buttons: [{ text: '戻る', action: tour.back }, { text: '次へ', action: tour.next }] });
+  tour.addStep({ title: '道具カテゴリ選択', text: '分析したい道具のカテゴリを選択します。', attachTo: { element: '#toolCategorySelect', on: 'bottom' }, buttons: [{ text: '戻る', action: tour.back }, { text: '次へ', action: tour.next }] });
+  tour.addStep({ title: '道具選択', text: '分析したい道具を選択します。', attachTo: { element: '#toolNameSelect', on: 'bottom' }, buttons: [{ text: '戻る', action: tour.back }, { text: '次へ', action: tour.next }] });
+  tour.addStep({ title: '分析実行', text: '選択した条件で分析を実行します。', attachTo: { element: '#filterToolBtn', on: 'bottom' }, buttons: [{ text: '戻る', action: tour.back }, { text: '次へ', action: tour.next }] });
+  tour.addStep({ title: '的キャンバス', text: '的キャンバスです。矢の位置を視覚的に確認できます。', attachTo: { element: '#targetCanvas', on: 'bottom' }, buttons: [{ text: '戻る', action: tour.back }, { text: '次へ', action: tour.next }] });
+  tour.addStep({ title: '得点分布', text: '得点分布グラフです。得点の偏りを確認できます。', attachTo: { element: '#scoreChart', on: 'bottom' }, buttons: [{ text: '戻る', action: tour.back }, { text: '次へ', action: tour.next }] });
+  tour.addStep({ title: '立ちごとの分析', text: '立ちごとの得点分析がここに表示されます。', attachTo: { element: '#shotAnalysisContainer', on: 'bottom' }, buttons: [{ text: '戻る', action: tour.back }, { text: '完了', action: tour.complete }] });
 
-  }
+  function startTour() { tour.start(); }
 
   if (isFirstVisit) {
-    startIntro();
+    startTour();
     localStorage.setItem(FIRST_VISIT_KEY, "true");
   }
 
-  const btnPC = document.getElementById("tutorialBtn");
-  if (btnPC) btnPC.addEventListener("click", startIntro);
-  const btnSP = document.getElementById("tutorialBtnMobile");
-  if (btnSP) btnSP.addEventListener("click", startIntro);
+  document.getElementById("tutorialBtn")?.addEventListener("click", startTour);
+  document.getElementById("tutorialBtnMobile")?.addEventListener("click", startTour);
 });
 </script>
 </body>

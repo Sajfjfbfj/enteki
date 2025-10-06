@@ -21,7 +21,9 @@ document.addEventListener("DOMContentLoaded", () => {
   let dailySets = [];
   let monthSets = [];
 
-  const markerRadius = 20;
+  // markerRadius をキャンバス幅に応じて算出する
+  let markerRadiusBase = 20;
+
   const img = new Image();
   img.src = "img/target1.png";
 
@@ -62,6 +64,9 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  // --------------------
+  // 画像読み込み後の初期化
+  // --------------------
   img.onload = () => {
     resizeCanvas();
     loadDailySets(currentDate);
@@ -79,12 +84,102 @@ document.addEventListener("DOMContentLoaded", () => {
   monthTab.addEventListener("click", ()=>{ currentTab="month"; updateTabs(); redrawCurrentTab(); });
 
   matchDateInput.addEventListener("change", ()=>{ currentDate = matchDateInput.value; loadDailySets(currentDate); redrawCurrentTab(); });
-
   filterToolBtn.addEventListener("click", ()=>{ redrawCurrentTab(); });
 
+  // ============================================================
+  // キャンバスリサイズ＋縦拡大
+  // ============================================================
   function resizeCanvas(){
-    targetCanvas.width = targetCanvas.parentElement.clientWidth;
-    targetCanvas.height = Math.max(targetCanvas.parentElement.clientHeight, 400);
+    const parent = targetCanvas.parentElement;
+    const parentWidth = Math.max(100, parent.clientWidth);
+    const parentHeight = Math.max(200, parent.clientHeight);
+
+    const imgRatio = img.width / img.height || 1;
+
+    // 幅に基づく高さ計算
+    let canvasWidth = parentWidth;
+    let canvasHeight = Math.round(canvasWidth / imgRatio);
+
+    // 縦拡大倍率
+    const HEIGHT_SCALE = 2.2; // 1.0で通常、1.1で10%縦長
+    canvasHeight = Math.round(canvasHeight * HEIGHT_SCALE);
+
+    // 高さが親要素を超える場合は調整
+    if (canvasHeight > parentHeight) {
+      canvasHeight = parentHeight;
+      canvasWidth = Math.round(canvasHeight * imgRatio);
+    }
+
+    // 最低サイズを確保
+    const MIN_W = 240;
+    const MIN_H = 240 / imgRatio;
+    if (canvasWidth < MIN_W) {
+      canvasWidth = MIN_W;
+      canvasHeight = Math.round(canvasWidth / imgRatio);
+    }
+    if (canvasHeight < MIN_H) {
+      canvasHeight = MIN_H;
+      canvasWidth = Math.round(canvasHeight * imgRatio);
+    }
+
+    targetCanvas.width = canvasWidth;
+    targetCanvas.height = canvasHeight;
+    targetCanvas.style.display = "block";
+    targetCanvas.style.margin = "0 auto";
+
+    markerRadiusBase = Math.max(10, Math.round(canvasWidth * 0.03));
+    redrawCurrentTab();
+  }
+
+  function drawCanvas(canvas, markers){
+    const ctx = canvas.getContext("2d");
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+
+    // 画像描画
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+    const markerRadius = markerRadiusBase;
+    const fontSize = Math.max(12, Math.round(markerRadius * 0.9));
+
+    markers.forEach((m,i) => {
+      // 座標変換
+      const x = (m.x / img.width) * canvas.width;
+      const y = (m.y / img.height) * canvas.height;
+
+      let strokeColor;
+      switch(m.score){
+        case 10: strokeColor='yellow'; break;
+        case 9: strokeColor='red'; break;
+        case 7: strokeColor='blue'; break;
+        case 5: strokeColor='black'; break;
+        case 3: strokeColor='white'; break;
+        default: strokeColor='gray';
+      }
+
+      // 外側リング
+      ctx.beginPath();
+      ctx.arc(x, y, markerRadius + 2, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(255,255,255,0.85)';
+      ctx.fill();
+
+      // メイン円
+      ctx.beginPath();
+      ctx.arc(x, y, markerRadius, 0, Math.PI * 2);
+      ctx.fillStyle = 'white';
+      ctx.fill();
+
+      // 枠線
+      ctx.strokeStyle = strokeColor;
+      ctx.lineWidth = Math.max(2, Math.round(markerRadius * 0.15));
+      ctx.stroke();
+
+      // 番号
+      ctx.fillStyle = strokeColor === 'white' ? 'black' : 'black';
+      ctx.font = `bold ${fontSize}px sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(i + 1, x, y);
+    });
   }
 
   function updateTabs(){
@@ -149,35 +244,6 @@ document.addEventListener("DOMContentLoaded", () => {
     return sets.flatMap(set=> (set.tools && set.tools[selectedCategory]===selectedToolName) ? set.markers : []);
   }
 
-  function drawCanvas(canvas, markers){
-    const ctx = canvas.getContext("2d");
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    ctx.drawImage(img,0,0,canvas.width,canvas.height);
-    markers.forEach((m,i)=>{
-      let strokeColor;
-      switch(m.score){
-        case 10: strokeColor='yellow'; break;
-        case 9: strokeColor='red'; break;
-        case 7: strokeColor='blue'; break;
-        case 5: strokeColor='black'; break;
-        case 3: strokeColor='white'; break;
-        default: strokeColor='gray';
-      }
-      ctx.beginPath();
-      ctx.arc(m.x/img.width*canvas.width, m.y/img.height*canvas.height, markerRadius,0,Math.PI*2);
-      ctx.fillStyle='white';
-      ctx.fill();
-      ctx.strokeStyle=strokeColor;
-      ctx.lineWidth=2;
-      ctx.stroke();
-      ctx.fillStyle='black';
-      ctx.font='bold 18px sans-serif';
-      ctx.textAlign='center';
-      ctx.textBaseline='middle';
-      ctx.fillText(i+1, m.x/img.width*canvas.width, m.y/img.height*canvas.height);
-    });
-  }
-
   function drawScoreChart(markers, label){
     const scores = markers.map(m=>m.score||0);
     const counts = [0,3,5,7,9,10].map(v=>scores.filter(s=>s===v).length);
@@ -230,5 +296,4 @@ document.addEventListener("DOMContentLoaded", () => {
       container.appendChild(div);
     });
   }
-
 });

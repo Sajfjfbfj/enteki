@@ -9,7 +9,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const categories = ["弽", "弓", "矢", "弦"];
   let toolsData = loadTools();
 
-  // 🔸データをロード
   function loadTools() {
     const data = localStorage.getItem(item);
     if (data) return JSON.parse(data);
@@ -18,107 +17,35 @@ document.addEventListener("DOMContentLoaded", () => {
     return init;
   }
 
-  // 🔸データを保存
   function saveTools(data) {
     localStorage.setItem(item, JSON.stringify(data));
     showOverlay("道具を保存しました！");
     renderMessage();
   }
 
-  // 🔸登録内容表示（＝登録ページ）
   function renderMessage() {
-    message.innerHTML = "";
-    const container = document.createElement("div");
-    container.className = "space-y-4";
-
-    const hasData = categories.some(cat => toolsData[cat].length > 0);
-    if (!hasData) {
-      message.textContent = "まだ道具が登録されていません。";
+    if (!editArea.classList.contains("hidden")) {
+      message.textContent = "";
       return;
     }
 
-    // 各カテゴリごとにカード化して一覧表示
-    categories.forEach(cat => {
-      if (toolsData[cat].length === 0) return;
-
-      const section = document.createElement("div");
-      section.className = "border rounded-lg p-3 bg-white dark:bg-slate-800 shadow-sm";
-
-      const title = document.createElement("h3");
-      title.textContent = cat;
-      title.className = "font-bold text-lg mb-2 text-primary";
-      section.appendChild(title);
-
-      const ul = document.createElement("ul");
-      toolsData[cat].forEach(tool => {
-        const li = document.createElement("li");
-        li.className = "border-b border-slate-200 dark:border-slate-700 py-1";
-        li.innerHTML = `<span class='font-semibold'>${tool.name}</span>　<span class='text-slate-500 dark:text-slate-400 text-sm'>${tool.feature}</span>`;
-        ul.appendChild(li);
+    const hasData = categories.some(cat => toolsData[cat].length > 0);
+    if (!hasData) {
+      message.textContent = "道具を登録しましょう";
+    } else {
+      const items = [];
+      categories.forEach(cat => {
+        if (toolsData[cat].length > 0) {
+          // 最新2件のみ表示
+          const latestTools = toolsData[cat].slice(-2).map(t => t.name);
+          items.push(`${cat}: ${latestTools.join(", ")}`);
+        }
       });
-      section.appendChild(ul);
-      container.appendChild(section);
-    });
-
-    message.appendChild(container);
+      // 縦並び表示
+      message.textContent = "登録済みの道具:\n" + items.join("\n");
+    }
   }
 
-  // 🔸編集エリア生成（＝編集ページ）
-  function renderEditArea() {
-    editArea.innerHTML = "";
-    categories.forEach(category => {
-      const wrapper = document.createElement("div");
-      wrapper.className = "category-wrapper space-y-2 p-4 border rounded bg-white dark:bg-slate-800";
-
-      const title = document.createElement("h3");
-      title.textContent = category;
-      title.className = "font-bold text-lg";
-      wrapper.appendChild(title);
-
-      const ul = document.createElement("ul");
-
-      // 空でもループさせる（liなしでもOK）
-      toolsData[category].forEach((tool, index) => {
-        const li = document.createElement("li");
-        li.className = "flex gap-2 items-center mb-1";
-
-        const nameInput = createInput("道具名", tool.name);
-        const featureInput = createInput("特徴", tool.feature);
-        const delBtn = createButton("削除", () => {
-          toolsData[category].splice(index, 1);
-          renderEditArea();
-        }, "red");
-
-        li.appendChild(nameInput);
-        li.appendChild(featureInput);
-        li.appendChild(delBtn);
-        ul.appendChild(li);
-      });
-
-      wrapper.appendChild(ul);
-
-      // 新規追加用のフォームは必ず追加
-      const newName = createInput("道具名");
-      const newFeature = createInput("特徴");
-      const addBtn = createButton("追加", () => {
-        const name = newName.value.trim() || "名前なし";
-        const feature = newFeature.value.trim() || "特徴なし";
-        toolsData[category].push({ name, feature });
-        renderEditArea();
-      }, "primary");
-
-      wrapper.appendChild(newName);
-      wrapper.appendChild(newFeature);
-      wrapper.appendChild(addBtn);
-
-      editArea.appendChild(wrapper);
-    });
-
-    // 編集中は編集ボタン非表示
-    editBtn.classList.add("hidden");
-  }
-
-  // 🔸共通UI部品
   function createInput(placeholder, value = "") {
     const input = document.createElement("input");
     input.placeholder = placeholder;
@@ -135,29 +62,92 @@ document.addEventListener("DOMContentLoaded", () => {
     return btn;
   }
 
-  // 🔸メッセージオーバーレイ
+  function renderEditArea() {
+    editArea.innerHTML = "";
+    categories.forEach((category) => {
+      const wrapper = document.createElement("div");
+      wrapper.className = "category-wrapper space-y-2 p-4 border rounded bg-white dark:bg-slate-800";
+
+      const title = document.createElement("h3");
+      title.textContent = category;
+      title.className = "font-bold text-lg";
+      wrapper.appendChild(title);
+
+      const ul = document.createElement("ul");
+      toolsData[category].forEach((tool, index) => {
+        const li = document.createElement("li");
+        li.className = "flex gap-2 items-center mb-1";
+
+        const nameInput = createInput("道具名", tool.name);
+        const featureInput = createInput("特徴", tool.feature);
+        const delBtn = createButton(
+          "削除",
+          () => {
+            toolsData[category].splice(index, 1);
+            renderEditArea();
+          },
+          "red"
+        );
+
+        li.appendChild(nameInput);
+        li.appendChild(featureInput);
+        li.appendChild(delBtn);
+        ul.appendChild(li);
+      });
+      wrapper.appendChild(ul);
+
+      const newName = createInput("道具名");
+      const newFeature = createInput("特徴");
+      const addBtn = createButton(
+        "追加",
+        () => {
+          const name = newName.value.trim() || "名前なし";
+          const feature = newFeature.value.trim() || "特徴なし";
+          toolsData[category].push({ name, feature });
+          renderEditArea();
+        },
+        "primary"
+      );
+
+      wrapper.appendChild(newName);
+      wrapper.appendChild(newFeature);
+      wrapper.appendChild(addBtn);
+
+      editArea.appendChild(wrapper);
+    });
+  }
+
   function showOverlay(msg) {
     messageOverlay.textContent = msg;
     messageOverlay.classList.add("show");
-    setTimeout(() => messageOverlay.classList.remove("show"), 2000);
+
+    setTimeout(() => {
+      messageOverlay.classList.remove("show");
+    }, 2000);
   }
 
-  // 🔸編集ボタンで編集モードを開く
   editBtn.addEventListener("click", () => {
-    renderEditArea();
-    editArea.classList.remove("hidden");
-    saveToolsBtn.classList.remove("hidden");
-    message.classList.add("hidden");
+    const isHidden = editArea.classList.contains("hidden");
+
+    if (isHidden) {
+      renderEditArea();
+      editArea.classList.remove("hidden");
+      saveToolsBtn.classList.remove("hidden");
+      message.textContent = "";
+    } else {
+      editArea.classList.add("hidden");
+      saveToolsBtn.classList.add("hidden");
+      renderMessage();
+    }
   });
 
-  // 🔸保存処理
   saveToolsBtn.addEventListener("click", () => {
     document.querySelectorAll(".category-wrapper").forEach((wrapper, i) => {
       const category = categories[i];
       const lis = wrapper.querySelectorAll("ul li");
       const updated = [];
 
-      lis.forEach(li => {
+      lis.forEach((li) => {
         const name = li.querySelector("input[placeholder='道具名']")?.value.trim() || "名前なし";
         const feature = li.querySelector("input[placeholder='特徴']")?.value.trim() || "特徴なし";
         updated.push({ name, feature });
@@ -178,13 +168,8 @@ document.addEventListener("DOMContentLoaded", () => {
     saveTools(toolsData);
     editArea.classList.add("hidden");
     saveToolsBtn.classList.add("hidden");
-    message.classList.remove("hidden");
     renderMessage();
-
-    // 保存後は編集ボタンを表示
-    editBtn.classList.remove("hidden");
   });
 
-  // 初期表示（登録内容ページ）
   renderMessage();
 });
