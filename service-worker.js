@@ -1,5 +1,4 @@
-// service-worker.js（即時反映＆安全版）
-const CACHE_NAME = "kyudo-cache-v2.0.1"; // ← バージョン番号を上げて更新を強制
+const CACHE_NAME = "kyudo-cache-v2.0.2";
 const OFFLINE_URL = "/offline.html";
 
 const urlsToCache = [
@@ -17,65 +16,58 @@ const urlsToCache = [
 
 // install
 self.addEventListener("install", event => {
-  self.skipWaiting(); // 即アクティブ化
-  event.waitUntil(
-    (async () => {
-      const cache = await caches.open(CACHE_NAME);
-      for (const url of urlsToCache) {
-        try {
-          // キャッシュ完全無効で取得
-          const res = await fetch(url, { cache: "reload" });
-          if (res.ok) await cache.put(url, res.clone());
-        } catch (e) {
-          console.warn("Skip caching:", url);
-        }
+  self.skipWaiting();
+  event.waitUntil((async () => {
+    const cache = await caches.open(CACHE_NAME);
+    for (const url of urlsToCache) {
+      try {
+        const res = await fetch(url, { cache: "no-store" });
+        if (res.ok) await cache.put(url, res.clone());
+      } catch {
+        console.warn("Skip caching:", url);
       }
-    })()
-  );
+    }
+  })());
 });
 
 // activate
 self.addEventListener("activate", event => {
-  event.waitUntil(
-    (async () => {
-      // 古いキャッシュ削除
-      const keys = await caches.keys();
-      await Promise.all(keys.map(k => k !== CACHE_NAME && caches.delete(k)));
-
-      // 全タブを強制リロード
-      const clients = await self.clients.matchAll({ type: "window" });
-      for (const client of clients) {
-        client.navigate(client.url);
-      }
-    })()
-  );
+  event.waitUntil((async () => {
+    const keys = await caches.keys();
+    await Promise.all(keys.map(k => k !== CACHE_NAME && caches.delete(k)));
+    const clients = await self.clients.matchAll({ type: "window" });
+    for (const client of clients) {
+      client.postMessage({ type: "RELOAD_PAGE" });
+    }
+  })());
 });
 
 // fetch
 self.addEventListener("fetch", event => {
   const { request } = event;
 
-  // HTMLナビゲーションリクエスト
   if (request.mode === "navigate") {
     event.respondWith(
-      fetch(request, { cache: "reload" })
+      fetch(request, { cache: "no-store" })
         .then(res => {
-          caches.open(CACHE_NAME).then(cache => cache.put(request, res.clone()));
+          caches.open(CACHE_NAME).then(c => c.put(request, res.clone()));
           return res;
         })
-        .catch(() => caches.match(OFFLINE_URL))
+        .catch(async () => {
+          const cachedOffline = await caches.match(OFFLINE_URL);
+          return cachedOffline || new Response("Offline", { status: 503 });
+        })
     );
     return;
   }
 
-  // その他リソース（JS・CSS・画像）
   event.respondWith(
     caches.match(request).then(cacheRes =>
       cacheRes ||
-      fetch(request, { cache: "reload" })
+      fetch(request, { cache: "no-store" })
         .then(res => {
           if (res && res.status === 200) {
-            caches.open(CACHE_NAME).then(cache => cache.put(request, res.clone()));
+            caches.open(CACHE_NAME).then(c => c.put(request, res.clone()));
           }
           return res;
         })
