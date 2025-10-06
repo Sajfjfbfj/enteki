@@ -1,8 +1,7 @@
-// service-worker.js（最速即時反映＋キャッシュ安全処理＋更新検知）
-const CACHE_NAME = "kyudo-cache-v1.0.6"; // ★バージョンを上げると確実更新
+// service-worker.js (safe + auto update + no-cache)
+const CACHE_NAME = "kyudo-cache-v1.0.7"; // bump version to update
 const OFFLINE_URL = "/offline.html";
 
-// === キャッシュ対象 ===
 const urlsToCache = [
   "/", "/index.html", "/yadokoro.html", "/help.html", "/tools.html",
   "/css/style.css",
@@ -31,9 +30,9 @@ const urlsToCache = [
   OFFLINE_URL
 ];
 
-// === install ===
+// install
 self.addEventListener("install", event => {
-  self.skipWaiting(); // 即座に新SW適用
+  self.skipWaiting();
   event.waitUntil(
     (async () => {
       const cache = await caches.open(CACHE_NAME);
@@ -42,35 +41,29 @@ self.addEventListener("install", event => {
           const res = await fetch(url, { cache: "no-cache" });
           if (res.ok) await cache.put(url, res.clone());
         } catch (err) {
-          console.warn("❌ キャッシュ失敗:", url);
+          console.log("Cache failed:", url);
         }
       }
     })()
   );
 });
 
-// === activate ===
+// activate
 self.addEventListener("activate", event => {
   event.waitUntil(
     (async () => {
       const keys = await caches.keys();
-      await Promise.all(
-        keys.map(key => key !== CACHE_NAME && caches.delete(key))
-      );
+      await Promise.all(keys.map(k => k !== CACHE_NAME && caches.delete(k)));
       await self.clients.claim();
-
-      // ★新バージョンが有効化されたら全タブ自動リロード！
       const clients = await self.clients.matchAll({ type: "window" });
-      clients.forEach(client => client.navigate(client.url));
+      clients.forEach(c => c.navigate(c.url));
     })()
   );
 });
 
-// === fetch ===
+// fetch
 self.addEventListener("fetch", event => {
   const { request } = event;
-
-  // HTMLはネットワーク優先 → キャッシュ → オフライン
   if (request.mode === "navigate") {
     event.respondWith(
       fetch(request)
@@ -78,12 +71,13 @@ self.addEventListener("fetch", event => {
           caches.open(CACHE_NAME).then(cache => cache.put(request, res.clone()));
           return res;
         })
-        .catch(() => caches.match(request).then(r => r || caches.match(OFFLINE_URL)))
+        .catch(() =>
+          caches.match(request).then(r => r || caches.match(OFFLINE_URL))
+        )
     );
     return;
   }
 
-  // その他はキャッシュ優先＋バックグラウンド更新
   event.respondWith(
     caches.match(request).then(cacheRes => {
       const fetchPromise = fetch(request, { cache: "no-cache" })
