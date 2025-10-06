@@ -1,13 +1,13 @@
-const CACHE_NAME = "kyudo-cache-v1.0.6"; // 新バージョン
+const CACHE_NAME = "kyudo-cache-v3.0.0"; // 新バージョン
 const urlsToCache = [
   "/", "/index.html", "/yadokoro.html", "/help.html", "/tools.html",
-  "/css/style.css?v=1.0.6",
-  "/js/matchSet.js?v=1.0.6",
-  "/js/main.js?v=1.0.6",
-  "/js/analysis.js?v=1.0.6",
-  "/js/navbar.js?v=1.0.6",
-  "/js/page.js?v=1.0.6",
-  "/js/tools.js?v=1.0.6",
+  "/css/style.css?v=3.0.0",
+  "/js/matchSet.js?v=3.0.0",
+  "/js/main.js?v=3.0.0",
+  "/js/analysis.js?v=3.0.0",
+  "/js/navbar.js?v=3.0.0",
+  "/js/page.js?v=3.0.0",
+  "/js/tools.js?v=3.0.0",
   "/img/target1.png",
   "/apple-icon-57x57.png",
   "/apple-icon-60x60.png",
