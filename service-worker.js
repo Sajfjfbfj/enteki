@@ -1,14 +1,13 @@
-// service-worker.js（改良版：自動更新＆くるくる防止）
-const CACHE_NAME = "kyudo-cache-v1.0.5"; // 新バージョン
+const CACHE_NAME = "kyudo-cache-v1.0.6"; // 新バージョン
 const urlsToCache = [
   "/", "/index.html", "/yadokoro.html", "/help.html", "/tools.html",
-  "/css/style.css?v=1.0.5",
-  "/js/matchSet.js?v=1.0.5",
-  "/js/main.js?v=1.0.5",
-  "/js/analysis.js?v=1.0.5",
-  "/js/navbar.js?v=1.0.5",
-  "/js/page.js?v=1.0.5",
-  "/js/tools.js?v=1.0.5",
+  "/css/style.css?v=1.0.6",
+  "/js/matchSet.js?v=1.0.6",
+  "/js/main.js?v=1.0.6",
+  "/js/analysis.js?v=1.0.6",
+  "/js/navbar.js?v=1.0.6",
+  "/js/page.js?v=1.0.6",
+  "/js/tools.js?v=1.0.6",
   "/img/target1.png",
   "/apple-icon-57x57.png",
   "/apple-icon-60x60.png",
@@ -39,29 +38,27 @@ self.addEventListener("install", event => {
 self.addEventListener("activate", event => {
   event.waitUntil(
     caches.keys().then(keys =>
-      Promise.all(keys.map(key => {
-        if (key !== CACHE_NAME) return caches.delete(key);
-      }))
+      Promise.all(keys.map(key => key !== CACHE_NAME ? caches.delete(key) : null))
     )
   );
   self.clients.claim();
 });
 
-// --- fetch: キャッシュ最優先 + ネットワーク更新 ---
+// --- fetch: キャッシュ優先 + ネットワーク更新 ---
 self.addEventListener("fetch", event => {
-  event.respondWith(
-    caches.match(event.request).then(cacheRes => {
-      const fetchPromise = fetch(event.request)
-        .then(fetchRes => {
-          if (fetchRes && fetchRes.status === 200) {
-            caches.open(CACHE_NAME).then(cache => cache.put(event.request, fetchRes.clone()));
-          }
-          return fetchRes;
-        })
-        .catch(() => null); // ネットワーク失敗は無視
+  event.respondWith((async () => {
+    const cache = await caches.open(CACHE_NAME);
+    const cachedResponse = await cache.match(event.request);
 
-      // キャッシュがあれば即返す、なければネットワーク結果を待つ
-      return cacheRes || fetchPromise || new Response("Offline", { status: 503 });
-    })
-  );
+    try {
+      const fetchResponse = await fetch(event.request);
+      if (fetchResponse && fetchResponse.status === 200) {
+        await cache.put(event.request, fetchResponse.clone());
+      }
+      return cachedResponse || fetchResponse;
+    } catch (err) {
+      // ネットワーク失敗時
+      return cachedResponse || new Response("Offline", { status: 503 });
+    }
+  })());
 });
