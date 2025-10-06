@@ -140,12 +140,12 @@
 <script>
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    // バージョン番号を変更することでブラウザに「新しいSWだ」と認識させる
-    navigator.serviceWorker.register('/service-worker.js?v=1.0.6')
+    navigator.serviceWorker.register('/service-worker-v1.0.6.js')
       .then(reg => console.log('✅ Service Worker registered:', reg))
-      .catch(err => console.error('❌ Service Worker registration failed:', err));
+      .catch(err => console.error('❌ SW registration failed:', err));
   });
 }
+
 
 
 // Shepherd.jsによるチュートリアル
