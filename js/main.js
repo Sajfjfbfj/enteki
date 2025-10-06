@@ -1,20 +1,14 @@
-/* matchSet.js -- Pixelなどでもスクロール可能対応済み + 道具保存対応（完全版） */
+/* matchSet.js -- Pixel対応 + 道具保存対応（下ボタンも対応済みフル版） */
 document.addEventListener("DOMContentLoaded", () => {
-  const addSetBtn = document.getElementById("addSetBtn"); // 上部ボタン
+  const addSetBtnTop = document.getElementById("addSetBtn");       // 上の追加ボタン
+  const addSetBtnBottom = document.getElementById("addSetBtnBottom"); // 下の追加ボタン
   const setsContainer = document.getElementById("setsContainer");
   const matchDate = document.getElementById("matchDate");
   const summaryContainer = document.getElementById("dailySummary");
-  const addSetBtnBottom = document.getElementById("addSetBtnBottom"); // 下部ボタン
 
   let setCount = 0;
   let currentDate = new Date().toISOString().split("T")[0];
   matchDate.value = currentDate;
-
-  /* ---------- 下部追加ボタン表示制御 ---------- */
-  function updateAddButtonVisibility() {
-    if (!addSetBtnBottom) return;
-    addSetBtnBottom.style.display = (setCount === 0) ? "none" : "flex";
-  }
 
   /* ---------- summary ---------- */
   function loadSummary() {
@@ -92,7 +86,6 @@ document.addEventListener("DOMContentLoaded", () => {
     setCount = 0;
     setsData.forEach(set => addNewSet(set));
     loadSummary();
-    updateAddButtonVisibility(); // ←追加
   }
 
   function saveSetsForDate(date, setsData) {
@@ -100,7 +93,6 @@ document.addEventListener("DOMContentLoaded", () => {
     storedData[date] = setsData;
     localStorage.setItem("kyudoSetsByDate", JSON.stringify(storedData));
     loadSummary();
-    updateAddButtonVisibility(); // ←追加
   }
 
   function getAllSetsData() {
@@ -130,17 +122,13 @@ document.addEventListener("DOMContentLoaded", () => {
   matchDate.addEventListener("change", () => setCurrentDate(matchDate.value));
 
   /* ---------- add set UI ---------- */
-  addSetBtn.addEventListener("click", () => {
-    addNewSet();
-    saveSetsForDate(currentDate, getAllSetsData());
-  });
-
-  if (addSetBtnBottom) {
-    addSetBtnBottom.addEventListener("click", () => {
+  [addSetBtnTop, addSetBtnBottom].forEach(btn => {
+    if (!btn) return;
+    btn.addEventListener("click", () => {
       addNewSet();
       saveSetsForDate(currentDate, getAllSetsData());
     });
-  }
+  });
 
   function addNewSet(existingSet = null) {
     const setIndex = setCount++;
@@ -160,7 +148,6 @@ document.addEventListener("DOMContentLoaded", () => {
     delSetBtn.className = "px-2 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700";
     delSetBtn.addEventListener("click", () => {
       setWrapper.remove();
-      setCount--;
       saveSetsForDate(currentDate, getAllSetsData());
     });
     titleDiv.appendChild(delSetBtn);
@@ -238,7 +225,6 @@ document.addEventListener("DOMContentLoaded", () => {
     setsContainer.appendChild(setWrapper);
 
     initializeCanvas(canvas, `#scoreList_${setIndex}`, `#totalScore_${setIndex}`, existingSet);
-
     saveSetsForDate(currentDate, getAllSetsData());
 
     setWrapper.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -246,7 +232,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   /* ---------- canvas initialization ---------- */
   function initializeCanvas(canvas, scoreListSelector, totalScoreSelector, existingSet = null) {
-    // ここから先のコードはマーカー判定やスコア関係に変更なし
     const ctx = canvas.getContext("2d", { willReadFrequently: true });
     const img = new Image();
     img.src = "img/target1.png";
@@ -350,14 +335,12 @@ document.addEventListener("DOMContentLoaded", () => {
     canvas.addEventListener("mousedown", startDrag);
     document.addEventListener("mousemove", onDrag);
     document.addEventListener("mouseup", endDrag);
-
     canvas.addEventListener("touchstart", startDrag, { passive: true });
     canvas.addEventListener("touchmove", onDrag, { passive: false });
     canvas.addEventListener("touchend", endDrag, { passive: true });
     canvas.addEventListener("touchcancel", endDrag, { passive: true });
   }
 
-  /* ---------- draw & score ---------- */
   function drawCanvas(canvas, img, markers, scale, offsetX = 0, offsetY = 0) {
     const ctx = canvas.getContext("2d");
     const markerRadius = 20;
@@ -440,26 +423,37 @@ document.addEventListener("DOMContentLoaded", () => {
     if (totalElem) totalElem.textContent = total;
   }
 
-  /* ---------- helpers for color to score ---------- */
   function getImagePixelColorOnImage(img, x, y) {
-    const c = document.createElement("canvas");
-    c.width = img.width;
-    c.height = img.height;
-    const ctx = c.getContext("2d");
-    ctx.drawImage(img, 0, 0);
-    const p = ctx.getImageData(x, y, 1, 1).data;
-    return { r: p[0], g: p[1], b: p[2] };
+    const tempCanvas = document.createElement("canvas");
+    tempCanvas.width = img.width;
+    tempCanvas.height = img.height;
+    const tempCtx = tempCanvas.getContext("2d");
+    tempCtx.drawImage(img, 0, 0);
+    return tempCtx.getImageData(Math.floor(x), Math.floor(y), 1, 1).data;
   }
 
-  function getScoreFromColor(pixel) {
-    // 近似処理は既存通り
-    if (pixel.r > 200 && pixel.g > 200) return 10;
-    if (pixel.r > 200) return 9;
-    if (pixel.b > 200) return 7;
-    if (pixel.r + pixel.g + pixel.b < 50) return 5;
-    return 3;
+  function colorDistance([r, g, b], [tr, tg, tb]) {
+    return Math.sqrt((r - tr) ** 2 + (g - tg) ** 2 + (b - tb) ** 2);
   }
 
-  /* ---------- initial load ---------- */
+  function getScoreFromColor([r, g, b]) {
+    const colors = {
+      10: [255, 255, 0],
+      9: [255, 0, 0],
+      7: [0, 0, 255],
+      5: [0, 0, 0],
+      3: [255, 255, 255]
+    };
+    let bestScore = 0, minDist = Infinity;
+    Object.keys(colors).forEach(k => {
+      const dist = colorDistance([r, g, b], colors[k]);
+      if (dist < minDist) {
+        minDist = dist;
+        bestScore = parseInt(k);
+      }
+    });
+    return bestScore;
+  }
+
   loadSetsForDate(currentDate);
 });
