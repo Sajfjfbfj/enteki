@@ -1,13 +1,17 @@
-const CACHE_NAME = "kyudo-cache-v3.0.0"; // 新バージョン
+// service-worker.js（完全版：自動更新＋クルクル防止＋柔軟キャッシュ）
+const CACHE_NAME = "kyudo-cache-v1.0.5"; // バージョン更新でキャッシュ切替
+const OFFLINE_URL = "/offline.html";     // オフライン時に表示するページ
+
+// キャッシュ対象リスト
 const urlsToCache = [
   "/", "/index.html", "/yadokoro.html", "/help.html", "/tools.html",
-  "/css/style.css?v=3.0.0",
-  "/js/matchSet.js?v=3.0.0",
-  "/js/main.js?v=3.0.0",
-  "/js/analysis.js?v=3.0.0",
-  "/js/navbar.js?v=3.0.0",
-  "/js/page.js?v=3.0.0",
-  "/js/tools.js?v=3.0.0",
+  "/css/style.css",
+  "/js/matchSet.js",
+  "/js/main.js",
+  "/js/analysis.js",
+  "/js/navbar.js",
+  "/js/page.js",
+  "/js/tools.js",
   "/img/target1.png",
   "/apple-icon-57x57.png",
   "/apple-icon-60x60.png",
@@ -23,7 +27,8 @@ const urlsToCache = [
   "/favicon-96x96.png",
   "/favicon-16x16.png",
   "/manifest.json",
-  "/ms-icon-144x144.png"
+  "/ms-icon-144x144.png",
+  OFFLINE_URL
 ];
 
 // --- インストール ---
@@ -34,31 +39,46 @@ self.addEventListener("install", event => {
   self.skipWaiting();
 });
 
-// --- 古いキャッシュ削除 ---
+// --- 有効化（古いキャッシュ削除） ---
 self.addEventListener("activate", event => {
   event.waitUntil(
     caches.keys().then(keys =>
-      Promise.all(keys.map(key => key !== CACHE_NAME ? caches.delete(key) : null))
+      Promise.all(keys.map(key => {
+        if (key !== CACHE_NAME) return caches.delete(key);
+      }))
     )
   );
   self.clients.claim();
 });
 
-// --- fetch: キャッシュ優先 + ネットワーク更新 ---
+// --- fetch ---
 self.addEventListener("fetch", event => {
-  event.respondWith((async () => {
-    const cache = await caches.open(CACHE_NAME);
-    const cachedResponse = await cache.match(event.request);
+  const { request } = event;
 
-    try {
-      const fetchResponse = await fetch(event.request);
-      if (fetchResponse && fetchResponse.status === 200) {
-        await cache.put(event.request, fetchResponse.clone());
-      }
-      return cachedResponse || fetchResponse;
-    } catch (err) {
-      // ネットワーク失敗時
-      return cachedResponse || new Response("Offline", { status: 503 });
-    }
-  })());
+  // HTMLファイルは「ネットワーク優先 → キャッシュ → オフラインページ」
+  if (request.mode === "navigate") {
+    event.respondWith(
+      fetch(request).then(res => {
+        caches.open(CACHE_NAME).then(cache => cache.put(request, res.clone()));
+        return res;
+      }).catch(() =>
+        caches.match(request).then(res => res || caches.match(OFFLINE_URL))
+      )
+    );
+    return;
+  }
+
+  // CSS/JS/画像は「キャッシュ優先 → ネットワーク更新」
+  event.respondWith(
+    caches.match(request).then(cacheRes => {
+      const fetchPromise = fetch(request).then(fetchRes => {
+        if (fetchRes && fetchRes.status === 200) {
+          caches.open(CACHE_NAME).then(cache => cache.put(request, fetchRes.clone()));
+        }
+        return fetchRes;
+      }).catch(() => null);
+
+      return cacheRes || fetchPromise || new Response("Offline", { status: 503 });
+    })
+  );
 });
