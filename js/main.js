@@ -266,6 +266,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
     img.onload = () => {
       resizeCanvas();
+      // 既存保存データに範囲外マーカーがあれば除去しておく
+      if (canvas.markers && canvas.markers.length) {
+        canvas.markers = canvas.markers.filter(m => {
+          return m.x >= 0 && m.y >= 0 && m.x <= img.width && m.y <= img.height;
+        });
+      }
       drawCanvas(canvas, img, canvas.markers, canvas.scale, canvas.offsetX, canvas.offsetY);
     };
 
@@ -322,18 +328,12 @@ document.addEventListener("DOMContentLoaded", () => {
       if (dragIndex !== null) {
         if (e.type && e.type.startsWith("touch")) e.preventDefault();
 
-        // 移動中に位置を更新
+        // 位置更新（画像座標系）
         canvas.markers[dragIndex].x = pos.x;
         canvas.markers[dragIndex].y = pos.y;
 
-        // 的の中心と許容半径（画像座標）
-        const cx = canvas.img.width / 2;
-        const cy = canvas.img.height / 2;
-        const targetRadius = Math.min(canvas.img.width, canvas.img.height) / 2 * 0.95;
-        const dist = Math.sqrt((canvas.markers[dragIndex].x - cx) ** 2 + (canvas.markers[dragIndex].y - cy) ** 2);
-
-        // 範囲外なら該当マーカーを削除して終了
-        if (dist > targetRadius) {
+        // 画像（的）範囲チェック：範囲外ならそのマーカーを削除して保存・再描画
+        if (pos.x < 0 || pos.y < 0 || pos.x > canvas.img.width || pos.y > canvas.img.height) {
           canvas.markers.splice(dragIndex, 1);
           dragIndex = null;
           startPos = null;
@@ -355,19 +355,26 @@ document.addEventListener("DOMContentLoaded", () => {
           return dx * dx + dy * dy < 4;
         });
         if (!near) {
-          // --- 的の外かどうかを座標で判定 ---
-          const cx = canvas.img.width / 2;
-          const cy = canvas.img.height / 2;
-          const dist = Math.sqrt((pos.x - cx) ** 2 + (pos.y - cy) ** 2);
-          const targetRadius = Math.min(canvas.img.width, canvas.img.height) / 2 * 0.95;
+          // 画像（的）範囲チェック：画像外なら追加しない
+          if (pos.x >= 0 && pos.y >= 0 && pos.x <= canvas.img.width && pos.y <= canvas.img.height) {
+            // --- 的の外かどうかを座標で判定（従来の的内判定） ---
+            const cx = canvas.img.width / 2;
+            const cy = canvas.img.height / 2;
+            const dist = Math.sqrt((pos.x - cx) ** 2 + (pos.y - cy) ** 2);
+            const targetRadius = Math.min(canvas.img.width, canvas.img.height) / 2 * 0.95;
 
-          if (dist <= targetRadius) {
-            // 的内のみ追加して得点判定
-            const pixel = getImagePixelColorOnImage(canvas.img, pos.x, pos.y);
-            const score = getScoreFromColor(pixel);
+            let score;
+            if (dist > targetRadius) {
+              // 的の外 → 無色（0点固定）
+              score = 0;
+            } else {
+              const pixel = getImagePixelColorOnImage(canvas.img, pos.x, pos.y);
+              score = getScoreFromColor(pixel);
+            }
+
             canvas.markers.push({ x: pos.x, y: pos.y, score });
           } else {
-            // 的外なら何もしない（追加も保存もしない）
+            // 範囲外なので追加しない
           }
         }
       }
@@ -490,6 +497,7 @@ function getImagePixelColorOnImage(img, x, y) {
 
 
 
+
  function getScoreFromColor(pixel) {
   const { r, g, b } = pixel;
   const brightness = r + g + b;
@@ -512,6 +520,7 @@ function getImagePixelColorOnImage(img, x, y) {
   // その他は白（3点）
   return 3;
 }
+
 
 
 
