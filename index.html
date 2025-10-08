@@ -19,7 +19,6 @@
   <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
 
   <link rel="manifest" href="/manifest.json">
-
   <meta name="theme-color" content="#1969e1">
   <meta name="msapplication-TileColor" content="#ffffff">
   <meta name="msapplication-TileImage" content="/ms-icon-144x144.png">
@@ -55,12 +54,7 @@
   <!-- Google Fonts & Icons -->
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&display=swap" rel="stylesheet"/>
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
-
-  <!-- Shepherd.js CSS -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/shepherd.js/dist/css/shepherd.css">
-
-  <!-- Vercel Analytics -->
-  <script defer src="https://static.vercel-analytics.com/script.js"></script>
 
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/styles.css">
@@ -74,17 +68,8 @@
     <div class="container mx-auto px-4">
       <div class="flex items-center justify-between h-16">
         <h1 class="text-lg font-bold text-slate-900 dark:text-white">MATOMA遠的</h1>
-        
-        <!-- SNSシェアボタン追加 -->
-        <div class="flex items-center space-x-2">
-          <button id="shareTwitter" class="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm">Twitter</button>
-          <button id="shareLINE" class="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 text-sm">LINE</button>
-          <button id="shareFacebook" class="px-3 py-1 bg-blue-700 text-white rounded hover:bg-blue-800 text-sm">Facebook</button>
-          <button id="shareInstagram" class="px-3 py-1 bg-pink-500 text-white rounded hover:bg-pink-600 text-sm">Instagram</button>
-          <button id="shareTikTok" class="px-3 py-1 bg-black text-white rounded hover:bg-gray-800 text-sm">TikTok</button>
-          <button id="shareWhatsApp" class="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 text-sm">WhatsApp</button>
-          <button id="shareMail" class="px-3 py-1 bg-gray-500 text-white rounded hover:bg-gray-600 text-sm">メール</button>
-        </div>
+        <!-- 共有ボタン -->
+        <button id="shareBtn" class="px-3 py-1 bg-primary text-white rounded hover:bg-blue-600 text-sm">共有</button>
       </div>
       <div class="flex border-b border-slate-200 dark:border-slate-800">
         <a class="px-4 py-2 text-sm font-bold border-b-2 border-primary text-primary" href="index.html">ホーム</a>
@@ -107,7 +92,6 @@
 
   <!-- メインコンテンツ -->
   <main class="flex-grow container mx-auto px-4 py-6 space-y-8">
-
     <!-- 上部（日付選択と日別集計） -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
       <section class="bg-white dark:bg-slate-900 p-4 rounded-xl shadow-lg" id="matchDateSection">
@@ -133,9 +117,7 @@
         <span>立ち追加</span>
       </button>
 
-      <div id="setsContainer" class="space-y-6">
-        <!-- JSで立ちセット追加 -->
-      </div>
+      <div id="setsContainer" class="space-y-6"></div>
 
       <!-- 下部の追加ボタン -->
       <div class="mt-4 flex justify-center">
@@ -145,7 +127,6 @@
         </button>
       </div>
     </section>
-
   </main>
 </div>
 
@@ -154,36 +135,34 @@
 <script src="js/matchSet.js"></script>
 <script src="js/navbar.js"></script>
 <script src="js/page.js"></script>
-
-<!-- Shepherd.js -->
 <script src="https://cdn.jsdelivr.net/npm/shepherd.js/dist/js/shepherd.min.js"></script>
 
-<!-- SNSシェア機能 -->
+<!-- 共有ボタン1つ版 -->
 <script>
 document.addEventListener("DOMContentLoaded", () => {
-  const pageUrl = encodeURIComponent(window.location.href);
-  const shareText = encodeURIComponent("矢所分析アプリMATOMA遠的で遠的記録してみよう！");
+  const shareBtn = document.getElementById("shareBtn");
+  const shareText = "矢所分析アプリMATOMA遠的で遠的記録してみよう！";
+  const shareUrl = window.location.href;
 
-  document.getElementById("shareTwitter")?.addEventListener("click", () => {
-    window.open(`https://twitter.com/intent/tweet?text=${shareText}&url=${pageUrl}`, "_blank", "width=550,height=420");
-  });
-  document.getElementById("shareLINE")?.addEventListener("click", () => {
-    window.open(`https://line.me/R/msg/text/?${shareText}%0A${pageUrl}`, "_blank");
-  });
-  document.getElementById("shareFacebook")?.addEventListener("click", () => {
-    window.open(`https://www.facebook.com/sharer/sharer.php?u=${pageUrl}`, "_blank");
-  });
-  document.getElementById("shareInstagram")?.addEventListener("click", () => {
-    alert("InstagramはWeb直接シェア不可です。アプリからURLをコピーしてシェアしてください。");
-  });
-  document.getElementById("shareTikTok")?.addEventListener("click", () => {
-    alert("TikTokはWeb直接シェア不可です。アプリからURLをコピーしてシェアしてください。");
-  });
-  document.getElementById("shareWhatsApp")?.addEventListener("click", () => {
-    window.open(`https://wa.me/?text=${shareText}%20${pageUrl}`, "_blank");
-  });
-  document.getElementById("shareMail")?.addEventListener("click", () => {
-    window.location.href = `mailto:?subject=${shareText}&body=${pageUrl}`;
+  shareBtn.addEventListener("click", async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: "MATOMA遠的",
+          text: shareText,
+          url: shareUrl
+        });
+      } catch (err) {
+        console.error("Share failed:", err);
+      }
+    } else {
+      try {
+        await navigator.clipboard.writeText(`${shareText} ${shareUrl}`);
+        alert("リンクをコピーしました。お好きな方法でシェアしてください。");
+      } catch (err) {
+        prompt("コピーに失敗しました。以下を手動でコピーしてください:", `${shareText} ${shareUrl}`);
+      }
+    }
   });
 });
 </script>
