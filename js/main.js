@@ -321,28 +321,60 @@ document.addEventListener("DOMContentLoaded", () => {
       if (Math.abs(dx) > 5 || Math.abs(dy) > 5) moved = true;
       if (dragIndex !== null) {
         if (e.type && e.type.startsWith("touch")) e.preventDefault();
+
+        // 移動中に位置を更新
         canvas.markers[dragIndex].x = pos.x;
         canvas.markers[dragIndex].y = pos.y;
+
+        // 的の中心と許容半径（画像座標）
+        const cx = canvas.img.width / 2;
+        const cy = canvas.img.height / 2;
+        const targetRadius = Math.min(canvas.img.width, canvas.img.height) / 2 * 0.95;
+        const dist = Math.sqrt((canvas.markers[dragIndex].x - cx) ** 2 + (canvas.markers[dragIndex].y - cy) ** 2);
+
+        // 範囲外なら該当マーカーを削除して終了
+        if (dist > targetRadius) {
+          canvas.markers.splice(dragIndex, 1);
+          dragIndex = null;
+          startPos = null;
+          moved = false;
+          drawCanvas(canvas, img, canvas.markers, canvas.scale, canvas.offsetX, canvas.offsetY);
+          saveSetsForDate(currentDate, getAllSetsData());
+          return;
+        }
+
         drawCanvas(canvas, img, canvas.markers, canvas.scale, canvas.offsetX, canvas.offsetY);
       }
     }
 
     function endDrag(e) {
-      const pos = getEventPosition(e);
       if (!moved && dragIndex === null && startPos) {
+        const pos = getEventPosition(e);
         const near = canvas.markers.some(m => {
           const dx = m.x - pos.x, dy = m.y - pos.y;
           return dx * dx + dy * dy < 4;
         });
         if (!near) {
-          const pixel = getImagePixelColorOnImage(canvas.img, pos.x, pos.y);
-          const score = getScoreFromColor(pixel);
-          canvas.markers.push({ x: pos.x, y: pos.y, score });
+          // --- 的の外かどうかを座標で判定 ---
+          const cx = canvas.img.width / 2;
+          const cy = canvas.img.height / 2;
+          const dist = Math.sqrt((pos.x - cx) ** 2 + (pos.y - cy) ** 2);
+          const targetRadius = Math.min(canvas.img.width, canvas.img.height) / 2 * 0.95;
+
+          if (dist <= targetRadius) {
+            // 的内のみ追加して得点判定
+            const pixel = getImagePixelColorOnImage(canvas.img, pos.x, pos.y);
+            const score = getScoreFromColor(pixel);
+            canvas.markers.push({ x: pos.x, y: pos.y, score });
+          } else {
+            // 的外なら何もしない（追加も保存もしない）
+          }
         }
       }
+
       dragIndex = null;
       startPos = null;
-      canvas.markers = canvas.markers.filter(m => m.x >= 0 && m.x <= img.width && m.y >= 0 && m.y <= img.height);
+      moved = false;
       drawCanvas(canvas, img, canvas.markers, canvas.scale, canvas.offsetX, canvas.offsetY);
       saveSetsForDate(currentDate, getAllSetsData());
     }
@@ -441,24 +473,48 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /* ---------- helpers for color to score ---------- */
-  function getImagePixelColorOnImage(img, x, y) {
-    const c = document.createElement("canvas");
-    c.width = img.width;
-    c.height = img.height;
-    const ctx = c.getContext("2d");
-    ctx.drawImage(img, 0, 0);
-    const p = ctx.getImageData(x, y, 1, 1).data;
-    return { r: p[0], g: p[1], b: p[2] };
+function getImagePixelColorOnImage(img, x, y) {
+  // x,yが画像範囲外なら白(255,255,255)＝無色として返す
+  if (x < 0 || y < 0 || x >= img.width || y >= img.height) {
+    return { r: 255, g: 255, b: 255 };
   }
 
-  function getScoreFromColor(pixel) {
-    // 近似処理は既存通り
-    if (pixel.r > 200 && pixel.g > 200) return 10;
-    if (pixel.r > 200) return 9;
-    if (pixel.b > 200) return 7;
-    if (pixel.r + pixel.g + pixel.b < 50) return 5;
-    return 3;
-  }
+  const c = document.createElement("canvas");
+  c.width = img.width;
+  c.height = img.height;
+  const ctx = c.getContext("2d");
+  ctx.drawImage(img, 0, 0, img.width, img.height);
+  const p = ctx.getImageData(Math.floor(x), Math.floor(y), 1, 1).data;
+  return { r: p[0], g: p[1], b: p[2] };
+}
+
+
+
+ function getScoreFromColor(pixel) {
+  const { r, g, b } = pixel;
+  const brightness = r + g + b;
+
+  // 明るい → 白（3点）
+  if (brightness > 600) return 3;
+
+  // 黄色
+  if (r > 200 && g > 200 && b < 150) return 10;
+
+  // 赤
+  if (r > 200 && g < 120 && b < 120) return 9;
+
+  // 青
+  if (b > 170 && r < 150 && g < 180) return 7;
+
+  // 黒
+  if (brightness < 150) return 5;
+
+  // その他は白（3点）
+  return 3;
+}
+
+
+
 
   /* ---------- initial load ---------- */
   loadSetsForDate(currentDate);

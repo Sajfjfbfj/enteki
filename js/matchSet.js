@@ -2,7 +2,7 @@ function initScoreCanvas(id) {
   const canvas = document.getElementById(`targetCanvas${id}`);
   const ctx = canvas.getContext("2d", { willReadFrequently: true });
   const img = new Image();
-  img.src = "img/target.png";
+  img.src = "img/target1.png";
 
   let markers = [];
   let dragIndex = null;
@@ -141,23 +141,49 @@ function initScoreCanvas(id) {
     return [Math.round(r / count), Math.round(g / count), Math.round(b / count), 255];
   }
 
-  function colorDistance([r, g, b], [tr, tg, tb]) { return Math.sqrt((r - tr) ** 2 + (g - tg) ** 2 + (b - tb) ** 2); }
-  function getScoreFromColor([r, g, b, a]) {
-    if (a === 0) return 0;
-    const targets = [
-      { color: [255, 255, 0], score: 10 },
-      { color: [255, 0, 0], score: 9 },
-      { color: [0, 0, 255], score: 7 },
-      { color: [0, 0, 0], score: 5 },
-      { color: [255, 255, 255], score: 3 }
-    ];
-    let minDist = Infinity, selectedScore = 0;
-    for (const t of targets) {
-      const dist = colorDistance([r, g, b], t.color);
-      if (dist < minDist) { minDist = dist; selectedScore = t.score; }
+function colorDistance([r, g, b], [tr, tg, tb]) {
+  return Math.sqrt((r - tr) ** 2 + (g - tg) ** 2 + (b - tb) ** 2);
+}
+
+function getScoreFromColor([r, g, b, a]) {
+  if (a === 0) return 0; // 透明（無色）は0点
+
+  // 明るい灰色〜白は無色扱い
+  if (r > 240 && g > 240 && b > 240) return 0;
+
+  // HSLに変換して色相判定
+  const toHsl = (r, g, b) => {
+    r /= 255; g /= 255; b /= 255;
+    const max = Math.max(r, g, b), min = Math.min(r, g, b);
+    let h = 0, s = 0, l = (max + min) / 2;
+    if (max !== min) {
+      const d = max - min;
+      s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+      switch (max) {
+        case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+        case g: h = (b - r) / d + 2; break;
+        case b: h = (r - g) / d + 4; break;
+      }
+      h *= 60;
     }
-    return selectedScore;
-  }
+    return { h, s, l };
+  };
+
+  const { h, s, l } = toHsl(r, g, b);
+
+  // 黒
+  if (l < 0.15) return 5;
+  // 黄（10点）
+  if (h >= 40 && h <= 70 && s > 0.35 && l > 0.25) return 10;
+  // 赤（9点）
+  if ((h >= 345 || h <= 20) && s > 0.3) return 9;
+  // 青（7点）— 範囲を拡張して安定化
+  if ((h >= 180 && h <= 280 && s > 0.15 && l > 0.05) || (b > 80 && b > r * 0.8 && b > g * 1.1)) return 7;
+  // 白（3点）
+  if (l > 0.85 && s < 0.25) return 3;
+
+  return 0;
+}
 
   function updateScoreBoard() {
     const list = document.getElementById(`scoreList${id}`);

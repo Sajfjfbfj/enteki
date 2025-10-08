@@ -1,161 +1,367 @@
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <link rel="apple-touch-icon" sizes="57x57" href="/apple-icon-57x57.png">
-  <link rel="apple-touch-icon" sizes="60x60" href="/apple-icon-60x60.png">
-  <link rel="apple-touch-icon" sizes="72x72" href="/apple-icon-72x72.png">
-  <link rel="apple-touch-icon" sizes="76x76" href="/apple-icon-76x76.png">
-  <link rel="apple-touch-icon" sizes="114x114" href="/apple-icon-114x114.png">
-  <link rel="apple-touch-icon" sizes="120x120" href="/apple-icon-120x120.png">
-  <link rel="apple-touch-icon" sizes="144x144" href="/apple-icon-144x144.png">
-  <link rel="apple-touch-icon" sizes="152x152" href="/apple-icon-152x152.png">
-  <link rel="apple-touch-icon" sizes="180x180" href="/apple-icon-180x180.png">
-  <link rel="icon" type="image/png" sizes="192x192" href="/android-icon-192x192.png">
-  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
-  <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
-  <link rel="manifest" href="/manifest.json">
-  <meta name="theme-color" content="#1969e1">
-  <meta name="msapplication-TileColor" content="#ffffff">
-  <meta name="msapplication-TileImage" content="/ms-icon-144x144.png">
-  <title>MATOMA|弓道道具管理ページ</title>
-
-  <!-- Tailwind CSS -->
-  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-  <script>
-    tailwind.config = {
-      darkMode: "class",
-      theme: {
-        extend: {
-          colors: {
-            "primary": "#1969e1",
-            "background-light": "#f6f7f8",
-            "background-dark": "#111721",
-          },
-          fontFamily: {
-            "display": ["Manrope", "Yu Gothic", "Hiragino Maru Gothic ProN", "sans-serif"],
-          },
-        },
-      },
-    }
-  </script>
-
-  <!-- Google Fonts & Icons -->
-  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&display=swap" rel="stylesheet"/>
-  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
-
-  <!-- Intro.js CSS -->
-  <link rel="stylesheet" href="https://unpkg.com/intro.js/minified/introjs.min.css">
-
-  <link rel="stylesheet" href="css/style.css">
-  <link rel="stylesheet" href="css/styles.css">
-</head>
-<body class="bg-background-light dark:bg-background-dark font-display text-slate-800 dark:text-slate-200">
-<div class="flex flex-col min-h-screen">
-
-  <!-- ナビゲーションバー -->
-  <header class="sticky top-0 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-sm z-10 shadow-sm">
-    <div class="container mx-auto px-4">
-      <div class="flex items-center justify-between h-16">
-        <h1 class="text-lg font-bold text-slate-900 dark:text-white">MATOMA遠的</h1>
-      </div>
-      <div class="flex border-b border-slate-200 dark:border-slate-800">
-        <a class="px-4 py-2 text-sm font-bold text-slate-500 hover:text-primary dark:text-slate-400 dark:hover:text-primary" href="index.html">ホーム</a>
-        <a class="px-4 py-2 text-sm font-bold border-b-2 border-primary text-primary" href="tools.html">道具管理</a>
-        <a class="px-4 py-2 text-sm font-bold text-slate-500 hover:text-primary dark:text-slate-400 dark:hover:text-primary" href="yadokoro.html">矢所分析</a>
-        <a class="px-4 py-2 text-sm font-bold text-slate-500 hover:text-primary dark:text-slate-400 dark:hover:text-primary" href="help.html">ヘルプ</a>
-      </div>
-    </div>
-  </header>
-
-  <!-- 「初めての方へ」ボタン -->
-  <div class="hidden md:block fixed bottom-4 right-4 z-50">
-    <button id="tutorialBtn" class="px-3 py-2 text-sm sm:text-base bg-primary text-white rounded-lg shadow-lg hover:bg-primary/80">
-      初めての方へ
-    </button>
-  </div>
-  <div class="md:hidden w-full py-2 bg-background-light dark:bg-background-dark shadow-sm">
-    <div class="container mx-auto px-4 flex justify-center">
-      <button id="tutorialBtnMobile" class="px-4 py-2 text-base bg-primary text-white rounded-lg shadow-lg hover:bg-primary/80">
-        初めての方へ
-      </button>
-    </div>
-  </div>
-
-  <!-- メインコンテンツ -->
-  <main class="flex-grow container mx-auto px-4 py-6 space-y-8">
-
-    <h1 id="pageTitle" class="text-2xl font-bold mb-4 text-slate-900 dark:text-white">弓道道具管理ページ</h1>
-
-    <p id="message" class="text-slate-600 dark:text-slate-400 mb-4" data-intro="登録した内容が出ます。"></p>
-
-    <button id="editBtn" class="px-4 py-2 rounded-lg bg-primary text-white font-bold hover:bg-primary/80" data-intro="ここを押すと道具を編集できます。">編集</button>
-
-    <div id="editArea" class="mt-4 space-y-6 hidden" data-intro="ここで道具を追加・削除できます。"></div>
-
-    <button id="saveToolsBtn" class="mt-4 px-4 py-2 rounded-lg bg-green-600 text-white font-bold hover:bg-green-700 hidden" data-intro="編集後にここで保存します。">保存</button>
-
-  </main>
-</div>
-
-<!-- 保存メッセージオーバーレイ -->
-<div id="messageOverlay" class="fixed inset-0 flex items-center justify-center pointer-events-none">
-  <div class="bg-primary text-white px-6 py-3 rounded-lg shadow-lg opacity-0 transition-opacity duration-300"></div>
-</div>
-
-<script src="js/tools.js"></script>
-<script src="js/page.js"></script>
-
-<!-- Intro.js -->
-<script src="https://unpkg.com/intro.js/minified/intro.min.js"></script>
-
-<script>
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/service-worker.js')
-      .then(reg => console.log('Service Worker registered:', reg))
-      .catch(err => console.error('Service Worker registration failed:', err));
-  });
-}
-
-// Intro.js 初回表示 & ボタンクリック
+/* matchSet.js -- Pixelなどでもスクロール可能対応済み + 道具保存対応 */
 document.addEventListener("DOMContentLoaded", () => {
-  const FIRST_VISIT_KEY = "matomaIntroShownTools";
-  const isFirstVisit = !localStorage.getItem(FIRST_VISIT_KEY);
+  const addSetBtn = document.getElementById("addSetBtn");
+  const setsContainer = document.getElementById("setsContainer");
+  const matchDate = document.getElementById("matchDate");
+  const summaryContainer = document.getElementById("dailySummary");
+  const addSetBtnBottom = document.getElementById("addSetBtnBottom");
 
-  const steps = [
-    { element: "#message", intro: "登録した内容が出ます。" },
-    { element: "#editBtn", intro: "ここを押すと道具を編集できます。" },
-    { element: "#editArea", intro: "ここで道具を追加・削除できます。" },
-    { element: "#saveToolsBtn", intro: "編集後にここで保存します。" }
-  ];
+  let setCount = 0;
+  let currentDate = new Date().toISOString().split("T")[0];
+  matchDate.value = currentDate;
 
-  function startIntro() {
-    introJs().setOptions({
-  steps,
-  showStepNumbers: true,
-  exitOnOverlayClick: false,
-  nextLabel: "次へ",
-  prevLabel: "戻る",
-  doneLabel: "完了",
-  tooltipPosition: "auto",    // autoで画面内に最適配置
-  scrollToElement: true,      // 対象要素までスクロール
-  disableInteraction: false,  // ツールチップ以外の操作は可能
-}).start();
-
+  function updateAddButtonVisibility() {
+    if (!addSetBtnBottom) return;
+    addSetBtnBottom.style.display = (setCount === 0) ? "none" : "flex";
   }
 
-  if (isFirstVisit) {
-    startIntro();
-    localStorage.setItem(FIRST_VISIT_KEY, "true");
+  function loadSummary() {
+    const storedData = JSON.parse(localStorage.getItem("kyudoSetsByDate") || "{}");
+    summaryContainer.innerHTML = "";
+
+    const currentMonth = new Date().getMonth() + 1;
+    const currentYear = new Date().getFullYear();
+
+    const dates = Object.keys(storedData).sort().reverse();
+    const filteredDates = dates.filter(date => {
+      const [year, month] = date.split("-").map(Number);
+      return year === currentYear && month === currentMonth;
+    });
+
+    if (filteredDates.length === 0) {
+      summaryContainer.textContent = `${currentMonth}月の記録はありません`;
+      return;
+    }
+
+    const grouped = {};
+    filteredDates.forEach(date => {
+      const sets = storedData[date] || [];
+      if (sets.length === 0) return;
+
+      const [year, month] = date.split("-").slice(0, 2);
+      const key = `${year}年${month}月`;
+      if (!grouped[key]) grouped[key] = [];
+      grouped[key].push(date);
+    });
+
+    if (Object.keys(grouped).length === 0) {
+      summaryContainer.textContent = `${currentMonth}月の記録はありません`;
+      return;
+    }
+
+    Object.keys(grouped).forEach(monthKey => {
+      const monthDiv = document.createElement("div");
+      const title = document.createElement("h3");
+      title.textContent = monthKey;
+      monthDiv.appendChild(title);
+
+      const ul = document.createElement("ul");
+      ul.className = "space-y-1";
+      grouped[monthKey].forEach(date => {
+        const sets = storedData[date] || [];
+        const tachisu = sets.length;
+        if (tachisu === 0) return;
+
+        let total = 0;
+        sets.forEach(set => set.markers.forEach(m => { total += m.score; }));
+        const li = document.createElement("li");
+        li.textContent = `${date}　立ち ${tachisu}　合計 ${total}点`;
+        li.style.cursor = "pointer";
+        li.className = "px-2 py-1 rounded hover:bg-primary/20 dark:hover:bg-primary/30";
+        li.addEventListener("click", () => setCurrentDate(date));
+        ul.appendChild(li);
+      });
+      monthDiv.appendChild(ul);
+      summaryContainer.appendChild(monthDiv);
+    });
   }
 
-  document.getElementById("tutorialBtn")?.addEventListener("click", startIntro);
-  document.getElementById("tutorialBtnMobile")?.addEventListener("click", startIntro);
+  function loadTools() {
+    const data = localStorage.getItem("kyudoTools");
+    return data ? JSON.parse(data) : { 弽: [], 弓: [], 矢: [], 弦: [] };
+  }
+
+  function loadSetsForDate(date) {
+    const storedData = JSON.parse(localStorage.getItem("kyudoSetsByDate") || "{}");
+    const setsData = storedData[date] || [];
+    setsContainer.innerHTML = "";
+    setCount = 0;
+    setsData.forEach(set => addNewSet(set));
+    loadSummary();
+    updateAddButtonVisibility();
+  }
+
+  function saveSetsForDate(date, setsData) {
+    const storedData = JSON.parse(localStorage.getItem("kyudoSetsByDate") || "{}");
+    storedData[date] = setsData;
+    localStorage.setItem("kyudoSetsByDate", JSON.stringify(storedData));
+    loadSummary();
+    updateAddButtonVisibility();
+  }
+
+  function getAllSetsData() {
+    const setsData = [];
+    setsContainer.querySelectorAll(".set-wrapper").forEach(setWrapper => {
+      const canvas = setWrapper.querySelector("canvas");
+      const markers = canvas && canvas.markers ? canvas.markers.map(m => ({ ...m })) : [];
+
+      const toolSelections = {};
+      setWrapper.querySelectorAll(".tool-select").forEach(select => {
+        const category = select.dataset.category;
+        toolSelections[category] = select.value;
+      });
+
+      setsData.push({ markers, tools: toolSelections });
+    });
+    return setsData;
+  }
+
+  function setCurrentDate(newDate) {
+    saveSetsForDate(currentDate, getAllSetsData());
+    currentDate = newDate;
+    matchDate.value = currentDate;
+    loadSetsForDate(currentDate);
+  }
+
+  matchDate.addEventListener("change", () => setCurrentDate(matchDate.value));
+
+  addSetBtn.addEventListener("click", () => {
+    addNewSet();
+    saveSetsForDate(currentDate, getAllSetsData());
+  });
+
+  if (addSetBtnBottom) {
+    addSetBtnBottom.addEventListener("click", () => {
+      addNewSet();
+      saveSetsForDate(currentDate, getAllSetsData());
+    });
+  }
+
+  function addNewSet(existingSet = null) {
+    const setIndex = setCount++;
+    const setWrapper = document.createElement("div");
+    setWrapper.className = "set-wrapper p-4 bg-white dark:bg-slate-900 rounded-xl shadow-lg space-y-2";
+    setWrapper.dataset.index = setIndex;
+
+    const titleDiv = document.createElement("div");
+    titleDiv.className = "flex justify-between items-center";
+    const title = document.createElement("h2");
+    title.textContent = `立ち ${setIndex + 1}`;
+    title.className = "font-bold text-lg";
+    titleDiv.appendChild(title);
+
+    const delSetBtn = document.createElement("button");
+    delSetBtn.textContent = "削除";
+    delSetBtn.className = "px-2 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700";
+    delSetBtn.addEventListener("click", () => {
+      setWrapper.remove();
+      setCount--;
+      saveSetsForDate(currentDate, getAllSetsData());
+    });
+    titleDiv.appendChild(delSetBtn);
+    setWrapper.appendChild(titleDiv);
+    // ▼ 道具セレクション
+    const toolsData = loadTools();
+    const toolCategories = ["弽", "弓", "矢", "弦"];
+    const toolsDiv = document.createElement("div");
+    toolsDiv.className = "grid grid-cols-2 md:grid-cols-4 gap-2";
+
+    toolCategories.forEach(category => {
+      const select = document.createElement("select");
+      select.className = "tool-select w-full border rounded p-1 text-sm";
+      select.dataset.category = category;
+
+      const defaultOption = document.createElement("option");
+      defaultOption.textContent = `${category}`;
+      defaultOption.value = "";
+      select.appendChild(defaultOption);
+
+      (toolsData[category] || []).forEach(tool => {
+        const opt = document.createElement("option");
+        opt.value = tool;
+        opt.textContent = tool;
+        select.appendChild(opt);
+      });
+
+      if (existingSet && existingSet.tools && existingSet.tools[category]) {
+        select.value = existingSet.tools[category];
+      }
+
+      select.addEventListener("change", () => {
+        saveSetsForDate(currentDate, getAllSetsData());
+      });
+
+      toolsDiv.appendChild(select);
+    });
+    setWrapper.appendChild(toolsDiv);
+
+    // ▼ キャンバス生成
+    const canvasContainer = document.createElement("div");
+    canvasContainer.className = "relative overflow-auto";
+    const canvas = document.createElement("canvas");
+    canvas.width = 300;
+    canvas.height = 300;
+    canvas.className = "border border-gray-400 rounded cursor-crosshair";
+
+    const ctx = canvas.getContext("2d");
+    const img = new Image();
+    img.src = "/target.png";
+    img.onload = () => {
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      redrawMarkers();
+    };
+
+    canvas.markers = existingSet && existingSet.markers ? [...existingSet.markers] : [];
+
+    let isDragging = false;
+    let dragMarker = null;
+
+    canvas.addEventListener("mousedown", startDrag);
+    canvas.addEventListener("mousemove", duringDrag);
+    canvas.addEventListener("mouseup", endDrag);
+    canvas.addEventListener("mouseleave", endDrag);
+
+    canvas.addEventListener("touchstart", e => startDrag(e.touches[0]));
+    canvas.addEventListener("touchmove", e => duringDrag(e.touches[0]));
+    canvas.addEventListener("touchend", e => endDrag(e.changedTouches[0]));
+    canvas.addEventListener("touchcancel", e => endDrag(e.changedTouches[0]));
+
+    function startDrag(e) {
+      const rect = canvas.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+
+      dragMarker = canvas.markers.find(m => Math.hypot(m.x - x, m.y - y) < 10);
+      if (dragMarker) {
+        isDragging = true;
+      } else {
+        const pixel = ctx.getImageData(x, y, 1, 1).data;
+        const score = getScoreFromColor({ r: pixel[0], g: pixel[1], b: pixel[2], a: pixel[3] }, x, y, img);
+        canvas.markers.push({ x, y, score });
+        redrawMarkers();
+        saveSetsForDate(currentDate, getAllSetsData());
+      }
+    }
+
+    function duringDrag(e) {
+      if (!isDragging || !dragMarker) return;
+      const rect = canvas.getBoundingClientRect();
+      dragMarker.x = e.clientX - rect.left;
+      dragMarker.y = e.clientY - rect.top;
+      redrawMarkers();
+    }
+
+    function endDrag(e) {
+      if (isDragging && dragMarker) {
+        isDragging = false;
+        dragMarker = null;
+        saveSetsForDate(currentDate, getAllSetsData());
+      }
+    }
+
+    function redrawMarkers() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+      canvas.markers.forEach(m => {
+        ctx.beginPath();
+        ctx.arc(m.x, m.y, 6, 0, 2 * Math.PI);
+        ctx.fillStyle = "rgba(255, 0, 0, 0.6)";
+        ctx.fill();
+
+        ctx.font = "bold 12px sans-serif";
+        ctx.fillStyle = "black";
+        ctx.textAlign = "center";
+        ctx.fillText(m.score, m.x, m.y - 10);
+      });
+
+      updateSetScore();
+    }
+
+    function updateSetScore() {
+      const total = canvas.markers.reduce((sum, m) => sum + m.score, 0);
+      scoreDisplay.textContent = `${total} 点`;
+    }
+
+    const scoreDisplay = document.createElement("div");
+    scoreDisplay.className = "text-center text-lg font-bold mt-2";
+    setWrapper.appendChild(canvasContainer);
+    canvasContainer.appendChild(canvas);
+    setWrapper.appendChild(scoreDisplay);
+
+    redrawMarkers();
+
+    setsContainer.appendChild(setWrapper);
+    updateAddButtonVisibility();
+  }
+  /* ---------- helpers ---------- */
+
+  function getAllSetsData() {
+    const data = [];
+    setsContainer.querySelectorAll(".set-wrapper").forEach(setWrapper => {
+      const canvas = setWrapper.querySelector("canvas");
+      const selects = setWrapper.querySelectorAll(".tool-select");
+      const tools = {};
+      selects.forEach(sel => (tools[sel.dataset.category] = sel.value));
+      data.push({
+        markers: canvas.markers || [],
+        tools
+      });
+    });
+    return data;
+  }
+
+  function saveSetsForDate(date, setsData) {
+    const all = JSON.parse(localStorage.getItem("kyudoSetsByDate") || "{}");
+    all[date] = setsData;
+    localStorage.setItem("kyudoSetsByDate", JSON.stringify(all));
+    loadSummary();
+  }
+
+  function loadSetsForDate(date) {
+    const all = JSON.parse(localStorage.getItem("kyudoSetsByDate") || "{}");
+    const setsData = all[date] || [];
+    setsContainer.innerHTML = "";
+    setCount = 0;
+    setsData.forEach(set => addNewSet(set));
+    loadSummary();
+    updateAddButtonVisibility();
+  }
+
+  function setCurrentDate(newDate) {
+    saveSetsForDate(currentDate, getAllSetsData());
+    currentDate = newDate;
+    matchDate.value = newDate;
+    loadSetsForDate(newDate);
+  }
+
+  matchDate.addEventListener("change", () => setCurrentDate(matchDate.value));
+
+  /* ---------- カラーからスコア算出 ---------- */
+  function getScoreFromColor(pixel, x, y, img) {
+    const { r, g, b, a } = pixel;
+    // alpha 0 = 透明（画像外） → 無色判定
+    if (a === 0) return 0;
+
+    // 白：明るいグレーや純白
+    if (r > 210 && g > 210 && b > 210) return 3;
+
+    // 黄（10点）
+    if (r > 220 && g > 200 && b < 100) return 10;
+    // 赤（9点）
+    if (r > 180 && g < 100 && b < 100) return 9;
+    // 青（7点）
+    if (b > 150 && r < 100 && g < 150) return 7;
+    // 黒（5点）
+    if (r < 60 && g < 60 && b < 60) return 5;
+
+    // 上記以外＝無色
+    return 0;
+  }
+
+  /* ---------- 初期ロード ---------- */
+  loadSetsForDate(currentDate);
+  loadSummary();
+  updateAddButtonVisibility();
+
 });
-</script>
-
-</body>
-</html>
