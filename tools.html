@@ -60,6 +60,18 @@
     <div class="container mx-auto px-4">
       <div class="flex items-center justify-between h-16">
         <h1 class="text-lg font-bold text-slate-900 dark:text-white">MATOMA遠的</h1>
+
+        <!-- SNSシェアボタン追加 -->
+        <div class="flex items-center space-x-2">
+          <button id="shareTwitter" class="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm">Twitter</button>
+          <button id="shareLINE" class="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 text-sm">LINE</button>
+          <button id="shareFacebook" class="px-3 py-1 bg-blue-700 text-white rounded hover:bg-blue-800 text-sm">Facebook</button>
+          <button id="shareInstagram" class="px-3 py-1 bg-pink-500 text-white rounded hover:bg-pink-600 text-sm">Instagram</button>
+          <button id="shareTikTok" class="px-3 py-1 bg-black text-white rounded hover:bg-gray-800 text-sm">TikTok</button>
+          <button id="shareWhatsApp" class="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 text-sm">WhatsApp</button>
+          <button id="shareMail" class="px-3 py-1 bg-gray-500 text-white rounded hover:bg-gray-600 text-sm">メール</button>
+        </div>
+
       </div>
       <div class="flex border-b border-slate-200 dark:border-slate-800">
         <a class="px-4 py-2 text-sm font-bold text-slate-500 hover:text-primary dark:text-slate-400 dark:hover:text-primary" href="index.html">ホーム</a>
@@ -72,15 +84,11 @@
 
   <!-- 「初めての方へ」ボタン -->
   <div class="hidden md:block fixed bottom-4 right-4 z-50">
-    <button id="tutorialBtn" class="px-3 py-2 text-sm sm:text-base bg-primary text-white rounded-lg shadow-lg hover:bg-primary/80">
-      初めての方へ
-    </button>
+    <button id="tutorialBtn" class="px-3 py-2 text-sm sm:text-base bg-primary text-white rounded-lg shadow-lg hover:bg-primary/80">初めての方へ</button>
   </div>
   <div class="md:hidden w-full py-2 bg-background-light dark:bg-background-dark shadow-sm">
     <div class="container mx-auto px-4 flex justify-center">
-      <button id="tutorialBtnMobile" class="px-4 py-2 text-base bg-primary text-white rounded-lg shadow-lg hover:bg-primary/80">
-        初めての方へ
-      </button>
+      <button id="tutorialBtnMobile" class="px-4 py-2 text-base bg-primary text-white rounded-lg shadow-lg hover:bg-primary/80">初めての方へ</button>
     </div>
   </div>
 
@@ -90,9 +98,7 @@
     <p id="message" class="text-slate-600 dark:text-slate-400 mb-4"></p>
 
     <button id="editBtn" class="px-4 py-2 rounded-lg bg-primary text-white font-bold hover:bg-primary/80">編集</button>
-
     <div id="editArea" class="mt-4 space-y-6 hidden"></div>
-
     <button id="saveToolsBtn" class="mt-4 px-4 py-2 rounded-lg bg-green-600 text-white font-bold hover:bg-green-700 hidden">保存</button>
   </main>
 </div>
@@ -109,6 +115,36 @@
 <!-- Shepherd.js -->
 <script src="https://cdn.jsdelivr.net/npm/shepherd.js/dist/js/shepherd.min.js"></script>
 
+<!-- SNSシェア機能 -->
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const pageUrl = encodeURIComponent(window.location.href);
+  const shareText = encodeURIComponent("道具管理アプリMATOMA遠的で道具を管理しよう！");
+
+  document.getElementById("shareTwitter")?.addEventListener("click", () => {
+    window.open(`https://twitter.com/intent/tweet?text=${shareText}&url=${pageUrl}`, "_blank", "width=550,height=420");
+  });
+  document.getElementById("shareLINE")?.addEventListener("click", () => {
+    window.open(`https://line.me/R/msg/text/?${shareText}%0A${pageUrl}`, "_blank");
+  });
+  document.getElementById("shareFacebook")?.addEventListener("click", () => {
+    window.open(`https://www.facebook.com/sharer/sharer.php?u=${pageUrl}`, "_blank");
+  });
+  document.getElementById("shareInstagram")?.addEventListener("click", () => {
+    alert("InstagramはWeb直接シェア不可です。アプリからURLをコピーしてシェアしてください。");
+  });
+  document.getElementById("shareTikTok")?.addEventListener("click", () => {
+    alert("TikTokはWeb直接シェア不可です。アプリからURLをコピーしてシェアしてください。");
+  });
+  document.getElementById("shareWhatsApp")?.addEventListener("click", () => {
+    window.open(`https://wa.me/?text=${shareText}%20${pageUrl}`, "_blank");
+  });
+  document.getElementById("shareMail")?.addEventListener("click", () => {
+    window.location.href = `mailto:?subject=${shareText}&body=${pageUrl}`;
+  });
+});
+</script>
+
 <script>
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
@@ -117,76 +153,7 @@ if ('serviceWorker' in navigator) {
       .catch(err => console.error('❌ SW registration failed:', err));
   });
 }
-
-
-
-document.addEventListener("DOMContentLoaded", () => {
-  const FIRST_VISIT_KEY = "matomaShepherdShownTools";
-  const isFirstVisit = !localStorage.getItem(FIRST_VISIT_KEY);
-
-  const tour = new Shepherd.Tour({
-    useModalOverlay: true,
-    defaultStepOptions: {
-      scrollTo: { behavior: 'smooth', block: 'center' },
-      cancelIcon: { enabled: true }
-    }
-  });
-
-  // ステップ定義（説明は元のまま）
-  tour.addStep({ 
-    title: '登録内容表示', 
-    text: '登録した内容が出ます。', 
-    attachTo: { element: '#message', on: 'bottom' }, 
-    buttons: [{ text: '次へ', action: tour.next }] 
-  });
-
-  tour.addStep({ 
-    title: '編集ボタン', 
-    text: 'ここを押すと道具を編集できます。', 
-    attachTo: { element: '#editBtn', on: 'bottom' }, 
-    buttons: [{ text: '戻る', action: tour.back }, { text: '次へ', action: tour.next }] 
-  });
-
-  tour.addStep({ 
-    title: '編集エリア', 
-    text: 'ここで道具を追加・削除できます。', 
-    attachTo: { element: '#editArea', on: 'bottom' }, 
-    buttons: [{ text: '戻る', action: tour.back }, { text: '次へ', action: tour.next }] 
-  });
-
-  tour.addStep({ 
-    title: '保存ボタン', 
-    text: '編集後にここで保存します。', 
-    attachTo: { element: '#saveToolsBtn', on: 'bottom' }, 
-    buttons: [{ text: '戻る', action: tour.back }, { text: '完了', action: tour.complete }] 
-  });
-
-  function startTour() { tour.start(); }
-
-  if (isFirstVisit) {
-    startTour();
-    localStorage.setItem(FIRST_VISIT_KEY, "true");
-  }
-
-  // 手動起動ボタン
-  ["tutorialBtn", "tutorialBtnMobile"].forEach(id => {
-    document.getElementById(id)?.addEventListener("click", startTour);
-  });
-
-  // 自動で次に進むボタン（編集・保存でステップ進行）
-  ["editBtn", "saveToolsBtn"].forEach(id => {
-    document.getElementById(id)?.addEventListener("click", () => {
-      if (id === "editBtn") {
-        document.getElementById("editArea").classList.remove("hidden");
-        document.getElementById("saveToolsBtn").classList.remove("hidden");
-      }
-      if (tour.isActive()) tour.next();
-    });
-  });
-
-});
 </script>
-
 
 </body>
 </html>
