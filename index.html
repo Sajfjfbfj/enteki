@@ -3,6 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+  <!-- ファビコン・PWA -->
   <link rel="apple-touch-icon" sizes="57x57" href="/apple-icon-57x57.png">
   <link rel="apple-touch-icon" sizes="60x60" href="/apple-icon-60x60.png">
   <link rel="apple-touch-icon" sizes="72x72" href="/apple-icon-72x72.png">
@@ -23,21 +25,42 @@
   <meta name="msapplication-TileColor" content="#ffffff">
   <meta name="msapplication-TileImage" content="/ms-icon-144x144.png">
 
-  <title>MATOMA | 遠的</title>
-<!-- ▼ OGP設定 ▼ -->
-<meta property="og:title" content="MATOMA | 遠的スコア管理アプリ" />
-<meta property="og:description" content="遠的スコアをスマホで簡単に分析・共有！MATOMAで弓道の記録をもっと楽しく。" />
-<meta property="og:type" content="website" />
-<meta property="og:url" content="https://enteki.vercel.app/" />
-<meta property="og:image" content="https://enteki.vercel.app/assets/img/aikonmato.png" />
-<meta property="og:site_name" content="MATOMA 遠的" />
+  <!-- SEO -->
+  <title>MATOMA | 遠的スコア管理アプリ - 弓道の記録をスマホで簡単に分析</title>
+  <meta name="description" content="MATOMA遠的は弓道の遠的スコアをスマホで簡単に記録・分析・共有できるアプリです。立ちごとの点数管理や矢所分析で、自分の射を可視化しましょう。" />
+  <meta name="keywords" content="弓道,遠的,スコア管理,矢所分析,アプリ,MATOMA" />
+  <meta name="robots" content="index, follow" />
 
-<!-- ▼ Twitterカード設定（X対応）▼ -->
-<meta name="twitter:card" content="summary_large_image" />
-<meta name="twitter:title" content="MATOMA | 遠的スコア管理アプリ" />
-<meta name="twitter:description" content="遠的スコアをスマホで簡単に分析・共有！MATOMAで弓道の記録をもっと楽しく。" />
-<meta name="twitter:image" content="https://enteki.vercel.app/assets/img/aikonmato.png" />
-<meta name="twitter:url" content="https://enteki.vercel.app/" />
+  <!-- OGP -->
+  <meta property="og:title" content="MATOMA | 遠的スコア管理アプリ" />
+  <meta property="og:description" content="遠的スコアをスマホで簡単に分析・共有！MATOMAで弓道の記録をもっと楽しく。" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://enteki.vercel.app/" />
+  <meta property="og:image" content="https://enteki.vercel.app/assets/img/aikonmato.png" />
+  <meta property="og:site_name" content="MATOMA 遠的" />
+
+  <!-- Twitterカード -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="MATOMA | 遠的スコア管理アプリ" />
+  <meta name="twitter:description" content="遠的スコアをスマホで簡単に分析・共有！MATOMAで弓道の記録をもっと楽しく。" />
+  <meta name="twitter:image" content="https://enteki.vercel.app/assets/img/aikonmato.png" />
+  <meta name="twitter:url" content="https://enteki.vercel.app/" />
+
+  <!-- 構造化データ（JSON-LD） -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "MATOMA 遠的",
+    "url": "https://enteki.vercel.app/",
+    "description": "MATOMA遠的は弓道の遠的スコアをスマホで簡単に記録・分析・共有できるアプリです。",
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": "https://enteki.vercel.app/?s={search_term_string}",
+      "query-input": "required name=search_term_string"
+    }
+  }
+  </script>
 
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
@@ -69,7 +92,6 @@
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&display=swap" rel="stylesheet"/>
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/shepherd.js/dist/css/shepherd.css">
-
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/styles.css">
 </head>
@@ -151,7 +173,7 @@
 <script src="js/page.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/shepherd.js/dist/js/shepherd.min.js"></script>
 
-<!-- 共有ボタン1つ版 -->
+<!-- 共有ボタン -->
 <script>
 document.addEventListener("DOMContentLoaded", () => {
   const shareBtn = document.getElementById("shareBtn");
