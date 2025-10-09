@@ -21,20 +21,20 @@
   <meta name="msapplication-TileColor" content="#ffffff">
   <meta name="msapplication-TileImage" content="/ms-icon-144x144.png">
   <title>MATOMA | 弓道道具管理ページ</title>
-<!-- ▼ OGP設定 ▼ -->
-<meta property="og:title" content="MATOMA | 遠的スコア管理アプリ" />
-<meta property="og:description" content="遠的スコアをスマホで簡単に分析・共有！MATOMAで弓道の記録をもっと楽しく。" />
-<meta property="og:type" content="website" />
-<meta property="og:url" content="https://enteki.vercel.app/" />
-<meta property="og:image" content="https://enteki.vercel.app/assets/img/aikonmato.png" />
-<meta property="og:site_name" content="MATOMA 遠的" />
 
-<!-- ▼ Twitterカード設定（X対応）▼ -->
-<meta name="twitter:card" content="summary_large_image" />
-<meta name="twitter:title" content="MATOMA | 遠的スコア管理アプリ" />
-<meta name="twitter:description" content="遠的スコアをスマホで簡単に分析・共有！MATOMAで弓道の記録をもっと楽しく。" />
-<meta name="twitter:image" content="https://enteki.vercel.app/assets/img/aikonmato.png" />
-<meta name="twitter:url" content="https://enteki.vercel.app/" />
+  <!-- OGP & Twitter -->
+  <meta property="og:title" content="MATOMA | 遠的スコア管理アプリ" />
+  <meta property="og:description" content="遠的スコアをスマホで簡単に分析・共有！MATOMAで弓道の記録をもっと楽しく。" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://enteki.vercel.app/" />
+  <meta property="og:image" content="https://enteki.vercel.app/assets/img/aikonmato.png" />
+  <meta property="og:site_name" content="MATOMA 遠的" />
+
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="MATOMA | 遠的スコア管理アプリ" />
+  <meta name="twitter:description" content="遠的スコアをスマホで簡単に分析・共有！MATOMAで弓道の記録をもっと楽しく。" />
+  <meta name="twitter:image" content="https://enteki.vercel.app/assets/img/aikonmato.png" />
+  <meta name="twitter:url" content="https://enteki.vercel.app/" />
 
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
@@ -60,7 +60,6 @@
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&display=swap" rel="stylesheet"/>
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/shepherd.js/dist/css/shepherd.css">
-
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/styles.css">
 </head>
@@ -68,12 +67,11 @@
 <body class="bg-background-light dark:bg-background-dark font-display text-slate-800 dark:text-slate-200">
 <div class="flex flex-col min-h-screen">
 
-  <!-- ナビゲーションバー -->
+  <!-- ナビバー -->
   <header class="sticky top-0 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-sm z-10 shadow-sm">
     <div class="container mx-auto px-4">
       <div class="flex items-center justify-between h-16">
         <h1 class="text-lg font-bold text-slate-900 dark:text-white">MATOMA遠的</h1>
-        <!-- 共有ボタン -->
         <button id="shareBtn" class="px-3 py-1 bg-primary text-white rounded hover:bg-blue-600 text-sm">共有</button>
       </div>
       <div class="flex border-b border-slate-200 dark:border-slate-800">
@@ -116,7 +114,7 @@
 <script src="js/page.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/shepherd.js/dist/js/shepherd.min.js"></script>
 
-<!-- 共有ボタン1つ版 -->
+<!-- 共有ボタン -->
 <script>
 document.addEventListener("DOMContentLoaded", () => {
   const shareBtn = document.getElementById("shareBtn");
@@ -125,22 +123,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
   shareBtn.addEventListener("click", async () => {
     if (navigator.share) {
-      try {
-        await navigator.share({
-          title: "MATOMA遠的",
-          text: shareText,
-          url: shareUrl
-        });
-      } catch (err) {
-        console.error("Share failed:", err);
-      }
+      try { await navigator.share({ title: "MATOMA遠的", text: shareText, url: shareUrl }); }
+      catch (err) { console.error("Share failed:", err); }
     } else {
-      try {
-        await navigator.clipboard.writeText(`${shareText} ${shareUrl}`);
-        alert("リンクをコピーしました。お好きな方法でシェアしてください。");
-      } catch (err) {
-        prompt("コピーに失敗しました。以下を手動でコピーしてください:", `${shareText} ${shareUrl}`);
-      }
+      try { await navigator.clipboard.writeText(`${shareText} ${shareUrl}`); alert("リンクをコピーしました。"); }
+      catch (err) { prompt("コピーに失敗しました。以下を手動でコピーしてください:", `${shareText} ${shareUrl}`); }
     }
   });
 });
@@ -154,6 +141,69 @@ if ('serviceWorker' in navigator) {
       .catch(err => console.error('❌ SW registration failed:', err));
   });
 }
+</script>
+
+<!-- Shepherd チュートリアル -->
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const createTour = () => {
+    const tour = new Shepherd.Tour({
+      defaultStepOptions: { 
+        classes: 'shadow-lg rounded-md bg-white dark:bg-slate-800 p-4', 
+        scrollTo: true, 
+        cancelIcon: { enabled: true } 
+      }
+    });
+
+    tour.addStep({
+      id:'step-1',
+      text:'このページでは弓道の道具を管理できます。',
+      buttons:[{text:'次へ', action: tour.next}]
+    });
+
+    tour.addStep({
+      id:'step-2',
+      text:'「編集」を押すと道具の追加・変更ができます。',
+      attachTo:{element:'#editBtn', on:'bottom'},
+      buttons:[]
+    });
+
+    tour.addStep({
+      id:'step-3',
+      text:'編集後は「保存」を押して変更を確定します。',
+      attachTo:{element:'#saveToolsBtn', on:'top'},
+      buttons:[]
+    });
+
+    // 編集ボタンでステップ2完了
+    const editBtn = document.getElementById('editBtn');
+    editBtn.addEventListener('click', () => {
+      const currentStep = tour.getCurrentStep();
+      if(currentStep && currentStep.id === 'step-2') tour.next();
+    });
+
+    // 保存ボタンでステップ3完了
+    const saveBtn = document.getElementById('saveToolsBtn');
+    saveBtn.addEventListener('click', () => {
+      const currentStep = tour.getCurrentStep();
+      if(currentStep && currentStep.id === 'step-3') tour.next();
+    });
+
+    return tour;
+  };
+
+  if (!localStorage.getItem('hasSeenToolTour')) {
+    const initialTour = createTour();
+    initialTour.start();
+    localStorage.setItem('hasSeenToolTour', 'true');
+  }
+
+  const tutorialBtns = [document.getElementById('tutorialBtn'), document.getElementById('tutorialBtnMobile')];
+  tutorialBtns.forEach(btn => btn.addEventListener('click', () => {
+    const tour = createTour();
+    tour.start();
+  }));
+});
 </script>
 
 </body>

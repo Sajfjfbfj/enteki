@@ -14,33 +14,30 @@
   <link rel="apple-touch-icon" sizes="144x144" href="/apple-icon-144x144.png">
   <link rel="apple-touch-icon" sizes="152x152" href="/apple-icon-152x152.png">
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-icon-180x180.png">
-
   <link rel="icon" type="image/png" sizes="192x192" href="/android-icon-192x192.png">
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
   <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
-
   <link rel="manifest" href="/manifest.json">
-
   <meta name="theme-color" content="#1969e1">
   <meta name="msapplication-TileColor" content="#ffffff">
   <meta name="msapplication-TileImage" content="/ms-icon-144x144.png">
-
   <title>MATOMA | 矢所分析</title>
-<!-- ▼ OGP設定 ▼ -->
-<meta property="og:title" content="MATOMA | 遠的スコア管理アプリ" />
-<meta property="og:description" content="遠的スコアをスマホで簡単に分析・共有！MATOMAで弓道の記録をもっと楽しく。" />
-<meta property="og:type" content="website" />
-<meta property="og:url" content="https://enteki.vercel.app/" />
-<meta property="og:image" content="https://enteki.vercel.app/assets/img/aikonmato.png" />
-<meta property="og:site_name" content="MATOMA 遠的" />
 
-<!-- ▼ Twitterカード設定（X対応）▼ -->
-<meta name="twitter:card" content="summary_large_image" />
-<meta name="twitter:title" content="MATOMA | 遠的スコア管理アプリ" />
-<meta name="twitter:description" content="遠的スコアをスマホで簡単に分析・共有！MATOMAで弓道の記録をもっと楽しく。" />
-<meta name="twitter:image" content="https://enteki.vercel.app/assets/img/aikonmato.png" />
-<meta name="twitter:url" content="https://enteki.vercel.app/" />
+  <!-- OGP設定 -->
+  <meta property="og:title" content="MATOMA | 遠的スコア管理アプリ" />
+  <meta property="og:description" content="遠的スコアをスマホで簡単に分析・共有！MATOMAで弓道の記録をもっと楽しく。" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://enteki.vercel.app/" />
+  <meta property="og:image" content="https://enteki.vercel.app/assets/img/aikonmato.png" />
+  <meta property="og:site_name" content="MATOMA 遠的" />
+
+  <!-- Twitterカード -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="MATOMA | 遠的スコア管理アプリ" />
+  <meta name="twitter:description" content="遠的スコアをスマホで簡単に分析・共有！MATOMAで弓道の記録をもっと楽しく。" />
+  <meta name="twitter:image" content="https://enteki.vercel.app/assets/img/aikonmato.png" />
+  <meta name="twitter:url" content="https://enteki.vercel.app/" />
 
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
@@ -84,13 +81,8 @@
     <div class="container mx-auto px-4">
       <div class="flex items-center justify-between h-16">
         <h1 class="text-lg font-bold text-slate-900 dark:text-white">MATOMA遠的</h1>
-
-        <!-- 🟦 SNS共有ボタンを追加 -->
-        <button id="shareBtn" class="px-3 py-1 bg-primary text-white rounded hover:bg-blue-600 text-sm">
-          共有
-        </button>
+        <button id="shareBtn" class="px-3 py-1 bg-primary text-white rounded hover:bg-blue-600 text-sm">共有</button>
       </div>
-
       <div class="flex border-b border-slate-200 dark:border-slate-800">
         <a class="px-4 py-2 text-sm font-bold text-slate-500 hover:text-primary dark:text-slate-400 dark:hover:text-primary" href="index.html">ホーム</a>
         <a class="px-4 py-2 text-sm font-bold text-slate-500 hover:text-primary dark:text-slate-400 dark:hover:text-primary" href="tools.html">道具管理</a>
@@ -102,21 +94,16 @@
 
   <!-- 「初めての方へ」ボタン -->
   <div class="hidden md:block fixed bottom-4 right-4 z-50">
-    <button id="tutorialBtn" class="px-3 py-2 text-sm sm:text-base bg-primary text-white rounded-lg shadow-lg hover:bg-primary/80">
-      初めての方へ
-    </button>
+    <button id="tutorialBtn" class="px-3 py-2 text-sm sm:text-base bg-primary text-white rounded-lg shadow-lg hover:bg-primary/80">初めての方へ</button>
   </div>
   <div class="md:hidden w-full py-2 bg-background-light dark:bg-background-dark shadow-sm">
     <div class="container mx-auto px-4 flex justify-center">
-      <button id="tutorialBtnMobile" class="px-4 py-2 text-base bg-primary text-white rounded-lg shadow-lg hover:bg-primary/80">
-        初めての方へ
-      </button>
+      <button id="tutorialBtnMobile" class="px-4 py-2 text-base bg-primary text-white rounded-lg shadow-lg hover:bg-primary/80">初めての方へ</button>
     </div>
   </div>
 
   <!-- メインコンテンツ -->
   <main class="flex-grow container mx-auto px-4 py-6 space-y-8">
-    <!-- 以下は既存そのまま -->
     <section class="bg-white dark:bg-slate-900 p-4 rounded-xl shadow-lg" data-step="1">
       <div class="flex flex-wrap gap-2 mb-4 items-center">
         <input id="matchDate" type="date" class="p-2 border rounded" />
@@ -156,7 +143,7 @@
 <script src="js/analysis.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/shepherd.js/dist/js/shepherd.min.js"></script>
 
-<!-- 🟦 SNS共有スクリプト（同じ動作） -->
+<!-- SNS共有 -->
 <script>
 document.addEventListener("DOMContentLoaded", () => {
   const shareBtn = document.getElementById("shareBtn");
@@ -186,7 +173,51 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 </script>
 
-<!-- Shepherd.jsチュートリアル（既存） -->
+<!-- チュートリアル -->
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const tour = new Shepherd.Tour({
+    defaultStepOptions: {
+      scrollTo: { behavior: 'smooth', block: 'center' },
+      cancelIcon: { enabled: true }
+    },
+    useModalOverlay: true
+  });
+
+  tour.addStep({
+    title: '日付・タブ選択',
+    text: 'ここで日付や分析したい期間を選択します。',
+    attachTo: { element: '#matchDate', on: 'bottom' },
+    buttons: [{ text: '次へ', action: tour.next }]
+  });
+
+  tour.addStep({
+    title: 'キャンバス表示',
+    text: 'ここに矢の着弾位置が表示されます。',
+    attachTo: { element: '#targetCanvas', on: 'top' },
+    buttons: [
+      { text: '前へ', action: tour.back },
+      { text: '次へ', action: tour.next }
+    ]
+  });
+
+  tour.addStep({
+    title: '得点分布',
+    text: 'ここで得点の分布を確認できます。',
+    attachTo: { element: '#scoreChart', on: 'top' },
+    buttons: [
+      { text: '前へ', action: tour.back },
+      { text: '終了', action: tour.complete }
+    ]
+  });
+
+  const tutorialBtn = document.getElementById("tutorialBtn");
+  const tutorialBtnMobile = document.getElementById("tutorialBtnMobile");
+  tutorialBtn.addEventListener('click', () => tour.start());
+  tutorialBtnMobile.addEventListener('click', () => tour.start());
+});
+</script>
+
 <script>
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
