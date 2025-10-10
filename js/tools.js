@@ -3,69 +3,112 @@ document.addEventListener("DOMContentLoaded", () => {
   const editBtn = document.getElementById("editBtn");
   const editArea = document.getElementById("editArea");
   const saveToolsBtn = document.getElementById("saveToolsBtn");
-  const messageOverlay = document.getElementById("messageOverlay").firstElementChild;
+  const messageOverlayEl = document.getElementById("messageOverlay");
+  const messageOverlay = messageOverlayEl ? messageOverlayEl.firstElementChild : null;
+
+  const centerBtn = document.getElementById("centerActionBtn");
+  const centerIcon = document.getElementById("centerIcon");
 
   const item = "kyudoTools";
   const categories = ["弽", "弓", "矢", "弦"];
   let toolsData = loadTools();
+  let isEditing = false;
 
-  // 🔸データをロード
   function loadTools() {
     const data = localStorage.getItem(item);
-    if (data) return JSON.parse(data);
+    if (data) {
+      try {
+        return JSON.parse(data);
+      } catch (e) {
+        console.error("tools load parse error", e);
+      }
+    }
     const init = {};
     categories.forEach(cat => (init[cat] = []));
     return init;
   }
 
-  // 🔸データを保存
   function saveTools(data) {
-    localStorage.setItem(item, JSON.stringify(data));
-    showOverlay("道具を保存しました！");
-    renderMessage();
-  }
-
-  // 🔸登録内容表示（＝登録ページ）
-  function renderMessage() {
-    message.innerHTML = "";
-    const container = document.createElement("div");
-    container.className = "space-y-4";
-
-    const hasData = categories.some(cat => toolsData[cat].length > 0);
-    if (!hasData) {
-      message.textContent = "まだ道具が登録されていません。";
-      return;
+    try {
+      localStorage.setItem(item, JSON.stringify(data));
+      showOverlay("道具を保存しました！");
+      renderMessage();
+      updateCenterButton();
+    } catch (e) {
+      console.error("保存に失敗しました", e);
+      showOverlay("保存に失敗しました…");
     }
-
-    // 各カテゴリごとにカード化して一覧表示
-    categories.forEach(cat => {
-      if (toolsData[cat].length === 0) return;
-
-      const section = document.createElement("div");
-      section.className = "border rounded-lg p-3 bg-white dark:bg-slate-800 shadow-sm";
-
-      const title = document.createElement("h3");
-      title.textContent = cat;
-      title.className = "font-bold text-lg mb-2 text-primary";
-      section.appendChild(title);
-
-      const ul = document.createElement("ul");
-      toolsData[cat].forEach(tool => {
-        const li = document.createElement("li");
-        li.className = "border-b border-slate-200 dark:border-slate-700 py-1";
-        li.innerHTML = `<span class='font-semibold'>${tool.name}</span>　<span class='text-slate-500 dark:text-slate-400 text-sm'>${tool.feature}</span>`;
-        ul.appendChild(li);
-      });
-      section.appendChild(ul);
-      container.appendChild(section);
-    });
-
-    message.appendChild(container);
   }
 
-  // 🔸編集エリア生成（＝編集ページ）
+  /** ======================
+   *  登録内容の表示（カード風）
+   ======================= */
+  function renderMessage() {
+    const hasData = categories.some(cat => toolsData[cat] && toolsData[cat].length > 0);
+    if (!hasData) {
+      if (message) message.textContent = "道具を登録しましょう";
+    } else {
+      let html = "";
+      categories.forEach(cat => {
+        const list = toolsData[cat] || [];
+        if (list.length > 0) {
+          html += `
+            <div class="tool-card">
+              <h3>${cat}</h3>
+              <ul>
+                ${list
+                  .map(
+                    t => `
+                    <li>
+                      <span class="tool-name">${t.name}</span>
+                      <span class="tool-feature">${t.feature}</span>
+                    </li>
+                  `
+                  )
+                  .join("")}
+              </ul>
+            </div>
+          `;
+        }
+      });
+      if (message) message.innerHTML = html;
+    }
+  }
+
+  function showOverlay(msg) {
+    if (!messageOverlay) return;
+    messageOverlay.textContent = msg;
+    messageOverlay.classList.add("show");
+    setTimeout(() => messageOverlay.classList.remove("show"), 2000);
+  }
+
+  function createInput(placeholder, value = "", isNew = false) {
+    const input = document.createElement("input");
+    input.placeholder = placeholder;
+    input.value = value;
+    input.className = "border rounded px-2 py-1 w-full dark:bg-slate-700 dark:text-white";
+    if (isNew) input.dataset.new = "true";
+    return input;
+  }
+
+  function createButton(text, onClick, color = "primary") {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.textContent = text;
+    const colorClasses = {
+      primary: "bg-blue-600 hover:bg-blue-700",
+      red: "bg-red-600 hover:bg-red-700",
+      gray: "bg-gray-600 hover:bg-gray-700"
+    };
+    btn.className = `px-2 py-1 rounded text-white ${colorClasses[color] || colorClasses.primary}`;
+    btn.addEventListener("click", onClick);
+    return btn;
+  }
+
   function renderEditArea() {
+    if (!editArea) return;
     editArea.innerHTML = "";
+
     categories.forEach(category => {
       const wrapper = document.createElement("div");
       wrapper.className = "category-wrapper space-y-2 p-4 border rounded bg-white dark:bg-slate-800";
@@ -76,9 +119,7 @@ document.addEventListener("DOMContentLoaded", () => {
       wrapper.appendChild(title);
 
       const ul = document.createElement("ul");
-
-      // 空でもループさせる（liなしでもOK）
-      toolsData[category].forEach((tool, index) => {
+      (toolsData[category] || []).forEach((tool, index) => {
         const li = document.createElement("li");
         li.className = "flex gap-2 items-center mb-1";
 
@@ -87,6 +128,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const delBtn = createButton("削除", () => {
           toolsData[category].splice(index, 1);
           renderEditArea();
+          renderMessage();
         }, "red");
 
         li.appendChild(nameInput);
@@ -94,17 +136,18 @@ document.addEventListener("DOMContentLoaded", () => {
         li.appendChild(delBtn);
         ul.appendChild(li);
       });
-
       wrapper.appendChild(ul);
 
-      // 新規追加用のフォームは必ず追加
-      const newName = createInput("道具名");
-      const newFeature = createInput("特徴");
+      // 新規追加 input
+      const newName = createInput("道具名", "", true);
+      const newFeature = createInput("特徴", "", true);
       const addBtn = createButton("追加", () => {
         const name = newName.value.trim() || "名前なし";
         const feature = newFeature.value.trim() || "特徴なし";
+        toolsData[category] = toolsData[category] || [];
         toolsData[category].push({ name, feature });
         renderEditArea();
+        renderMessage();
       }, "primary");
 
       wrapper.appendChild(newName);
@@ -113,45 +156,36 @@ document.addEventListener("DOMContentLoaded", () => {
 
       editArea.appendChild(wrapper);
     });
-
-    // 編集中は編集ボタン非表示
-    editBtn.classList.add("hidden");
   }
 
-  // 🔸共通UI部品
-  function createInput(placeholder, value = "") {
-    const input = document.createElement("input");
-    input.placeholder = placeholder;
-    input.value = value;
-    input.className = "border rounded px-2 py-1 w-full dark:bg-slate-700 dark:text-white";
-    return input;
+  function updateCenterButton() {
+    if (!centerBtn) return;
+    const hasMessage = message && message.textContent && message.textContent.trim().length > 0;
+    if (!hasMessage && !isEditing) centerBtn.classList.add("hidden");
+    else centerBtn.classList.remove("hidden");
+    if (centerIcon) {
+      centerIcon.textContent = isEditing ? "save" : "edit";
+      centerBtn.setAttribute("aria-label", isEditing ? "保存" : "編集");
+    }
   }
 
-  function createButton(text, onClick, color = "primary") {
-    const btn = document.createElement("button");
-    btn.textContent = text;
-    btn.className = `px-2 py-1 rounded bg-${color}-600 text-white hover:bg-${color}-700`;
-    btn.addEventListener("click", onClick);
-    return btn;
-  }
-
-  // 🔸メッセージオーバーレイ
-  function showOverlay(msg) {
-    messageOverlay.textContent = msg;
-    messageOverlay.classList.add("show");
-    setTimeout(() => messageOverlay.classList.remove("show"), 2000);
-  }
-
-  // 🔸編集ボタンで編集モードを開く
-  editBtn.addEventListener("click", () => {
+  function enterEditMode() {
+    isEditing = true;
+    if (editArea) editArea.classList.remove("hidden");
     renderEditArea();
-    editArea.classList.remove("hidden");
-    saveToolsBtn.classList.remove("hidden");
-    message.classList.add("hidden");
-  });
+    updateCenterButton();
+    const firstInput = editArea.querySelector("input, textarea, [contenteditable='true']");
+    if (firstInput) firstInput.focus();
+  }
 
-  // 🔸保存処理
-  saveToolsBtn.addEventListener("click", () => {
+  function exitEditMode() {
+    isEditing = false;
+    if (editArea) editArea.classList.add("hidden");
+    updateCenterButton();
+  }
+
+  function doSave() {
+    // 全カテゴリの input を正確に反映
     document.querySelectorAll(".category-wrapper").forEach((wrapper, i) => {
       const category = categories[i];
       const lis = wrapper.querySelectorAll("ul li");
@@ -163,10 +197,11 @@ document.addEventListener("DOMContentLoaded", () => {
         updated.push({ name, feature });
       });
 
-      const extraInputs = wrapper.querySelectorAll("input[placeholder]");
-      if (extraInputs.length >= 2) {
-        const newName = extraInputs[extraInputs.length - 2].value.trim();
-        const newFeature = extraInputs[extraInputs.length - 1].value.trim();
+      // 新規 input も確実に取得
+      const newInputs = wrapper.querySelectorAll("input[data-new='true']");
+      if (newInputs.length >= 2) {
+        const newName = newInputs[0].value.trim();
+        const newFeature = newInputs[1].value.trim();
         if (newName || newFeature) {
           updated.push({ name: newName || "名前なし", feature: newFeature || "特徴なし" });
         }
@@ -176,15 +211,41 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     saveTools(toolsData);
-    editArea.classList.add("hidden");
-    saveToolsBtn.classList.add("hidden");
-    message.classList.remove("hidden");
-    renderMessage();
+    exitEditMode();
+  }
 
-    // 保存後は編集ボタンを表示
-    editBtn.classList.remove("hidden");
-  });
+  // 中央ボタン挙動
+  if (centerBtn) {
+    centerBtn.addEventListener("click", e => {
+      e.preventDefault();
+      if (isEditing) doSave();
+      else enterEditMode();
+    });
+  }
 
-  // 初期表示（登録内容ページ）
+  // 編集ボタン
+  if (editBtn) {
+    editBtn.addEventListener("click", e => {
+      e.preventDefault();
+      enterEditMode();
+    });
+  }
+
+  // 保存ボタン
+  if (saveToolsBtn) {
+    saveToolsBtn.addEventListener("click", e => {
+      e.preventDefault();
+      doSave();
+    });
+  }
+
+  // message の変化を監視して中央ボタン更新
+  if (message) {
+    const mo = new MutationObserver(() => updateCenterButton());
+    mo.observe(message, { childList: true, characterData: true, subtree: true });
+  }
+
+  // 初期表示
   renderMessage();
+  updateCenterButton();
 });

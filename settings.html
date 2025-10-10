@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>設定 - MATOMA</title>
+
+  <!-- Tailwind + 共通フォント -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            primary: "#1969e1",
+            background: "#f6f7f8",
+          },
+          fontFamily: {
+            sans: ["Manrope", "Yu Gothic", "Hiragino Maru Gothic ProN", "sans-serif"],
+          },
+        },
+      },
+    };
+  </script>
+</head>
+
+<body class="bg-background font-sans text-slate-900 dark:bg-slate-900 dark:text-slate-100">
+  <!-- ヘッダー -->
+  <header class="bg-primary text-white flex items-center px-4 py-3 shadow-md">
+    <button onclick="location.href='index.html'" class="mr-3 text-2xl">←</button>
+    <h1 class="text-lg font-semibold">MATOMA</h1>
+  </header>
+
+  <!-- 設定一覧 -->
+  <main class="mt-2 bg-white dark:bg-slate-800 divide-y divide-gray-200 dark:divide-slate-700">
+    <!-- テーマ -->
+    <div class="flex justify-between items-center px-4 py-3">
+      <span>ダークモード</span>
+      <label class="inline-flex relative items-center cursor-pointer">
+        <input id="darkModeToggle" type="checkbox" class="sr-only peer">
+        <div class="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:bg-primary after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:h-5 after:w-5 after:rounded-full after:transition-all peer-checked:after:translate-x-full"></div>
+      </label>
+    </div>
+
+    <!-- 自動保存 -->
+    <div class="flex justify-between items-center px-4 py-3">
+      <span>自動スコア保存</span>
+      <label class="inline-flex relative items-center cursor-pointer">
+        <input id="autoSaveToggle" type="checkbox" class="sr-only peer">
+        <div class="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:bg-primary after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:h-5 after:w-5 after:rounded-full after:transition-all peer-checked:after:translate-x-full"></div>
+      </label>
+    </div>
+
+    <!-- 通知 -->
+    <div class="flex justify-between items-center px-4 py-3">
+      <span>通知を有効にする</span>
+      <label class="inline-flex relative items-center cursor-pointer">
+        <input id="notificationToggle" type="checkbox" class="sr-only peer">
+        <div class="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:bg-primary after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:h-5 after:w-5 after:rounded-full after:transition-all peer-checked:after:translate-x-full"></div>
+      </label>
+    </div>
+
+    <!-- データ削除 -->
+    <div class="flex justify-between items-center px-4 py-3">
+      <div>
+        <p>すべてのデータをリセット</p>
+        <p class="text-sm text-gray-500 dark:text-gray-400">※記録・道具データが削除されます</p>
+      </div>
+      <button id="clearDataBtn" class="px-3 py-1 bg-red-600 text-white rounded-lg text-sm hover:bg-red-700">
+        実行
+      </button>
+    </div>
+  </main>
+
+  <!-- JS：設定保存・読込・連携 -->
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const darkModeToggle = document.getElementById("darkModeToggle");
+      const autoSaveToggle = document.getElementById("autoSaveToggle");
+      const notificationToggle = document.getElementById("notificationToggle");
+      const clearDataBtn = document.getElementById("clearDataBtn");
+
+      // ---- 初期状態読み込み ----
+      darkModeToggle.checked = localStorage.getItem("theme") === "dark";
+      autoSaveToggle.checked = localStorage.getItem("autoSave") === "true";
+      notificationToggle.checked = localStorage.getItem("notifications") === "true";
+
+      // ダークモード反映
+      if (darkModeToggle.checked) document.documentElement.classList.add("dark");
+
+      // ---- イベント ----
+      darkModeToggle.addEventListener("change", (e) => {
+        if (e.target.checked) {
+          document.documentElement.classList.add("dark");
+          localStorage.setItem("theme", "dark");
+        } else {
+          document.documentElement.classList.remove("dark");
+          localStorage.setItem("theme", "light");
+        }
+      });
+
+      autoSaveToggle.addEventListener("change", (e) => {
+        localStorage.setItem("autoSave", e.target.checked);
+      });
+
+      notificationToggle.addEventListener("change", (e) => {
+        localStorage.setItem("notifications", e.target.checked);
+      });
+
+      clearDataBtn.addEventListener("click", () => {
+        if (confirm("全てのデータを削除しますか？")) {
+          localStorage.removeItem("kyudoSetsByDate");
+          localStorage.removeItem("kyudoTools");
+          alert("データを削除しました。");
+        }
+      });
+    });
+  </script>
+</body>
+</html>

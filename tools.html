@@ -1,107 +1,237 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <link rel="apple-touch-icon" sizes="57x57" href="/apple-icon-57x57.png">
-  <link rel="apple-touch-icon" sizes="60x60" href="/apple-icon-60x60.png">
-  <link rel="apple-touch-icon" sizes="72x72" href="/apple-icon-72x72.png">
-  <link rel="apple-touch-icon" sizes="76x76" href="/apple-icon-76x76.png">
-  <link rel="apple-touch-icon" sizes="114x114" href="/apple-icon-114x114.png">
-  <link rel="apple-touch-icon" sizes="120x120" href="/apple-icon-120x120.png">
-  <link rel="apple-touch-icon" sizes="144x144" href="/apple-icon-144x144.png">
-  <link rel="apple-touch-icon" sizes="152x152" href="/apple-icon-152x152.png">
-  <link rel="apple-touch-icon" sizes="180x180" href="/apple-icon-180x180.png">
-  <link rel="icon" type="image/png" sizes="192x192" href="/android-icon-192x192.png">
-  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
-  <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
-  <link rel="manifest" href="/manifest.json">
-  <meta name="theme-color" content="#1969e1">
-  <meta name="msapplication-TileColor" content="#ffffff">
-  <meta name="msapplication-TileImage" content="/ms-icon-144x144.png">
-  <title>MATOMA | 弓道道具管理ページ</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <!-- OGP & Twitter -->
-  <meta property="og:title" content="MATOMA | 遠的スコア管理アプリ" />
-  <meta property="og:description" content="遠的スコアをスマホで簡単に分析・共有！MATOMAで弓道の記録をもっと楽しく。" />
-  <meta property="og:type" content="website" />
-  <meta property="og:url" content="https://enteki.vercel.app/" />
-  <meta property="og:image" content="https://enteki.vercel.app/assets/img/aikonmato.png" />
-  <meta property="og:site_name" content="MATOMA 遠的" />
+<!-- ===========================
+     ファビコン・PWA設定
+============================ -->
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-icon-57x57.png">
+<link rel="apple-touch-icon" sizes="60x60" href="/apple-icon-60x60.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="76x76" href="/apple-icon-76x76.png">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="120x120" href="/apple-icon-120x120.png">
+<link rel="apple-touch-icon" sizes="144x144" href="/apple-icon-144x144.png">
+<link rel="apple-touch-icon" sizes="152x152" href="/apple-icon-152x152.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-icon-180x180.png">
 
-  <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="MATOMA | 遠的スコア管理アプリ" />
-  <meta name="twitter:description" content="遠的スコアをスマホで簡単に分析・共有！MATOMAで弓道の記録をもっと楽しく。" />
-  <meta name="twitter:image" content="https://enteki.vercel.app/assets/img/aikonmato.png" />
-  <meta name="twitter:url" content="https://enteki.vercel.app/" />
+<link rel="icon" type="image/png" sizes="192x192" href="/android-icon-192x192.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
 
-  <!-- Tailwind CSS -->
-  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-  <script>
-    tailwind.config = {
-      darkMode: "class",
-      theme: {
-        extend: {
-          colors: {
-            "primary": "#1969e1",
-            "background-light": "#f6f7f8",
-            "background-dark": "#111721",
-          },
-          fontFamily: {
-            "display": ["Manrope", "Yu Gothic", "Hiragino Maru Gothic ProN", "sans-serif"],
-          },
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#1969e1">
+<meta name="msapplication-TileColor" content="#ffffff">
+<meta name="msapplication-TileImage" content="/ms-icon-144x144.png">
+
+<title>MATOMA | 弓道道具管理ページ</title>
+
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        colors: {
+          "primary": "#1969e1",
+          "background-light": "#f6f7f8",
+          "background-dark": "#111721"
         },
-      },
+        fontFamily: {
+          "display": ["Manrope", "Yu Gothic", "Hiragino Maru Gothic ProN", "sans-serif"]
+        },
+        borderRadius: {
+          "DEFAULT": "0.5rem",
+          "lg": "1rem",
+          "xl": "1.5rem",
+          "full": "9999px"
+        }
+      }
     }
-  </script>
+  }
+</script>
 
-  <!-- Google Fonts & Icons -->
-  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&display=swap" rel="stylesheet"/>
-  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/shepherd.js/dist/css/shepherd.css">
-  <link rel="stylesheet" href="css/style.css">
-  <link rel="stylesheet" href="css/styles.css">
+<!-- Google Fonts & Icons -->
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/styles.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/shepherd.js/dist/css/shepherd.css"/>
+
+<style>
+  body { padding-bottom: 80px; }
+  .center-tab-button {
+    position: relative;
+    top: -20px;
+    width: 64px;
+    height: 64px;
+    background: linear-gradient(135deg, #1969e1, #1557c7);
+    border-radius: 50%;
+    box-shadow: 0 8px 24px rgba(25, 105, 225, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+  }
+  #message {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* カード全体 */
+.tool-card {
+  background: #fff;
+  border-radius: 1rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+  padding: 1rem 1.25rem;
+  border: 1px solid rgba(0,0,0,0.05);
+  transition: all 0.2s ease-in-out;
+}
+.tool-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(25, 105, 225, 0.15);
+}
+
+/* タイトル */
+.tool-card h3 {
+  font-weight: 700;
+  color: #1969e1;
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+/* 各道具行 */
+.tool-card ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.tool-card li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.35rem 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+.tool-card li:last-child {
+  border-bottom: none;
+}
+
+/* テキスト */
+.tool-name {
+  font-weight: 600;
+  color: #1e293b;
+}
+.tool-feature {
+  color: #64748b;
+  font-size: 0.9rem;
+}
+
+/* ダークモード対応 */
+.dark .tool-card {
+  background: #1e293b;
+  border-color: rgba(255, 255, 255, 0.1);
+}
+.dark .tool-card h3 {
+  color: #60a5fa;
+}
+.dark .tool-name {
+  color: #e2e8f0;
+}
+.dark .tool-feature {
+  color: #94a3b8;
+}
+
+</style>
 </head>
 
 <body class="bg-background-light dark:bg-background-dark font-display text-slate-800 dark:text-slate-200">
 <div class="flex flex-col min-h-screen">
 
-  <!-- ナビバー -->
+  <!-- ヘッダー -->
   <header class="sticky top-0 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-sm z-10 shadow-sm">
-    <div class="container mx-auto px-4">
-      <div class="flex items-center justify-between h-16">
-        <h1 class="text-lg font-bold text-slate-900 dark:text-white">MATOMA遠的</h1>
-        <button id="shareBtn" class="px-3 py-1 bg-primary text-white rounded hover:bg-blue-600 text-sm">共有</button>
-      </div>
-      <div class="flex border-b border-slate-200 dark:border-slate-800">
-        <a class="px-4 py-2 text-sm font-bold text-slate-500 hover:text-primary dark:text-slate-400 dark:hover:text-primary" href="index.html">ホーム</a>
-        <a class="px-4 py-2 text-sm font-bold border-b-2 border-primary text-primary" href="tools.html">道具管理</a>
-        <a class="px-4 py-2 text-sm font-bold text-slate-500 hover:text-primary dark:text-slate-400 dark:hover:text-primary" href="yadokoro.html">矢所分析</a>
-        <a class="px-4 py-2 text-sm font-bold text-slate-500 hover:text-primary dark:text-slate-400 dark:hover:text-primary" href="help.html">ヘルプ</a>
-      </div>
-    </div>
+    <div class="flex items-center justify-between h-14">
+  <h1 class="text-lg font-bold text-slate-900 dark:text-white">MATOMA遠的</h1>
+  <div class="flex items-center gap-2">
+    <!-- 共有ボタン -->
+    <button id="shareBtn"
+      class="px-4 py-2 bg-primary text-white rounded-full hover:bg-blue-600 text-sm font-semibold shadow-md transition-all">
+      共有
+    </button>
+
+    <!-- 設定ボタン（歯車） -->
+    <button id="settingsBtn"
+      class="p-2 rounded-full bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 transition-all shadow-sm"
+      title="設定ページ">
+      <span class="material-symbols-outlined text-2xl">settings</span>
+    </button>
+  </div>
+</div>
+
   </header>
 
   <!-- 「初めての方へ」ボタン -->
   <div class="hidden md:block fixed bottom-4 right-4 z-50">
-    <button id="tutorialBtn" class="px-3 py-2 text-sm sm:text-base bg-primary text-white rounded-lg shadow-lg hover:bg-primary/80">初めての方へ</button>
+    <button id="tutorialBtn" class="px-3 py-2 text-sm sm:text-base bg-primary text-white rounded-lg shadow-lg hover:bg-primary/80">
+      初めての方へ
+    </button>
   </div>
   <div class="md:hidden w-full py-2 bg-background-light dark:bg-background-dark shadow-sm">
     <div class="container mx-auto px-4 flex justify-center">
-      <button id="tutorialBtnMobile" class="px-4 py-2 text-base bg-primary text-white rounded-lg shadow-lg hover:bg-primary/80">初めての方へ</button>
+      <button id="tutorialBtnMobile" class="px-4 py-2 text-base bg-primary text-white rounded-lg shadow-lg hover:bg-primary/80">
+        初めての方へ
+      </button>
     </div>
   </div>
 
   <!-- メインコンテンツ -->
   <main class="flex-grow container mx-auto px-4 py-6 space-y-8">
-    <h1 id="pageTitle" class="text-2xl font-bold mb-4 text-slate-900 dark:text-white">弓道道具管理ページ</h1>
+    <h1 class="text-2xl font-bold mb-4 text-slate-900 dark:text-white">弓道道具管理ページ</h1>
+
+    <!-- 登録メッセージ -->
     <p id="message" class="text-slate-600 dark:text-slate-400 mb-4"></p>
 
-    <button id="editBtn" class="px-4 py-2 rounded-lg bg-primary text-white font-bold hover:bg-primary/80">編集</button>
+    <!-- 編集エリア -->
     <div id="editArea" class="mt-4 space-y-6 hidden"></div>
-    <button id="saveToolsBtn" class="mt-4 px-4 py-2 rounded-lg bg-green-600 text-white font-bold hover:bg-green-700 hidden">保存</button>
+
   </main>
+
+  <!-- 下部タブバー -->
+  <nav class="tab-bar fixed bottom-0 left-0 right-0 z-40 px-4 py-2 bg-background-light dark:bg-background-dark/95 backdrop-blur-md">
+    <div class="max-w-2xl mx-auto flex items-end justify-around relative">
+      <a href="tools.html" class="flex flex-col items-center gap-1 py-2 px-3 text-primary">
+        <span class="material-symbols-outlined text-2xl">construction</span>
+        <span class="text-xs font-semibold">道具</span>
+      </a>
+
+      <a href="index.html" class="flex flex-col items-center gap-1 py-2 px-3 text-slate-500 dark:text-slate-400 hover:text-primary transition-colors">
+        <span class="material-symbols-outlined text-2xl">today</span>
+        <span class="text-xs font-semibold">今日の記録</span>
+      </a>
+
+      <!-- 中央ボタン -->
+      <button id="centerActionBtn" class="center-tab-button" aria-label="編集/保存" type="button">
+        <span id="centerIcon" class="material-symbols-outlined icon-center">edit</span>
+      </button>
+
+      <a href="yadokoro.html" class="flex flex-col items-center gap-1 py-2 px-3 text-slate-500 dark:text-slate-400 hover:text-primary transition-colors">
+        <span class="material-symbols-outlined text-2xl">analytics</span>
+        <span class="text-xs font-semibold">分析</span>
+      </a>
+      <a href="help.html" class="flex flex-col items-center gap-1 py-2 px-3 text-slate-500 dark:text-slate-400 hover:text-primary transition-colors">
+        <span class="material-symbols-outlined text-2xl">help</span>
+        <span class="text-xs font-semibold">ヘルプ</span>
+      </a>
+    </div>
+  </nav>
+
 </div>
 
 <!-- 保存メッセージオーバーレイ -->
@@ -114,95 +244,79 @@
 <script src="js/page.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/shepherd.js/dist/js/shepherd.min.js"></script>
 
-<!-- 共有ボタン -->
 <script>
-document.addEventListener("DOMContentLoaded", () => {
-  const shareBtn = document.getElementById("shareBtn");
-  const shareText = "道具管理アプリMATOMA遠的で道具を管理しよう！";
-  const shareUrl = window.location.href;
 
-  shareBtn.addEventListener("click", async () => {
-    if (navigator.share) {
-      try { await navigator.share({ title: "MATOMA遠的", text: shareText, url: shareUrl }); }
-      catch (err) { console.error("Share failed:", err); }
-    } else {
-      try { await navigator.clipboard.writeText(`${shareText} ${shareUrl}`); alert("リンクをコピーしました。"); }
-      catch (err) { prompt("コピーに失敗しました。以下を手動でコピーしてください:", `${shareText} ${shareUrl}`); }
+// 初めての方へチュートリアル
+function startTutorial() {
+  const tour = new Shepherd.Tour({
+    defaultStepOptions: {
+      scrollTo: { behavior: 'smooth', block: 'center' }
     }
   });
-});
-</script>
 
-<script>
+  tour.addStep({
+    text: 'このボタンで道具編集画面を開き、保存できます。',
+    attachTo: { element: '#centerActionBtn', on: 'top' },
+    buttons: [
+      { text: '次へ', action: tour.next }
+    ]
+  });
+
+  tour.addStep({
+    text: 'ここから各ページに移動できます。',
+    attachTo: { element: '.tab-bar', on: 'top' },
+    buttons: [
+      { text: '終了', action: tour.complete }
+    ]
+  });
+
+  tour.start();
+}
+
+document.getElementById("tutorialBtn").addEventListener("click", startTutorial);
+document.getElementById("tutorialBtnMobile").addEventListener("click", startTutorial);
+
+// 共有ボタン
+document.getElementById("shareBtn").addEventListener("click", async () => {
+  const shareText = "MATOMA遠的の矢所分析で射の傾向をチェックしよう！";
+  const shareUrl = window.location.href;
+  if (navigator.share) {
+    try { await navigator.share({ title: "MATOMA遠的", text: shareText, url: shareUrl }); }
+    catch(err){ console.error(err); }
+  } else {
+    try { await navigator.clipboard.writeText(`${shareText} ${shareUrl}`); alert("リンクをコピーしました。"); }
+    catch(err){ prompt("コピーできません。以下をコピーしてください:", `${shareText} ${shareUrl}`); }
+  }
+});
+
+// Service Worker
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/service-worker-v1.0.6.js')
-      .then(reg => console.log('✅ Service Worker registered:', reg))
-      .catch(err => console.error('❌ SW registration failed:', err));
+    navigator.serviceWorker.register('/service-worker.js')
+      .then(reg => console.log('Service Worker registered:', reg))
+      .catch(err => console.error('Service Worker registration failed:', err));
   });
 }
 </script>
-
-<!-- Shepherd チュートリアル -->
+<script>
+  // ======== ページ読込時にテーマを反映 ========
+  (function() {
+    const theme = localStorage.getItem("theme");
+    if (theme === "dark") {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+  })();
+</script>
 <script>
 document.addEventListener("DOMContentLoaded", () => {
-  const createTour = () => {
-    const tour = new Shepherd.Tour({
-      defaultStepOptions: { 
-        classes: 'shadow-lg rounded-md bg-white dark:bg-slate-800 p-4', 
-        scrollTo: true, 
-        cancelIcon: { enabled: true } 
-      }
+  const settingsBtn = document.getElementById("settingsBtn");
+  if (settingsBtn) {
+    settingsBtn.addEventListener("click", () => {
+      window.location.href = "settings.html"; // ← 設定ページへ遷移
     });
-
-    tour.addStep({
-      id:'step-1',
-      text:'このページでは弓道の道具を管理できます。',
-      buttons:[{text:'次へ', action: tour.next}]
-    });
-
-    tour.addStep({
-      id:'step-2',
-      text:'「編集」を押すと道具の追加・変更ができます。',
-      attachTo:{element:'#editBtn', on:'bottom'},
-      buttons:[]
-    });
-
-    tour.addStep({
-      id:'step-3',
-      text:'編集後は「保存」を押して変更を確定します。',
-      attachTo:{element:'#saveToolsBtn', on:'top'},
-      buttons:[]
-    });
-
-    // 編集ボタンでステップ2完了
-    const editBtn = document.getElementById('editBtn');
-    editBtn.addEventListener('click', () => {
-      const currentStep = tour.getCurrentStep();
-      if(currentStep && currentStep.id === 'step-2') tour.next();
-    });
-
-    // 保存ボタンでステップ3完了
-    const saveBtn = document.getElementById('saveToolsBtn');
-    saveBtn.addEventListener('click', () => {
-      const currentStep = tour.getCurrentStep();
-      if(currentStep && currentStep.id === 'step-3') tour.next();
-    });
-
-    return tour;
-  };
-
-  if (!localStorage.getItem('hasSeenToolTour')) {
-    const initialTour = createTour();
-    initialTour.start();
-    localStorage.setItem('hasSeenToolTour', 'true');
   }
-
-  const tutorialBtns = [document.getElementById('tutorialBtn'), document.getElementById('tutorialBtnMobile')];
-  tutorialBtns.forEach(btn => btn.addEventListener('click', () => {
-    const tour = createTour();
-    tour.start();
-  }));
 });
 </script>
 

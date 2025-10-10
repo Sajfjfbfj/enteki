@@ -2,9 +2,11 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <!-- ファビコン・PWA -->
+  <!-- ===========================
+       ファビコン・PWA設定
+  ============================ -->
   <link rel="apple-touch-icon" sizes="57x57" href="/apple-icon-57x57.png">
   <link rel="apple-touch-icon" sizes="60x60" href="/apple-icon-60x60.png">
   <link rel="apple-touch-icon" sizes="72x72" href="/apple-icon-72x72.png">
@@ -14,24 +16,26 @@
   <link rel="apple-touch-icon" sizes="144x144" href="/apple-icon-144x144.png">
   <link rel="apple-touch-icon" sizes="152x152" href="/apple-icon-152x152.png">
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-icon-180x180.png">
-
   <link rel="icon" type="image/png" sizes="192x192" href="/android-icon-192x192.png">
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
   <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
-
   <link rel="manifest" href="/manifest.json">
   <meta name="theme-color" content="#1969e1">
   <meta name="msapplication-TileColor" content="#ffffff">
   <meta name="msapplication-TileImage" content="/ms-icon-144x144.png">
 
-  <!-- SEO -->
+  <!-- ===========================
+       SEO基本設定
+  ============================ -->
   <title>MATOMA | 遠的スコア管理アプリ - 弓道の記録をスマホで簡単に分析</title>
   <meta name="description" content="MATOMA遠的は弓道の遠的スコアをスマホで簡単に記録・分析・共有できるアプリです。立ちごとの点数管理や矢所分析で、自分の射を可視化しましょう。" />
   <meta name="keywords" content="弓道,遠的,スコア管理,矢所分析,アプリ,MATOMA" />
   <meta name="robots" content="index, follow" />
 
-  <!-- OGP -->
+  <!-- ===========================
+       OGP設定
+  ============================ -->
   <meta property="og:title" content="MATOMA | 遠的スコア管理アプリ" />
   <meta property="og:description" content="遠的スコアをスマホで簡単に分析・共有！MATOMAで弓道の記録をもっと楽しく。" />
   <meta property="og:type" content="website" />
@@ -39,14 +43,18 @@
   <meta property="og:image" content="https://enteki.vercel.app/assets/img/aikonmato.png" />
   <meta property="og:site_name" content="MATOMA 遠的" />
 
-  <!-- Twitterカード -->
+  <!-- ===========================
+       Twitterカード設定
+  ============================ -->
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="MATOMA | 遠的スコア管理アプリ" />
   <meta name="twitter:description" content="遠的スコアをスマホで簡単に分析・共有！MATOMAで弓道の記録をもっと楽しく。" />
   <meta name="twitter:image" content="https://enteki.vercel.app/assets/img/aikonmato.png" />
   <meta name="twitter:url" content="https://enteki.vercel.app/" />
 
-  <!-- 構造化データ（JSON-LD） -->
+  <!-- ===========================
+       構造化データ（JSON-LD）
+  ============================ -->
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -62,7 +70,9 @@
   }
   </script>
 
-  <!-- Tailwind CSS -->
+  <!-- ===========================
+       Tailwind CSS
+  ============================ -->
   <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
   <script>
     tailwind.config = {
@@ -72,98 +82,196 @@
           colors: {
             "primary": "#1969e1",
             "background-light": "#f6f7f8",
-            "background-dark": "#111721",
+            "background-dark": "#111721"
           },
           fontFamily: {
-            "display": ["Manrope", "Yu Gothic", "Hiragino Maru Gothic ProN", "sans-serif"],
+            "display": ["Manrope", "Yu Gothic", "Hiragino Maru Gothic ProN", "sans-serif"]
           },
           borderRadius: {
             "DEFAULT": "0.5rem",
             "lg": "1rem",
             "xl": "1.5rem",
+            "2xl": "2rem",
             "full": "9999px"
-          },
-        },
-      },
+          }
+        }
+      }
     }
   </script>
 
-  <!-- Google Fonts & Icons -->
-  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&display=swap" rel="stylesheet"/>
-  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+  <!-- ===========================
+       Google Fonts & 外部CSS
+  ============================ -->
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/shepherd.js/dist/css/shepherd.css">
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/styles.css">
   <meta name="google-site-verification" content="BPIz999ax7wid03IH2bc6D9QQT1WzAw4Ej9VHfXODMo" />
+
+  <!-- ===========================
+       カスタムスタイル
+  ============================ -->
+  <style>
+    .app-card {
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .app-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+    }
+    .tab-bar {
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(255, 255, 255, 0.95));
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-top: 1px solid rgba(0, 0, 0, 0.1);
+    }
+    .dark .tab-bar {
+      background: linear-gradient(180deg, rgba(17, 23, 33, 0.98), rgba(17, 23, 33, 0.95));
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    body { padding-bottom: 80px; }
+
+    /* 中央の立ち追加ボタン */
+    .center-tab-button {
+      position: relative;
+      top: -20px;
+      width: 64px;
+      height: 64px;
+      background: linear-gradient(135deg, #1969e1, #1557c7);
+      border-radius: 50%;
+      box-shadow: 0 8px 24px rgba(25, 105, 225, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+      border: none;
+      cursor: pointer;
+    }
+
+    /* 的キャンバス */
+    .canvas-container {
+      width: 100%;
+      max-width: 600px;
+      margin: 0 auto;
+      aspect-ratio: 1 / 1;
+      position: relative;
+    }
+    .canvas-container canvas {
+      width: 100% !important;
+      height: 100% !important;
+      display: block;
+    }
+  </style>
 </head>
 
 <body class="bg-background-light dark:bg-background-dark font-display text-slate-800 dark:text-slate-200">
 <div class="flex flex-col min-h-screen">
 
-  <!-- ナビゲーションバー -->
+  <!-- ===========================
+       ヘッダー
+  ============================ -->
   <header class="sticky top-0 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-sm z-10 shadow-sm">
-    <div class="container mx-auto px-4">
-      <div class="flex items-center justify-between h-16">
-        <h1 class="text-lg font-bold text-slate-900 dark:text-white">MATOMA遠的</h1>
-        <!-- 共有ボタン -->
-        <button id="shareBtn" class="px-3 py-1 bg-primary text-white rounded hover:bg-blue-600 text-sm">共有</button>
-      </div>
-      <div class="flex border-b border-slate-200 dark:border-slate-800">
-        <a class="px-4 py-2 text-sm font-bold border-b-2 border-primary text-primary" href="index.html">ホーム</a>
-        <a class="px-4 py-2 text-sm font-bold text-slate-500 hover:text-primary dark:text-slate-400 dark:hover:text-primary" href="tools.html">道具管理</a>
-        <a class="px-4 py-2 text-sm font-bold text-slate-500 hover:text-primary dark:text-slate-400 dark:hover:text-primary" href="yadokoro.html">矢所分析</a>
-        <a class="px-4 py-2 text-sm font-bold text-slate-500 hover:text-primary dark:text-slate-400 dark:hover:text-primary" href="help.html">ヘルプ</a>
-      </div>
-    </div>
+    <div class="flex items-center justify-between h-14">
+  <h1 class="text-lg font-bold text-slate-900 dark:text-white">MATOMA遠的</h1>
+  <div class="flex items-center gap-2">
+    <!-- 共有ボタン -->
+    <button id="shareBtn"
+      class="px-4 py-2 bg-primary text-white rounded-full hover:bg-blue-600 text-sm font-semibold shadow-md transition-all">
+      共有
+    </button>
+
+    <!-- 設定ボタン（歯車） -->
+    <button id="settingsBtn"
+      class="p-2 rounded-full bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 transition-all shadow-sm"
+      title="設定ページ">
+      <span class="material-symbols-outlined text-2xl">settings</span>
+    </button>
+  </div>
+</div>
+
   </header>
 
-  <!-- 「初めての方へ」ボタン -->
-  <div class="hidden md:block fixed bottom-4 right-4 z-50">
-    <button id="tutorialBtn" class="px-3 py-2 text-sm sm:text-base bg-primary text-white rounded-lg shadow-lg hover:bg-primary/80">初めての方へ</button>
+  <!-- ===========================
+       初めての方へボタン
+  ============================ -->
+  <div class="hidden md:block fixed bottom-24 right-4 z-50">
+    <button id="tutorialBtn" class="px-5 py-3 text-sm sm:text-base bg-primary text-white rounded-full shadow-xl hover:bg-primary/90 font-semibold transition-all hover:scale-105">初めての方へ</button>
   </div>
-  <div class="md:hidden w-full py-2 bg-background-light dark:bg-background-dark shadow-sm">
+  <div class="md:hidden w-full py-3 bg-background-light dark:bg-background-dark">
     <div class="container mx-auto px-4 flex justify-center">
-      <button id="tutorialBtnMobile" class="px-4 py-2 text-base bg-primary text-white rounded-lg shadow-lg hover:bg-primary/80">初めての方へ</button>
+      <button id="tutorialBtnMobile" class="px-6 py-3 text-base bg-primary text-white rounded-full shadow-lg hover:bg-primary/90 font-semibold transition-all">初めての方へ</button>
     </div>
   </div>
 
-  <!-- メインコンテンツ -->
-  <main class="flex-grow container mx-auto px-4 py-6 space-y-8">
+  <!-- ===========================
+       メインコンテンツ
+  ============================ -->
+  <main class="flex-grow container mx-auto px-4 py-6 space-y-6">
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <section class="bg-white dark:bg-slate-900 p-4 rounded-xl shadow-lg" id="matchDateSection">
-        <label for="matchDate" class="block mb-2 font-bold text-slate-800 dark:text-slate-200">日付選択</label>
-        <input type="date" id="matchDate" class="w-full rounded-lg border border-slate-300 dark:border-slate-700 px-3 py-2 text-slate-800 dark:text-slate-200 bg-white dark:bg-slate-800">
+      <!-- 日付選択 -->
+      <section class="app-card bg-white dark:bg-slate-900 p-5 rounded-2xl shadow-lg" id="matchDateSection">
+        <label for="matchDate" class="block mb-3 font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2">
+          <span class="material-symbols-outlined text-primary">calendar_today</span>
+          日付選択
+        </label>
+        <input type="date" id="matchDate" class="w-full rounded-xl border-2 border-slate-200 dark:border-slate-700 px-4 py-3 text-slate-800 dark:text-slate-200 bg-white dark:bg-slate-800 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all">
       </section>
 
+      <!-- 日別集計 -->
       <section id="dailySummary">
-        <h2 class="text-xl font-bold mb-4 text-slate-900 dark:text-white">日別集計</h2>
-        <div class="bg-white dark:bg-slate-900 rounded-xl shadow-lg p-4 space-y-2">
-          <p class="text-slate-500 dark:text-slate-400">ここに日別集計（立ち数・合計点）が表示されます</p>
+        <h2 class="text-xl font-bold mb-3 text-slate-900 dark:text-white">日別集計</h2>
+        <div class="app-card bg-white dark:bg-slate-900 rounded-2xl shadow-lg p-5">
+          <div class="flex items-center gap-3 text-slate-500 dark:text-slate-400">
+            <span class="material-symbols-outlined text-3xl text-primary">analytics</span>
+            <p class="text-sm">ここに日別集計（立ち数・合計点）が表示されます</p>
+          </div>
         </div>
       </section>
     </div>
 
+    <!-- 立ちセクション -->
     <section>
       <h2 class="text-xl font-bold mb-4 text-slate-900 dark:text-white">立ちセット</h2>
-
-      <button id="addSetBtn" class="mb-4 w-full md:w-auto flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg border-2 border-primary/50 text-primary font-bold hover:bg-primary/10 transition-colors">
-        <span class="material-symbols-outlined">add</span>
-        <span>立ち追加</span>
-      </button>
-
-      <div id="setsContainer" class="space-y-6"></div>
-
-      <div class="mt-4 flex justify-center">
-        <button id="addSetBtnBottom" class="mb-4 w-full md:w-auto flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg border-2 border-primary/50 text-primary font-bold hover:bg-primary/10 transition-colors">
-          <span class="material-symbols-outlined">add</span>
-          <span>立ち追加</span>
-        </button>
-      </div>
+      <div id="setsContainer" class="space-y-4"></div>
     </section>
   </main>
+
+  <!-- ===========================
+       タブバー（JAL Pay風）
+  ============================ -->
+  <nav class="tab-bar fixed bottom-0 left-0 right-0 z-40 px-4 py-2">
+    <div class="max-w-2xl mx-auto flex items-end justify-around relative">
+      <a href="tools.html" class="flex flex-col items-center gap-1 py-2 px-3 text-slate-500 dark:text-slate-400 hover:text-primary transition-colors">
+        <span class="material-symbols-outlined text-2xl">construction</span>
+        <span class="text-xs font-semibold">道具</span>
+      </a>
+
+      <a href="index.html" class="flex flex-col items-center gap-1 py-2 px-3 text-primary">
+        <span class="material-symbols-outlined text-2xl">today</span>
+        <span class="text-xs font-semibold">今日の記録</span>
+      </a>
+
+      <button id="addSetBtnTab" class="center-tab-button">
+        <span class="material-symbols-outlined text-3xl text-white">add_circle</span>
+      </button>
+
+      <a href="yadokoro.html" class="flex flex-col items-center gap-1 py-2 px-3 text-slate-500 dark:text-slate-400 hover:text-primary transition-colors">
+        <span class="material-symbols-outlined text-2xl">analytics</span>
+        <span class="text-xs font-semibold">分析</span>
+      </a>
+
+      <a href="help.html" class="flex flex-col items-center gap-1 py-2 px-3 text-slate-500 dark:text-slate-400 hover:text-primary transition-colors">
+        <span class="material-symbols-outlined text-2xl">help</span>
+        <span class="text-xs font-semibold">ヘルプ</span>
+      </a>
+    </div>
+  </nav>
 </div>
 
-<!-- JS -->
+<!-- ===========================
+     JSスクリプト
+=========================== -->
 <script src="js/main.js"></script>
 <script src="js/matchSet.js"></script>
 <script src="js/navbar.js"></script>
@@ -179,18 +287,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
   shareBtn.addEventListener("click", async () => {
     if (navigator.share) {
-      try {
-        await navigator.share({ title: "MATOMA遠的", text: shareText, url: shareUrl });
-      } catch (err) { console.error("Share failed:", err); }
+      try { await navigator.share({ title: "MATOMA遠的", text: shareText, url: shareUrl }); }
+      catch (err) { console.error("Share failed:", err); }
     } else {
-      try { await navigator.clipboard.writeText(`${shareText} ${shareUrl}`);
-        alert("リンクをコピーしました。お好きな方法でシェアしてください。");
-      } catch (err) { prompt("コピーに失敗しました。以下を手動でコピーしてください:", `${shareText} ${shareUrl}`); }
+      try { await navigator.clipboard.writeText(`${shareText} ${shareUrl}`); alert("リンクをコピーしました。"); }
+      catch (err) { prompt("コピーに失敗しました。手動でコピーしてください:", `${shareText} ${shareUrl}`); }
     }
   });
 });
 </script>
 
+<!-- Service Worker -->
 <script>
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
@@ -212,41 +319,54 @@ document.addEventListener("DOMContentLoaded", () => {
         cancelIcon: { enabled: true } 
       }
     });
-
     tour.addStep({ id:'step-1', text:'日付を選択します', attachTo:{element:'#matchDateSection', on:'bottom'}, buttons:[{text:'次へ', action: tour.next}] });
     tour.addStep({ id:'step-2', text:'日別集計がここに表示されます', attachTo:{element:'#dailySummary', on:'bottom'}, buttons:[{text:'前へ', action: tour.back},{text:'次へ', action: tour.next}] });
-    tour.addStep({ id:'step-3', text:'「立ち追加」で新しい立ちを作ります', attachTo:{element:'#addSetBtn', on:'top'}, buttons:[{text:'前へ', action: tour.back}] });
+    tour.addStep({ id:'step-3', text:'下部の「立ち追加」ボタンで新しい立ちを作ります', attachTo:{element:'#addSetBtnTab', on:'top'}, buttons:[{text:'前へ', action: tour.back},{text:'次へ', action: tour.next}] });
     tour.addStep({ id:'step-4', text:'的をタップすると点数が付き、外に出すと消えます', attachTo:{element:'#setsContainer', on:'top'}, buttons:[{text:'前へ', action: tour.back},{text:'次へ', action: tour.next}] });
     tour.addStep({ id:'step-5', text:'リセットで内容、削除で立ちごと削除', attachTo:{element:'#setsContainer', on:'top'}, buttons:[{text:'前へ', action: tour.back},{text:'終了', action: tour.complete}] });
-
     return tour;
   };
 
-  // 初回起動で自動開始
   if (!localStorage.getItem('hasSeenTour')) {
     const initialTour = createTour();
     initialTour.start();
     localStorage.setItem('hasSeenTour', 'true');
   }
 
-  // 「初めての方へ」ボタン押下でチュートリアル再開
   const tutorialBtns = [document.getElementById('tutorialBtn'), document.getElementById('tutorialBtnMobile')];
   tutorialBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
-      const tour = createTour();
-      tour.start();
-    });
+    if (btn) btn.addEventListener('click', () => { createTour().start(); });
   });
 
-  // 立ち追加で次ステップ
-  const addSetBtn = document.getElementById("addSetBtn");
-  const addSetBtnBottom = document.getElementById("addSetBtnBottom");
-  addSetBtn.addEventListener("click", () => { if (Shepherd.activeTour) Shepherd.activeTour.next(); });
-  addSetBtnBottom.addEventListener("click", () => { if (Shepherd.activeTour) Shepherd.activeTour.next(); });
+  const addSetBtnTab = document.getElementById("addSetBtnTab");
+  if (addSetBtnTab) {
+    addSetBtnTab.addEventListener("click", () => { 
+      if (Shepherd.activeTour) Shepherd.activeTour.next(); 
+    });
+  }
+});
+</script>
+<script>
+  // ======== ページ読込時にテーマを反映 ========
+  (function() {
+    const theme = localStorage.getItem("theme");
+    if (theme === "dark") {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+  })();
+</script>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const settingsBtn = document.getElementById("settingsBtn");
+  if (settingsBtn) {
+    settingsBtn.addEventListener("click", () => {
+      window.location.href = "settings.html"; // ← 設定ページへ遷移
+    });
+  }
 });
 </script>
 
-
 </body>
 </html>
-

@@ -2,9 +2,11 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
-  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-  <link rel="stylesheet" href="css/style.css">
-  <link rel="stylesheet" href="css/styles.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- ===========================
+       ファビコン・PWA設定（index.htmlと同一）
+  ============================ -->
   <link rel="apple-touch-icon" sizes="57x57" href="/apple-icon-57x57.png">
   <link rel="apple-touch-icon" sizes="60x60" href="/apple-icon-60x60.png">
   <link rel="apple-touch-icon" sizes="72x72" href="/apple-icon-72x72.png">
@@ -20,24 +22,8 @@
   <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
   <link rel="manifest" href="/manifest.json">
   <meta name="theme-color" content="#1969e1">
-  <meta name="msapplication-TileColor" content="#ffffff">
-  <meta name="msapplication-TileImage" content="/ms-icon-144x144.png">
+
   <title>MATOMA | 矢所分析</title>
-
-  <!-- OGP設定 -->
-  <meta property="og:title" content="MATOMA | 遠的スコア管理アプリ" />
-  <meta property="og:description" content="遠的スコアをスマホで簡単に分析・共有！MATOMAで弓道の記録をもっと楽しく。" />
-  <meta property="og:type" content="website" />
-  <meta property="og:url" content="https://enteki.vercel.app/" />
-  <meta property="og:image" content="https://enteki.vercel.app/assets/img/aikonmato.png" />
-  <meta property="og:site_name" content="MATOMA 遠的" />
-
-  <!-- Twitterカード -->
-  <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="MATOMA | 遠的スコア管理アプリ" />
-  <meta name="twitter:description" content="遠的スコアをスマホで簡単に分析・共有！MATOMAで弓道の記録をもっと楽しく。" />
-  <meta name="twitter:image" content="https://enteki.vercel.app/assets/img/aikonmato.png" />
-  <meta name="twitter:url" content="https://enteki.vercel.app/" />
 
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
@@ -49,66 +35,110 @@
           colors: {
             "primary": "#1969e1",
             "background-light": "#f6f7f8",
-            "background-dark": "#111721",
+            "background-dark": "#111721"
           },
           fontFamily: {
-            "display": ["Manrope", "Yu Gothic", "Hiragino Maru Gothic ProN", "sans-serif"],
+            "display": ["Manrope", "Yu Gothic", "Hiragino Maru Gothic ProN", "sans-serif"]
           },
           borderRadius: {
             "DEFAULT": "0.5rem",
             "lg": "1rem",
             "xl": "1.5rem",
+            "2xl": "2rem",
             "full": "9999px"
-          },
-        },
-      },
+          }
+        }
+      }
     }
   </script>
 
-  <!-- Google Fonts & Icons -->
-  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&display=swap" rel="stylesheet"/>
-  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/shepherd.js/dist/css/shepherd.css">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/styles.css">
+  <meta name="google-site-verification" content="BPIz999ax7wid03IH2bc6D9QQT1WzAw4Ej9VHfXODMo" />
 
-  <!-- Shepherd.js CSS -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/shepherd.js/dist/css/shepherd.css"/>
+  <style>
+    .app-card { transition: transform 0.2s ease, box-shadow 0.2s ease; }
+    .app-card:hover { transform: translateY(-2px); box-shadow: 0 20px 40px rgba(0,0,0,0.15); }
+    .tab-bar {
+      background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(255,255,255,0.95));
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-top: 1px solid rgba(0,0,0,0.1);
+    }
+    .dark .tab-bar {
+      background: linear-gradient(180deg, rgba(17,23,33,0.98), rgba(17,23,33,0.95));
+      border-top: 1px solid rgba(255,255,255,0.1);
+    }
+    body { padding-bottom: 80px; }
+
+    .center-tab-button {
+      position: relative;
+      top: -20px;
+      width: 64px;
+      height: 64px;
+      background: linear-gradient(135deg, #1969e1, #1557c7);
+      border-radius: 50%;
+      box-shadow: 0 8px 24px rgba(25,105,225,0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+      border: none;
+      cursor: pointer;
+    }
+
+    .canvas-container { width: 100%; max-width: 600px; margin: 0 auto; aspect-ratio: 1/1; position: relative; }
+    .canvas-container canvas { width: 100% !important; height: 100% !important; display: block; }
+  </style>
 </head>
 
 <body class="bg-background-light dark:bg-background-dark font-display text-slate-800 dark:text-slate-200">
 <div class="flex flex-col min-h-screen">
 
-  <!-- ナビゲーションバー -->
+  <!-- ヘッダー -->
   <header class="sticky top-0 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-sm z-10 shadow-sm">
-    <div class="container mx-auto px-4">
-      <div class="flex items-center justify-between h-16">
-        <h1 class="text-lg font-bold text-slate-900 dark:text-white">MATOMA遠的</h1>
-        <button id="shareBtn" class="px-3 py-1 bg-primary text-white rounded hover:bg-blue-600 text-sm">共有</button>
-      </div>
-      <div class="flex border-b border-slate-200 dark:border-slate-800">
-        <a class="px-4 py-2 text-sm font-bold text-slate-500 hover:text-primary dark:text-slate-400 dark:hover:text-primary" href="index.html">ホーム</a>
-        <a class="px-4 py-2 text-sm font-bold text-slate-500 hover:text-primary dark:text-slate-400 dark:hover:text-primary" href="tools.html">道具管理</a>
-        <a class="px-4 py-2 text-sm font-bold border-b-2 border-primary text-primary" href="yadokoro.html">矢所分析</a>
-        <a class="px-4 py-2 text-sm font-bold text-slate-500 hover:text-primary dark:text-slate-400 dark:hover:text-primary" href="help.html">ヘルプ</a>
-      </div>
-    </div>
+    <div class="flex items-center justify-between h-14">
+  <h1 class="text-lg font-bold text-slate-900 dark:text-white">MATOMA遠的</h1>
+  <div class="flex items-center gap-2">
+    <!-- 共有ボタン -->
+    <button id="shareBtn"
+      class="px-4 py-2 bg-primary text-white rounded-full hover:bg-blue-600 text-sm font-semibold shadow-md transition-all">
+      共有
+    </button>
+
+    <!-- 設定ボタン（歯車） -->
+    <button id="settingsBtn"
+      class="p-2 rounded-full bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 transition-all shadow-sm"
+      title="設定ページ">
+      <span class="material-symbols-outlined text-2xl">settings</span>
+    </button>
+  </div>
+</div>
+
   </header>
 
-  <!-- 「初めての方へ」ボタン -->
-  <div class="hidden md:block fixed bottom-4 right-4 z-50">
-    <button id="tutorialBtn" class="px-3 py-2 text-sm sm:text-base bg-primary text-white rounded-lg shadow-lg hover:bg-primary/80">初めての方へ</button>
+  <!-- 初めての方へ -->
+  <div class="hidden md:block fixed bottom-24 right-4 z-50">
+    <button id="tutorialBtn" class="px-5 py-3 text-sm sm:text-base bg-primary text-white rounded-full shadow-xl hover:bg-primary/90 font-semibold transition-all hover:scale-105">初めての方へ</button>
   </div>
-  <div class="md:hidden w-full py-2 bg-background-light dark:bg-background-dark shadow-sm">
+  <div class="md:hidden w-full py-3 bg-background-light dark:bg-background-dark">
     <div class="container mx-auto px-4 flex justify-center">
-      <button id="tutorialBtnMobile" class="px-4 py-2 text-base bg-primary text-white rounded-lg shadow-lg hover:bg-primary/80">初めての方へ</button>
+      <button id="tutorialBtnMobile" class="px-6 py-3 text-base bg-primary text-white rounded-full shadow-lg hover:bg-primary/90 font-semibold transition-all">初めての方へ</button>
     </div>
   </div>
 
-  <!-- メインコンテンツ -->
-  <main class="flex-grow container mx-auto px-4 py-6 space-y-8">
-    <section class="bg-white dark:bg-slate-900 p-4 rounded-xl shadow-lg" data-step="1">
-      <div class="flex flex-wrap gap-2 mb-4 items-center">
-        <input id="matchDate" type="date" class="p-2 border rounded" />
-        <button id="dailyTab" class="px-4 py-2 font-bold rounded bg-primary text-white">日別</button>
-        <button id="monthTab" class="px-4 py-2 font-bold rounded bg-slate-300 dark:bg-slate-700 text-slate-800 dark:text-slate-200">過去30日</button>
+  <!-- 分析ページ本体 -->
+  <main class="flex-grow container mx-auto px-4 py-6 space-y-6">
+    <section class="bg-white dark:bg-slate-900 p-5 rounded-2xl shadow-lg">
+      <h2 class="text-xl font-bold mb-4 text-slate-900 dark:text-white">矢所分析</h2>
+
+      <div class="flex flex-wrap gap-3 mb-4 items-center">
+        <input type="date" id="matchDate" class="p-2 border rounded" />
+        <button id="dailyTab" class="px-4 py-2 bg-primary text-white rounded">日別</button>
+        <button id="monthTab" class="px-4 py-2 bg-slate-300 dark:bg-slate-700 text-slate-800 dark:text-slate-200">過去30日</button>
         <select id="toolCategorySelect" class="p-2 border rounded">
           <option value="">-- カテゴリ --</option>
           <option value="弓">弓</option>
@@ -119,30 +149,64 @@
         <select id="toolNameSelect" class="p-2 border rounded">
           <option value="">-- 道具を選択 --</option>
         </select>
-        <button id="filterToolBtn" class="px-4 py-2 bg-primary text-white rounded">分析</button>
       </div>
-    </section>
 
-    <section class="bg-white dark:bg-slate-900 p-4 rounded-xl shadow-lg flex flex-col md:flex-row gap-6" data-step="2">
-      <canvas id="targetCanvas" class="w-full md:w-1/2 h-64 bg-slate-100 dark:bg-slate-800 rounded-xl"></canvas>
-      <div class="w-full md:w-1/2">
-        <h3 class="font-bold mb-2 text-slate-900 dark:text-white">得点分布</h3>
-        <canvas id="scoreChart" class="w-full h-64 bg-white dark:bg-slate-900 rounded-xl"></canvas>
+      <div class="bg-white dark:bg-slate-900 rounded-xl shadow-lg p-4 flex flex-col md:flex-row gap-6">
+        <canvas id="targetCanvas" class="w-full md:w-1/2 h-64 bg-slate-100 dark:bg-slate-800 rounded-xl"></canvas>
+        <div class="w-full md:w-1/2">
+          <h3 class="font-bold mb-2 text-slate-900 dark:text-white">得点分布</h3>
+          <canvas id="scoreChart" class="w-full h-64 bg-white dark:bg-slate-900 rounded-xl"></canvas>
+        </div>
       </div>
-    </section>
 
-    <section class="bg-white dark:bg-slate-900 p-4 rounded-xl shadow-lg" data-step="3">
-      <h3 class="font-bold mb-2 text-slate-900 dark:text-white">立ちごとの得点分析</h3>
-      <div id="shotAnalysisContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+      <div class="bg-white dark:bg-slate-900 rounded-xl shadow-lg p-4 mt-6">
+        <h3 class="font-bold mb-2 text-slate-900 dark:text-white">立ちごとの得点分析</h3>
+        <div id="shotAnalysisContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+      </div>
     </section>
   </main>
+
+  <!-- タブバー -->
+  <nav class="tab-bar fixed bottom-0 left-0 right-0 z-40 px-4 py-2">
+    <div class="max-w-2xl mx-auto flex items-end justify-around relative">
+      <a href="tools.html" class="flex flex-col items-center gap-1 py-2 px-3 text-slate-500 dark:text-slate-400 hover:text-primary transition-colors">
+        <span class="material-symbols-outlined text-2xl">construction</span>
+        <span class="text-xs font-semibold">道具</span>
+      </a>
+
+      <a href="index.html" class="flex flex-col items-center gap-1 py-2 px-3 text-slate-500 dark:text-slate-400 hover:text-primary transition-colors">
+        <span class="material-symbols-outlined text-2xl">today</span>
+        <span class="text-xs font-semibold">記録</span>
+      </a>
+
+      <!-- 🔵 分析開始ボタン -->
+      <button id="startAnalysisBtn" class="center-tab-button">
+        <span class="material-symbols-outlined text-3xl text-white">analytics</span>
+      </button>
+
+      <a href="yadokoro.html" class="flex flex-col items-center gap-1 py-2 px-3 text-primary">
+        <span class="material-symbols-outlined text-2xl">bar_chart</span>
+        <span class="text-xs font-semibold">分析</span>
+      </a>
+
+      <a href="help.html" class="flex flex-col items-center gap-1 py-2 px-3 text-slate-500 dark:text-slate-400 hover:text-primary transition-colors">
+        <span class="material-symbols-outlined text-2xl">help</span>
+        <span class="text-xs font-semibold">ヘルプ</span>
+      </a>
+    </div>
+  </nav>
 </div>
 
 <!-- JS -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="js/analysis.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/shepherd.js/dist/js/shepherd.min.js"></script>
+<script src="js/page.js"></script>
 
+<script>
+document.getElementById("startAnalysisBtn").addEventListener("click", () => {
+  if (window.startAnalysis) window.startAnalysis();
+});
+</script>
 <!-- SNS共有 -->
 <script>
 document.addEventListener("DOMContentLoaded", () => {
@@ -172,52 +236,6 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 </script>
-
-<!-- チュートリアル -->
-<script>
-document.addEventListener("DOMContentLoaded", () => {
-  const tour = new Shepherd.Tour({
-    defaultStepOptions: {
-      scrollTo: { behavior: 'smooth', block: 'center' },
-      cancelIcon: { enabled: true }
-    },
-    useModalOverlay: true
-  });
-
-  tour.addStep({
-    title: '日付・タブ選択',
-    text: 'ここで日付や分析したい期間を選択します。',
-    attachTo: { element: '#matchDate', on: 'bottom' },
-    buttons: [{ text: '次へ', action: tour.next }]
-  });
-
-  tour.addStep({
-    title: 'キャンバス表示',
-    text: 'ここに矢の着弾位置が表示されます。',
-    attachTo: { element: '#targetCanvas', on: 'top' },
-    buttons: [
-      { text: '前へ', action: tour.back },
-      { text: '次へ', action: tour.next }
-    ]
-  });
-
-  tour.addStep({
-    title: '得点分布',
-    text: 'ここで得点の分布を確認できます。',
-    attachTo: { element: '#scoreChart', on: 'top' },
-    buttons: [
-      { text: '前へ', action: tour.back },
-      { text: '終了', action: tour.complete }
-    ]
-  });
-
-  const tutorialBtn = document.getElementById("tutorialBtn");
-  const tutorialBtnMobile = document.getElementById("tutorialBtnMobile");
-  tutorialBtn.addEventListener('click', () => tour.start());
-  tutorialBtnMobile.addEventListener('click', () => tour.start());
-});
-</script>
-
 <script>
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
@@ -227,5 +245,27 @@ if ('serviceWorker' in navigator) {
   });
 }
 </script>
+<script>
+  // ======== ページ読込時にテーマを反映 ========
+  (function() {
+    const theme = localStorage.getItem("theme");
+    if (theme === "dark") {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+  })();
+</script>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const settingsBtn = document.getElementById("settingsBtn");
+  if (settingsBtn) {
+    settingsBtn.addEventListener("click", () => {
+      window.location.href = "settings.html"; // ← 設定ページへ遷移
+    });
+  }
+});
+</script>
+
 </body>
 </html>

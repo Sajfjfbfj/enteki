@@ -1,299 +1,352 @@
-document.addEventListener("DOMContentLoaded", () => {
-  const targetCanvas = document.getElementById("targetCanvas");
-  const scoreChartCanvas = document.getElementById("scoreChart");
-  const scoreCtx = scoreChartCanvas.getContext("2d");
-  let chart = null;
+/**
+ * js/analysis.js
+ * 分析ロジック（分析ボタン押下必須で描画）
+ */
+(function () {
+  let analysisStarted = false;
+  let analysisReady = false; // 分析ボタンを押すと true
 
-  const matchDateInput = document.getElementById("matchDate");
-  let currentDate = new Date().toISOString().split("T")[0];
-  matchDateInput.value = currentDate;
-
-  const dailyTab = document.getElementById("dailyTab");
-  const monthTab = document.getElementById("monthTab");
-  let currentTab = "daily";
-
-  const toolCategorySelect = document.getElementById("toolCategorySelect");
-  const toolNameSelect = document.getElementById("toolNameSelect");
-  const filterToolBtn = document.getElementById("filterToolBtn");
-
-  const shotAnalysisContainerId = "shotAnalysisContainer";
-
-  let dailySets = [];
-  let monthSets = [];
-
-  // markerRadius をキャンバス幅に応じて算出する
-  let markerRadiusBase = 20;
-
-  const img = new Image();
-  img.src = "img/target1.png";
-
-  const toolCategories = ["弽","弓","矢","弦"];
-  let toolsData = loadTools();
+  const toolCategories = ["弽", "弓", "矢", "弦"];
+  let toolsData = {};
   let selectedCategory = "";
   let selectedToolName = "";
+  let currentTab = "daily";
+  let currentDate = new Date().toISOString().split("T")[0];
 
+  let globalChart = null; // Chart インスタンス保持
+
+  // --- 初期化 ---
+  window.addEventListener("DOMContentLoaded", () => {
+    toolsData = loadTools();
+
+    const targetCanvas = document.getElementById("targetCanvas");
+    const img = new Image();
+    img.src = "img/target1.png";
+    if (targetCanvas) {
+      const ctx = targetCanvas.getContext("2d");
+      img.onload = () => ctx.drawImage(img, 0, 0, targetCanvas.width, targetCanvas.height);
+    }
+
+    const toolCategorySelect = document.getElementById("toolCategorySelect");
+    const toolNameSelect = document.getElementById("toolNameSelect");
+    const dateInput = document.getElementById("matchDate");
+
+    // 🎨 セレクト・カレンダー共通スタイル（黒背景＋白文字）
+    function applySelectStyles() {
+      [dateInput, toolCategorySelect, toolNameSelect].forEach((el) => {
+        if (!el) return;
+        el.classList.add(
+          "border",
+          "rounded",
+          "px-2",
+          "py-1",
+          "text-slate-800", // ライト時文字色
+          "bg-white",
+          "dark:text-white", // ダーク時白文字
+          "dark:bg-black", // ダーク時黒背景
+          "transition-colors"
+        );
+      });
+    }
+    applySelectStyles();
+
+    // --- カテゴリ・道具選択イベント ---
+    if (toolCategorySelect) {
+      renderToolCategories();
+      toolCategorySelect.addEventListener("change", () => {
+        selectedCategory = toolCategorySelect.value;
+        selectedToolName = "";
+        renderToolNames(selectedCategory);
+      });
+    }
+    if (toolNameSelect) {
+      toolNameSelect.addEventListener("change", () => {
+        selectedToolName = toolNameSelect.value;
+      });
+    }
+
+    // --- タブ切替 ---
+    const dailyTab = document.getElementById("dailyTab");
+    const monthTab = document.getElementById("monthTab");
+
+    if (dailyTab)
+      dailyTab.addEventListener("click", () => {
+        currentTab = "daily";
+        updateTabs();
+      });
+    if (monthTab)
+      monthTab.addEventListener("click", () => {
+        currentTab = "month";
+        updateTabs();
+      });
+
+    updateTabs();
+
+    // --- Canvas リサイズ ---
+    function resizeCanvas() {
+      if (!targetCanvas) return;
+      targetCanvas.width = targetCanvas.parentElement.clientWidth;
+      targetCanvas.height = Math.max(targetCanvas.parentElement.clientHeight, 400);
+    }
+    window.addEventListener("resize", resizeCanvas);
+    resizeCanvas();
+
+    if (selectedCategory) renderToolNames(selectedCategory);
+  });
+
+  // --- ツール読み込み ---
   function loadTools() {
     const data = localStorage.getItem("kyudoTools");
-    if(data) return JSON.parse(data);
+    if (data) {
+      try {
+        return JSON.parse(data);
+      } catch (e) {
+        console.error("tools parse error", e);
+      }
+    }
     const init = {};
-    toolCategories.forEach(cat => init[cat]=[]);
+    toolCategories.forEach((cat) => (init[cat] = []));
     return init;
   }
 
-  toolCategorySelect.addEventListener("change", () => {
-    selectedCategory = toolCategorySelect.value;
-    renderToolNames(selectedCategory);
-  });
-
-  toolNameSelect.addEventListener("change", () => {
-    selectedToolName = toolNameSelect.value;
-  });
+  function renderToolCategories() {
+    const select = document.getElementById("toolCategorySelect");
+    if (!select) return;
+    select.innerHTML = "<option value=''>-- カテゴリ選択 --</option>";
+    toolCategories.forEach((cat) => {
+      const opt = document.createElement("option");
+      opt.value = cat;
+      opt.textContent = cat;
+      select.appendChild(opt);
+    });
+    if (selectedCategory) select.value = selectedCategory;
+  }
 
   function renderToolNames(category) {
-    toolNameSelect.innerHTML = "<option value=''>-- 道具を選択 --</option>";
-    if(category && toolsData[category]){
-      toolsData[category].forEach(tool => {
+    const select = document.getElementById("toolNameSelect");
+    if (!select) return;
+    const prevSelected = selectedToolName;
+    select.innerHTML = "<option value=''>-- 道具を選択 --</option>";
+    if (category && toolsData[category]) {
+      toolsData[category].forEach((tool) => {
         const opt = document.createElement("option");
         opt.value = tool.name;
         opt.textContent = tool.name;
-        toolNameSelect.appendChild(opt);
+        select.appendChild(opt);
       });
     }
-    if(selectedToolName){
-      toolNameSelect.value = selectedToolName;
+    if (prevSelected && Array.from(select.options).some((o) => o.value === prevSelected)) {
+      select.value = prevSelected;
+      selectedToolName = prevSelected;
+    } else {
+      select.value = "";
+      selectedToolName = "";
     }
   }
 
-  // --------------------
-  // 画像読み込み後の初期化
-  // --------------------
-  img.onload = () => {
-    resizeCanvas();
-    loadDailySets(currentDate);
-    drawDaily();
-    loadMonthSets();
-    drawMonth();
+  function updateTabs() {
+    const dailyTab = document.getElementById("dailyTab");
+    const monthTab = document.getElementById("monthTab");
+    if (currentTab === "daily") {
+      if (dailyTab) {
+        dailyTab.classList.add("bg-primary", "text-white");
+        dailyTab.classList.remove("bg-slate-300", "dark:bg-slate-700", "text-slate-800", "dark:text-slate-200");
+      }
+      if (monthTab) {
+        monthTab.classList.remove("bg-primary", "text-white");
+        monthTab.classList.add("bg-slate-300", "dark:bg-slate-700", "text-slate-800", "dark:text-slate-200");
+      }
+    } else {
+      if (monthTab) {
+        monthTab.classList.add("bg-primary", "text-white");
+        monthTab.classList.remove("bg-slate-300", "dark:bg-slate-700", "text-slate-800", "dark:text-slate-200");
+      }
+      if (dailyTab) {
+        dailyTab.classList.remove("bg-primary", "text-white");
+        dailyTab.classList.add("bg-slate-300", "dark:bg-slate-700", "text-slate-800", "dark:text-slate-200");
+      }
+    }
+  }
+
+  // --- 分析ボタン押下 ---
+  window.startAnalysis = function () {
+    if (analysisStarted) {
+      // 再押下で強制再描画する場合はコメントアウト
+    }
+    analysisStarted = true;
+    analysisReady = true;
+    runAnalysis();
   };
 
-  window.addEventListener("resize", () => {
-    resizeCanvas();
-    redrawCurrentTab();
-  });
+  // --- 分析本体 ---
+  function runAnalysis() {
+    const targetCanvas = document.getElementById("targetCanvas");
+    const scoreChartCanvas = document.getElementById("scoreChart");
+    const scoreCtx = scoreChartCanvas ? scoreChartCanvas.getContext("2d") : null;
+    const shotAnalysisContainerId = "shotAnalysisContainer";
 
-  dailyTab.addEventListener("click", ()=>{ currentTab="daily"; updateTabs(); redrawCurrentTab(); });
-  monthTab.addEventListener("click", ()=>{ currentTab="month"; updateTabs(); redrawCurrentTab(); });
+    let dailySets = [];
+    let monthSets = [];
 
-  matchDateInput.addEventListener("change", ()=>{ currentDate = matchDateInput.value; loadDailySets(currentDate); redrawCurrentTab(); });
-  filterToolBtn.addEventListener("click", ()=>{ redrawCurrentTab(); });
-
-  // ============================================================
-  // キャンバスリサイズ＋縦拡大
-  // ============================================================
-  function resizeCanvas(){
-    const parent = targetCanvas.parentElement;
-    const parentWidth = Math.max(100, parent.clientWidth);
-    const parentHeight = Math.max(200, parent.clientHeight);
-
-    const imgRatio = img.width / img.height || 1;
-
-    // 幅に基づく高さ計算
-    let canvasWidth = parentWidth;
-    let canvasHeight = Math.round(canvasWidth / imgRatio);
-
-    // 縦拡大倍率
-    const HEIGHT_SCALE = 2.2; // 1.0で通常、1.1で10%縦長
-    canvasHeight = Math.round(canvasHeight * HEIGHT_SCALE);
-
-    // 高さが親要素を超える場合は調整
-    if (canvasHeight > parentHeight) {
-      canvasHeight = parentHeight;
-      canvasWidth = Math.round(canvasHeight * imgRatio);
+    function loadDailySets(date) {
+      const storedData = JSON.parse(localStorage.getItem("kyudoSetsByDate") || "{}");
+      dailySets = storedData[date] || [];
     }
 
-    // 最低サイズを確保
-    const MIN_W = 240;
-    const MIN_H = 240 / imgRatio;
-    if (canvasWidth < MIN_W) {
-      canvasWidth = MIN_W;
-      canvasHeight = Math.round(canvasWidth / imgRatio);
+    function loadMonthSets() {
+      const storedData = JSON.parse(localStorage.getItem("kyudoSetsByDate") || "{}");
+      const today = new Date();
+      const thirtyDaysAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
+      monthSets = [];
+      Object.keys(storedData).forEach((dateStr) => {
+        const d = new Date(dateStr);
+        if (d >= thirtyDaysAgo && d <= today) {
+          storedData[dateStr].forEach((set) => monthSets.push(set));
+        }
+      });
     }
-    if (canvasHeight < MIN_H) {
-      canvasHeight = MIN_H;
-      canvasWidth = Math.round(canvasHeight * imgRatio);
+
+    function filterSets(sets) {
+      return sets.flatMap((set) => {
+        if (!selectedCategory) return set.markers || [];
+        if (selectedToolName) {
+          return set.tools && set.tools[selectedCategory] === selectedToolName ? set.markers || [] : [];
+        }
+        return set.markers || [];
+      });
     }
 
-    targetCanvas.width = canvasWidth;
-    targetCanvas.height = canvasHeight;
-    targetCanvas.style.display = "block";
-    targetCanvas.style.margin = "0 auto";
-
-    markerRadiusBase = Math.max(10, Math.round(canvasWidth * 0.03));
-    redrawCurrentTab();
-  }
-
-  function drawCanvas(canvas, markers){
-    const ctx = canvas.getContext("2d");
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-
-    // 画像描画
-    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-
-    const markerRadius = markerRadiusBase;
-    const fontSize = Math.max(12, Math.round(markerRadius * 0.9));
-
-    markers.forEach((m,i) => {
-      // 座標変換
-      const x = (m.x / img.width) * canvas.width;
-      const y = (m.y / img.height) * canvas.height;
-
-      let strokeColor;
-      switch(m.score){
-        case 10: strokeColor='yellow'; break;
-        case 9: strokeColor='red'; break;
-        case 7: strokeColor='blue'; break;
-        case 5: strokeColor='black'; break;
-        case 3: strokeColor='white'; break;
-        default: strokeColor='gray';
-      }
-
-      // 外側リング
-      ctx.beginPath();
-      ctx.arc(x, y, markerRadius + 2, 0, Math.PI * 2);
-      ctx.fillStyle = 'rgba(255,255,255,0.85)';
-      ctx.fill();
-
-      // メイン円
-      ctx.beginPath();
-      ctx.arc(x, y, markerRadius, 0, Math.PI * 2);
-      ctx.fillStyle = 'white';
-      ctx.fill();
-
-      // 枠線
-      ctx.strokeStyle = strokeColor;
-      ctx.lineWidth = Math.max(2, Math.round(markerRadius * 0.15));
-      ctx.stroke();
-
-      // 番号
-      ctx.fillStyle = strokeColor === 'white' ? 'black' : 'black';
-      ctx.font = `bold ${fontSize}px sans-serif`;
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(i + 1, x, y);
-    });
-  }
-
-  function updateTabs(){
-    if(currentTab==="daily"){
-      dailyTab.classList.add("bg-primary","text-white");
-      dailyTab.classList.remove("bg-slate-300","dark:bg-slate-700","text-slate-800","dark:text-slate-200");
-      monthTab.classList.remove("bg-primary","text-white");
-      monthTab.classList.add("bg-slate-300","dark:bg-slate-700","text-slate-800","dark:text-slate-200");
-    } else {
-      monthTab.classList.add("bg-primary","text-white");
-      monthTab.classList.remove("bg-slate-300","dark:bg-slate-700","text-slate-800","dark:text-slate-200");
-      dailyTab.classList.remove("bg-primary","text-white");
-      dailyTab.classList.add("bg-slate-300","dark:bg-slate-700","text-slate-800","dark:text-slate-200");
-    }
-  }
-
-  function redrawCurrentTab() {
-    if(currentTab==="daily") drawDaily();
-    else drawMonth();
-  }
-
-  /* ---------- データロード ---------- */
-  function loadDailySets(date){
-    const storedData = JSON.parse(localStorage.getItem("kyudoSetsByDate") || "{}");
-    dailySets = [];
-    const sets = storedData[date] || [];
-    sets.forEach(set=>{ if(set.markers) dailySets.push({...set, markers:set.markers.map(m=>({...m}))}); });
-  }
-
-  function loadMonthSets(){
-    const storedData = JSON.parse(localStorage.getItem("kyudoSetsByDate") || "{}");
-    const today = new Date();
-    const thirtyDaysAgo = new Date(today.getTime()-30*24*60*60*1000);
-    monthSets = [];
-    Object.keys(storedData).forEach(dateStr=>{
-      const d = new Date(dateStr);
-      if(d>=thirtyDaysAgo && d<=today){
-        storedData[dateStr].forEach(set=>{
-          if(set.markers) monthSets.push({...set, markers:set.markers.map(m=>({...m}))});
+    function drawCanvas(canvas, markers) {
+      if (!canvas) return;
+      const ctx = canvas.getContext("2d");
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const baseImg = new Image();
+      baseImg.src = "img/target1.png";
+      baseImg.onload = () => {
+        ctx.drawImage(baseImg, 0, 0, canvas.width, canvas.height);
+        markers.forEach((m, i) => {
+          let strokeColor;
+          switch (m.score) {
+            case 10:
+              strokeColor = "yellow";
+              break;
+            case 9:
+              strokeColor = "red";
+              break;
+            case 7:
+              strokeColor = "blue";
+              break;
+            case 5:
+              strokeColor = "black";
+              break;
+            case 3:
+              strokeColor = "white";
+              break;
+            default:
+              strokeColor = "gray";
+          }
+          const px = (m.x / baseImg.width) * canvas.width;
+          const py = (m.y / baseImg.height) * canvas.height;
+          ctx.beginPath();
+          ctx.arc(px, py, 20, 0, Math.PI * 2);
+          ctx.fillStyle = "white";
+          ctx.fill();
+          ctx.strokeStyle = strokeColor;
+          ctx.lineWidth = 2;
+          ctx.stroke();
+          ctx.fillStyle = "black";
+          ctx.font = "bold 18px sans-serif";
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.fillText(i + 1, px, py);
         });
+      };
+    }
+
+    function drawScoreChart(markers) {
+      if (!scoreCtx) return;
+      const scores = markers.map((m) => m.score || 0);
+      const counts = [0, 3, 5, 7, 9, 10].map((v) => scores.filter((s) => s === v).length);
+      const data = {
+        labels: ["0点", "3点", "5点", "7点", "9点", "10点"],
+        datasets: [
+          {
+            label: "得点",
+            data: counts,
+            backgroundColor: ["gray", "white", "black", "blue", "red", "yellow"],
+          },
+        ],
+      };
+      if (globalChart) {
+        try {
+          globalChart.destroy();
+        } catch {}
+        globalChart = null;
       }
-    });
-  }
-
-  /* ---------- 描画 ---------- */
-  function drawDaily(){
-    const markers = filterSets(dailySets);
-    drawCanvas(targetCanvas, markers);
-    drawScoreChart(markers, "日別得点分布");
-    renderShotAnalysis(dailySets, shotAnalysisContainerId);
-  }
-
-  function drawMonth(){
-    const markers = filterSets(monthSets);
-    drawCanvas(targetCanvas, markers);
-    drawScoreChart(markers, "過去30日得点分布");
-    renderShotAnalysis(monthSets, shotAnalysisContainerId);
-  }
-
-  function filterSets(sets){
-    if(!selectedCategory || !selectedToolName) return sets.flatMap(s=>s.markers);
-    return sets.flatMap(set=> (set.tools && set.tools[selectedCategory]===selectedToolName) ? set.markers : []);
-  }
-
-  function drawScoreChart(markers, label){
-    const scores = markers.map(m=>m.score||0);
-    const counts = [0,3,5,7,9,10].map(v=>scores.filter(s=>s===v).length);
-    const data = {
-      labels: ["0点","3点","5点","7点","9点","10点"],
-      datasets:[{label,data:counts,backgroundColor:['gray','white','black','blue','red','yellow']}]
-    };
-    if(chart) chart.destroy();
-    chart = new Chart(scoreCtx,{
-      type:'bar',
-      data,
-      options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,stepSize:1}}}
-    });
-  }
-
-  /* ---------- 立ちごとの得点分析 ---------- */
-  function analyzeShots(sets){
-    const shotMap = {};
-    sets.forEach(set => {
-      set.markers.forEach((m,i)=>{
-        if(!shotMap[i+1]) shotMap[i+1]=[];
-        shotMap[i+1].push(m.score||0);
+      globalChart = new Chart(scoreCtx, {
+        type: "bar",
+        data,
+        options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, stepSize: 1 } } },
       });
-    });
-    const result = [];
-    Object.keys(shotMap).forEach(shotIndex=>{
-      const scores = shotMap[shotIndex];
-      const total = scores.length;
-      const avg = scores.reduce((a,b)=>a+b,0)/total || 0;
-      const distribution = [0,3,5,7,9,10].map(v=>{
-        const count = scores.filter(s=>s===v).length;
-        return {score:v,count,rate:((count/total)*100).toFixed(1)};
-      });
-      result.push({shot:shotIndex,avg,distribution});
-    });
-    return result;
-  }
+    }
 
-  function renderShotAnalysis(sets, containerId){
-    const analysis = analyzeShots(sets);
-    const container = document.getElementById(containerId);
-    container.innerHTML="";
-    analysis.forEach(a=>{
-      const div = document.createElement("div");
-      div.innerHTML=`<strong>${a.shot}立目 平均 ${a.avg.toFixed(1)}点</strong>`;
-      a.distribution.forEach(d=>{
-        div.innerHTML+=`<div>${d.score}点: ${d.count}回 (${d.rate}%)</div>`;
+    // --- 立ちごとの分析結果（黒文字固定） ---
+    function renderShotAnalysis(sets, containerId) {
+      const analysis = analyzeShots(sets);
+      const container = document.getElementById(containerId);
+      if (!container) return;
+      container.innerHTML = "";
+      analysis.forEach((a) => {
+        const div = document.createElement("div");
+        div.innerHTML = `<strong>${a.shot}立目 平均 ${a.avg.toFixed(1)}点</strong>`;
+        a.distribution.forEach((d) => {
+          div.innerHTML += `<div>${d.score}点: ${d.count}回 (${d.rate}%)</div>`;
+        });
+        div.classList.add("mb-2", "p-2", "border", "rounded");
+        div.style.color = "#1e293b"; // ← 黒文字固定（darkでも白くならない）
+        container.appendChild(div);
       });
-      div.classList.add("mb-2","p-2","border","rounded");
-      container.appendChild(div);
-    });
+    }
+
+    function analyzeShots(sets) {
+      const shotMap = {};
+      sets.forEach((set) =>
+        set.markers?.forEach((m, i) => {
+          if (!shotMap[i + 1]) shotMap[i + 1] = [];
+          shotMap[i + 1].push(m.score || 0);
+        })
+      );
+      const result = [];
+      Object.keys(shotMap).forEach((shotIndex) => {
+        const scores = shotMap[shotIndex];
+        const total = scores.length;
+        const avg = total ? scores.reduce((a, b) => a + b, 0) / total : 0;
+        const distribution = [0, 3, 5, 7, 9, 10].map((v) => {
+          const count = scores.filter((s) => s === v).length;
+          return { score: v, count, rate: total ? ((count / total) * 100).toFixed(1) : "0.0" };
+        });
+        result.push({ shot: shotIndex, avg, distribution });
+      });
+      return result;
+    }
+
+    // --- 描画 ---
+    function drawCurrent() {
+      if (currentTab === "daily") {
+        loadDailySets(currentDate);
+        const markers = filterSets(dailySets);
+        drawCanvas(document.getElementById("targetCanvas"), markers);
+        drawScoreChart(markers);
+        renderShotAnalysis(dailySets, shotAnalysisContainerId);
+      } else {
+        loadMonthSets();
+        const markers = filterSets(monthSets);
+        drawCanvas(document.getElementById("targetCanvas"), markers);
+        drawScoreChart(markers);
+        renderShotAnalysis(monthSets, shotAnalysisContainerId);
+      }
+    }
+
+    drawCurrent();
   }
-});
+})();
