@@ -406,606 +406,788 @@
     <button id="floatingSwLap" class="px-3 py-2 bg-slate-100 dark:bg-slate-700 rounded-md w-full text-sm">Lap</button>
   </div>
 
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/shepherd.js/dist/js/shepherd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lz-string/libs/lz-string.min.js"></script>
+<script src="js/main.js"></script>
+<script src="js/matchSet.js"></script>
+<script src="js/navbar.js"></script>
+<script src="js/page.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/shepherd.js/dist/js/shepherd.min.js"></script>
+<script type="module">
+  // Import the functions you need from the SDKs you need
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-analytics.js";
+  // TODO: Add SDKs for Firebase products that you want to use
+  // https://firebase.google.com/docs/web/setup#available-libraries
 
-  <script>
-    // ====================================================================
-    // 2. 設定とグローバル変数
-    // ====================================================================
-    
-    // ユーザー提供のFirebase認証情報を設定
-    const firebaseConfig = {
-      apiKey: "AIzaSyDqFm2sgV0uEWvx8XQy2kzc2PxoWuf8lFw",
-      authDomain: "matoma-1bac1.firebaseapp.com",
-      // Realtime Database URLはprojectIdから自動生成されるが、明示的に設定
-      databaseURL: "https://matoma-1bac1-default-rtdb.firebaseio.com", 
-      projectId: "matoma-1bac1",
-      storageBucket: "matoma-1bac1.firebasestorage.app",
-      messagingSenderId: "581046138191",
-      appId: "1:581046138191:web:ac88f7ac08799895de413a",
-      measurementId: "G-WWK72Z6RV0"
+  // Your web app's Firebase configuration
+  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+  const firebaseConfig = {
+    apiKey: "AIzaSyDqFm2sgV0uEWvx8XQy2kzc2PxoWuf8lFw",
+    authDomain: "matoma-1bac1.firebaseapp.com",
+    projectId: "matoma-1bac1",
+    storageBucket: "matoma-1bac1.firebasestorage.app",
+    messagingSenderId: "581046138191",
+    appId: "1:581046138191:web:6b3423ddb7eeb957de413a",
+    measurementId: "G-SK4R15CJF1"
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const analytics = getAnalytics(app);
+</script>
+<script>
+// ==========================================================
+// ★★★ グローバルスコープで定義する主要な関数と変数 (中央ボタン連動防止ロジックを含む最終修正版) ★★★
+// ==========================================================
+
+// ======= Settings & Global Variables =======
+const SELECTIONS = [0,3,5,7,9,10];
+const TEAM_SIZE = 3;
+const ARROW_COUNT = 4;
+let currentRoom = null; 
+let isHistoryView = false;
+
+// === UI要素の取得（DOMContentLoadedの前に実行可能） ===
+const openRegisterModalBtn = document.getElementById("openRegisterModalBtn");
+const openManagementModalBtn = document.getElementById("openManagementModalBtn");
+const modalWrapper = document.getElementById("modalWrapper");
+const modalContent = document.getElementById("modalContent");
+const qrCodeDisplayModal = document.getElementById("qrCodeDisplayModal");
+const teamsContainer = document.getElementById("teamsContainer");
+const roomSummary = document.getElementById("roomSummary");
+
+// ★★★ 追跡用の変数: 中央ボタン ★★★
+let centerButton = null;
+
+
+// ==========================================================
+// ★★★ 実行関数定義: addSet (個人用) と addNewTeam (団体用) ★★★
+// ==========================================================
+
+// 外部ファイルで定義されている 'addSet' 関数がグローバルスコープにあることを前提とします。
+// 見つからない場合に備えたダミー定義
+if (typeof window.addSet !== 'function') {
+    window.addSet = function() {
+        alert("【個人用】新しい立ちセットを追加しました！"); 
+        console.log("✅ 個人用セットを追加します (addSet 実行)");
     };
+}
 
-    let currentRoomId = null;
-    let currentRoomRef = null;
-    let registeredPlayerId = localStorage.getItem('matomaRegisteredPlayerId'); // 登録プレイヤーIDをLocalStorageから取得
-    let database;
+/**
+ * 団体用: 新しいチームを追加する処理
+ */
+function addNewTeam() {
+    if (!currentRoom || isHistoryView) {
+        alert("履歴の閲覧中はチームを追加できません。");
+        return;
+    }
+    const newId = "T" + (currentRoom.teams.length + 1);
+    currentRoom.teams.push({ id: newId, name: `チーム ${currentRoom.teams.length + 1}` });
+    saveRoomToStorage(currentRoom);
+    renderTeamsAndPlayers();
+    updateRoomSummary();
+    alert("【団体用】新しいチームを追加しました！"); 
+}
 
-    // ====================================================================
-    // 3. 初期化と基本ユーティリティ
-    // ====================================================================
-    
-    try {
-        firebase.initializeApp(firebaseConfig);
-        database = firebase.database();
-    } catch (e) {
-        console.error("Firebaseの初期化に失敗しました。", e);
-        // UIにエラーを表示
-        document.getElementById('roomTitle').innerText = 'リアルタイム機能は無効';
-        document.getElementById('roomSubtitle').innerText = 'Firebaseの初期化に失敗しました。';
+
+// ==========================================================
+// ★★★ 中央タブボタンの動的変更機能 (連動解消ロジック: onclick & stopPropagation) ★★★
+// ==========================================================
+function updateCenterTabButton() {
+    if (!centerButton) {
+        centerButton = document.getElementById('addSetBtnTab');
+        if (!centerButton) return;
     }
     
-    // ユーティリティ: ルームID（招待コード）を生成 (例: RMXXXXXX)
-    const generateRoomId = () => {
-        return 'RM' + Math.random().toString(36).substring(2, 8).toUpperCase();
-    };
-    // ユーティリティ: プレイヤーIDを生成 (例: P_XXXXXX)
-    const generatePlayerId = () => {
-        return 'P_' + Date.now().toString(36) + Math.random().toString(36).substring(2, 5);
-    };
+    const centerButtonIcon = centerButton.querySelector('span.material-symbols-outlined');
+    
+    // currentRoomが存在することを前提に、ルーム内の状態をシミュレート
+    const isRoomActive = currentRoom && !isHistoryView;
+    // タブの色で団体モードか判定
+    const isTeamModeActive = document.getElementById('teamTabBtn').classList.contains('bg-primary') && isRoomActive;
+    
+    // ★★★ 核心的な修正: onclickプロパティを上書きし、イベント伝播を停止するハンドラを設定 ★★★
+    
+    if (isTeamModeActive) {
+        // 団体モードの設定
+        centerButton.title = "チームを追加";
+        centerButtonIcon.innerText = "group_add";
+        
+        centerButton.onclick = (e) => {
+            e.stopPropagation(); // ★重要: 他のリスナー（個人用）へのイベント伝播を停止
+            e.preventDefault();
+            addNewTeam();
+        };
 
-    // UI: タブ切り替え機能
-    function switchTab(targetId) {
-        document.querySelectorAll('.tab-content').forEach(content => {
-            content.classList.remove('active');
+    } else {
+        // 個人モードの設定
+        centerButton.title = "立ちセットを追加";
+        centerButtonIcon.innerText = "add_circle";
+        
+        centerButton.onclick = (e) => {
+            e.stopPropagation(); // ★重要: 他のリスナーへのイベント伝播を停止
+            e.preventDefault();
+            window.addSet();
+        };
+    }
+}
+
+
+// === Storageヘルパー関数 ===
+function saveRoomToStorage(room) { 
+    if (!room || !room.id) return;
+    const rooms = JSON.parse(localStorage.getItem("MATOMA_rooms")||"{}");
+    rooms[room.id] = room;
+    localStorage.setItem("MATOMA_rooms", JSON.stringify(rooms));
+}
+function loadRoomFromStorage(id) { 
+    const rooms = JSON.parse(localStorage.getItem("MATOMA_rooms")||"{}");
+    return rooms[id] || null;
+}
+function isUserRegisteredForRoom(roomId) { return !!localStorage.getItem("MATOMA_user_registered_"+roomId); }
+function setUserRegisteredForRoom(roomId, playerId) { localStorage.setItem("MATOMA_user_registered_"+roomId, playerId || "1"); }
+
+
+// === ユーティリティ関数 ===
+function calcPlayerTotal(player) { 
+    if(!player || !player.scores) return 0; 
+    return player.scores.reduce((acc,v)=> acc + (Number.isFinite(v)? v:0), 0); 
+}
+function calcTeamTotal(teamId) { 
+    if (!currentRoom) return 0;
+    const ps = currentRoom.players.filter(p=>p.teamId===teamId); 
+    return ps.reduce((acc,p)=>acc+calcPlayerTotal(p),0); 
+}
+function calcTeamCount(teamId) { 
+    if (!currentRoom) return 0;
+    return currentRoom.players.filter(p=>p.teamId===teamId).length; 
+}
+function toggleMemberControlButtons(room) {
+    if (!room || isHistoryView) {
+        openRegisterModalBtn.style.display = 'none';
+        openManagementModalBtn.style.display = 'none';
+        return;
+    }
+    const registered = isUserRegisteredForRoom(room.id);
+    if(registered) {
+        openRegisterModalBtn.style.display = 'none';
+        openManagementModalBtn.style.display = 'block';
+    } else {
+        openRegisterModalBtn.style.display = 'block';
+        openManagementModalBtn.style.display = 'none';
+    }
+}
+function updateTeamTotalDisplay(teamId) {
+    const total = calcTeamTotal(teamId);
+    document.querySelectorAll(`.team-${teamId}-total`).forEach(el => {
+        el.innerText = `チーム合計: ${total}`;
+    });
+}
+window.updateRoomSummary = function() {
+    if(!currentRoom){ roomSummary.innerText = "—"; return; }
+    const totalPlayers = currentRoom.players.length;
+    const teamTotals = currentRoom.teams.map(t => `${t.name}=${calcTeamTotal(t.id)}`);
+    roomSummary.innerText = `プレイヤー数: ${totalPlayers}\nチーム数: ${currentRoom.teams.length}\n各チーム合計: ${teamTotals.join(" , ")}`;
+}
+
+
+// === メインのUIレンダリング関数 (変更なし) ===
+window.renderTeamsAndPlayers = function() {
+    teamsContainer.innerHTML = "";
+    if (!currentRoom) return;
+    
+    const scoreOptionsHtml = SELECTIONS.map(score => `<option value="${score}">${score}</option>`).join('');
+
+    currentRoom.players.forEach(p => {
+        if (!p.role) p.role = 'player';
+        p.scores = p.scores || [];
+        p.scores = Array.from({ length: ARROW_COUNT }, (_, i) => p.scores[i] ?? null);
+    });
+
+    if (!currentRoom.teams || currentRoom.teams.length===0) currentRoom.teams=[{id:"T1", name:"チーム 1"}];
+
+    currentRoom.teams.forEach(team => {
+      const teamPlayers = currentRoom.players.filter(p=>p.teamId===team.id);
+      const card = document.createElement("div"); card.className="team-card app-card bg-white dark:bg-slate-900 rounded-2xl shadow p-4";
+      const header = document.createElement("div"); header.className="flex items-center justify-between mb-3";
+      header.innerHTML = `<div><strong>${team.name}</strong><div class="text-sm text-slate-500">メンバー: ${teamPlayers.length}/${currentRoom.settings.teamSize}</div></div>`;
+      
+      const btns = document.createElement("div"); btns.className="flex gap-2";
+      if (!isHistoryView) {
+          const addTeamBtn = document.createElement("button"); addTeamBtn.className="px-2 py-1 bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-slate-200 rounded-md text-sm"; addTeamBtn.innerText="チーム追加";
+          addTeamBtn.onclick = addNewTeam;
+          const renameBtn = document.createElement("button"); renameBtn.className="px-2 py-1 bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-slate-200 rounded-md text-sm"; renameBtn.innerText="名前変更";
+          renameBtn.onclick = () => { const n = prompt("チーム名を入力してください", team.name); if(n){ team.name=n; saveRoomToStorage(currentRoom); renderTeamsAndPlayers(); updateRoomSummary(); } };
+          btns.appendChild(addTeamBtn); btns.appendChild(renameBtn);
+      }
+      header.appendChild(btns); card.appendChild(header);
+
+      const list = document.createElement("div"); list.className="space-y-2";
+      teamPlayers.forEach(player => {
+        const row = document.createElement("div"); row.className="player-row";
+        const left = document.createElement("div"); left.className="player-row-left";
+        const right = document.createElement("div"); right.className="player-row-right";
+        
+        const nameInp = document.createElement("input"); 
+        nameInp.value = player.name||""; 
+        nameInp.className = "rounded-md border-2 border-slate-200 dark:border-slate-700 px-2 py-1 text-sm bg-white dark:bg-slate-800";
+        
+        const canEditRoom = !isHistoryView;
+        const isRegistered = isUserRegisteredForRoom(currentRoom.id);
+        
+        if (!canEditRoom || !isRegistered) { 
+            nameInp.disabled = true;
+            nameInp.classList.add("bg-gray-100", "dark:bg-slate-700", "opacity-70", "cursor-not-allowed");
+        }
+        if (canEditRoom && isRegistered) {
+             nameInp.onchange = () => { player.name = nameInp.value; saveRoomToStorage(currentRoom); updateRoomSummary(); };
+        }
+        left.appendChild(nameInp);
+
+        if (canEditRoom && isRegistered) {
+            const moveBtn = document.createElement("button"); moveBtn.className="px-2 py-1 bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-slate-200 rounded-md text-xs"; moveBtn.innerText="移動";
+            moveBtn.onclick = () => {
+              const options = currentRoom.teams.map(t=>`${t.id}:${t.name}`).join("\n");
+              const sel = prompt("移動先のIDを入力（例: T2）\n"+options);
+              if(sel){ const found = currentRoom.teams.find(t=>t.id===sel.trim()); if(found){ player.teamId = found.id; saveRoomToStorage(currentRoom); renderTeamsAndPlayers(); updateRoomSummary(); } else alert("チームが見つかりませんでした"); }
+            };
+            left.appendChild(moveBtn);
+        }
+        row.appendChild(left);
+        
+        const canEditScore = canEditRoom && (player.role === 'player' || player.role === 'manager'); 
+
+        for (let arrowIndex = 0; arrowIndex < ARROW_COUNT; arrowIndex++) {
+            const select = document.createElement("select"); 
+            select.innerHTML = `<option value="" disabled selected hidden>${arrowIndex+1}射</option>` + scoreOptionsHtml;
+            const score = player.scores[arrowIndex];
+            if (score !== null && score !== undefined) { select.value = score.toString(); } else { select.value = ""; }
+            select.className = "player-score-input rounded-md border-2 border-slate-200 dark:border-slate-700 px-1 py-1 text-sm text-slate-800 dark:text-slate-200 bg-white dark:bg-slate-800 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all";
+
+            if (!canEditScore) {
+                select.disabled = true;
+                select.classList.add("bg-gray-100", "dark:bg-slate-700", "opacity-70", "cursor-not-allowed");
+            }
+
+            if (canEditScore) {
+                select.onchange = () => {
+                    const v = parseInt(select.value);
+                    player.scores[arrowIndex] = Number.isNaN(v) ? null : v;
+                    saveRoomToStorage(currentRoom); 
+                    document.getElementById(`player-total-${player.id}`).innerText = calcPlayerTotal(player);
+                    updateTeamTotalDisplay(team.id);
+                    updateRoomSummary(); 
+                };
+            }
+            right.appendChild(select);
+        }
+        
+        const total = document.createElement("div"); 
+        total.id = `player-total-${player.id}`; 
+        total.className="w-14 text-right font-semibold"; 
+        total.innerText = calcPlayerTotal(player);
+        right.appendChild(total);
+        
+        if (canEditRoom && isRegistered) {
+            const del = document.createElement("button"); del.className="px-2 py-1 bg-red-500 text-white rounded-md text-xs"; del.innerText="削除";
+            del.onclick = () => { if(!confirm(`${player.name} を削除しますか？`)) return; currentRoom.players = currentRoom.players.filter(p=>p.id!==player.id); saveRoomToStorage(currentRoom); renderTeamsAndPlayers(); updateRoomSummary(); };
+            right.appendChild(del);
+        }
+
+        row.appendChild(right);
+        list.appendChild(row);
+      });
+
+      const teamTotal = document.createElement("div"); 
+      teamTotal.className=`mt-3 text-sm font-bold team-total-display team-${team.id}-total`; 
+      teamTotal.innerText = `チーム合計: ${calcTeamTotal(team.id)}`;
+      card.appendChild(list); card.appendChild(teamTotal);
+      teamsContainer.appendChild(card);
+    });
+
+    const unassigned = currentRoom.players.filter(p=>!p.teamId);
+    if(unassigned.length>0){
+      const ucard = document.createElement("div"); ucard.className="team-card app-card bg-white dark:bg-slate-900 rounded-2xl shadow p-4";
+      ucard.innerHTML = `<strong>未割当プレイヤー</strong><div class="text-sm text-slate-500">合計 ${unassigned.length}</div>`;
+      unassigned.forEach(player => {
+        const el = document.createElement("div"); el.className="flex items-center justify-between mt-2";
+        el.innerHTML = `<div>${player.name}</div>${!isHistoryView ? `<div class="flex gap-2"><button class="px-2 py-1 bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-slate-200 rounded-md text-xs assign-btn">割当</button></div>` : ''}`;
+        
+        if (!isHistoryView) {
+            const btn = el.querySelector("button");
+            if(btn) {
+                 btn.onclick = () => {
+                    let target = currentRoom.teams.find(t=>calcTeamCount(t.id) < currentRoom.settings.teamSize);
+                    if(!target){ const newId = "T"+(currentRoom.teams.length+1); target = {id:newId, name:`チーム ${currentRoom.teams.length+1}`}; currentRoom.teams.push(target); }
+                    player.teamId = target.id; saveRoomToStorage(currentRoom); renderTeamsAndPlayers(); updateRoomSummary();
+                 };
+            }
+        }
+        ucard.appendChild(el);
+      });
+      teamsContainer.appendChild(ucard);
+    }
+}
+
+
+// === 過去のルーム履歴表示関数 (変更なし) ===
+window.renderRoomHistory = function() {
+    const historyList = document.getElementById("historyList");
+    const roomHistoryElement = document.getElementById("roomHistory");
+    const rooms = JSON.parse(localStorage.getItem("MATOMA_rooms") || "{}");
+    const roomIds = Object.keys(rooms).sort((a,b) => new Date(rooms[b].createdAt) - new Date(rooms[a].createdAt));
+    
+    if (currentRoom) {
+        if(roomHistoryElement) roomHistoryElement.style.display = 'none';
+        return;
+    } else {
+        if(roomHistoryElement) roomHistoryElement.style.display = 'block';
+    }
+    historyList.innerHTML = "";
+    if (roomIds.length === 0) {
+        historyList.innerHTML = '<p class="text-sm text-slate-500" id="noHistoryMessage">履歴はありません。</p>';
+        return;
+    }
+    roomIds.forEach(id => {
+        const room = rooms[id];
+        const item = document.createElement("div");
+        item.className = "flex items-center justify-between p-3 bg-slate-100 dark:bg-slate-800 rounded-lg";
+        item.innerHTML = `
+            <div>
+                <strong class="block">${room.name}</strong>
+                <span class="text-xs text-slate-600 dark:text-slate-400">${room.id} (${new Date(room.createdAt).toLocaleDateString()})</span>
+            </div>
+            <button data-room-id="${id}" class="join-history-btn px-3 py-1 bg-blue-500 hover:bg-blue-600 text-white rounded-md text-sm transition-colors">詳細閲覧</button>
+        `;
+        historyList.appendChild(item);
+    });
+    historyList.querySelectorAll('.join-history-btn').forEach(button => {
+        button.addEventListener('click', (e) => {
+            const roomId = e.target.getAttribute('data-room-id');
+            const room = loadRoomFromStorage(roomId);
+            if (room) {
+                isHistoryView = true; 
+                renderRoom(room);
+                showTeam();
+                const title = document.getElementById("roomTitle");
+                const subtitle = document.getElementById("roomSubtitle");
+                title.innerText = `${room.name} の【履歴閲覧中】`;
+                subtitle.innerText = `ルームID: ${room.id} - これは過去の記録です。スコア編集はできません。`;
+                document.getElementById("leaveRoomBtn").innerText = "履歴閲覧を終了";
+                alert(`${room.name} の過去の記録を閲覧しています。編集はできません。`);
+            }
         });
-        document.getElementById(targetId).classList.add('active');
+    });
+}
 
-        document.getElementById('personalTabBtn').classList.remove('bg-primary', 'text-white');
-        document.getElementById('personalTabBtn').classList.add('bg-slate-200', 'dark:bg-slate-700', 'text-slate-800', 'dark:text-white');
-        document.getElementById('teamTabBtn').classList.remove('bg-primary', 'text-white');
-        document.getElementById('teamTabBtn').classList.add('bg-slate-200', 'dark:bg-slate-700', 'text-slate-800', 'dark:text-white');
 
-        if (targetId === 'personalTab') {
-            document.getElementById('personalTabBtn').classList.add('bg-primary', 'text-white');
-            document.getElementById('personalTabBtn').classList.remove('bg-slate-200', 'dark:bg-slate-700', 'text-slate-800', 'dark:text-white');
-        } else if (targetId === 'teamTab') {
-            document.getElementById('teamTabBtn').classList.add('bg-primary', 'text-white');
-            document.getElementById('teamTabBtn').classList.remove('bg-slate-200', 'dark:bg-slate-700', 'text-slate-800', 'dark:text-white');
+// === モーダルアクションハンドラ ===
+window.closeModal = function() {
+    modalWrapper.classList.add("hidden");
+    modalWrapper.classList.remove("flex");
+    modalContent.innerHTML = '';
+    if (document.getElementById("qrIconBtn")) {
+        document.getElementById("qrIconBtn").classList.remove("bg-primary/20", "text-primary", "dark:bg-primary/50");
+        document.getElementById("qrIconBtn").classList.add("bg-slate-200", "dark:bg-slate-700", "text-slate-700", "dark:text-slate-200");
+    }
+}
+window.handleRegisterSelf = function() {
+    const name = (modalContent.querySelector('#registerNameInput').value || "").trim();
+    const role = modalContent.querySelector('#registerRoleSelect').value;
+    if(!currentRoom || !currentRoom.teams){ alert("ルーム情報が取得できません。"); closeModal(); return; }
+    if(!name){ alert("名前を入力してください"); return; }
+    const newPlayer = { id:"P"+Date.now().toString(36), name, role, teamId:null, scores: Array(ARROW_COUNT).fill(null), local:true };
+    let assigned = currentRoom.teams.find(t=>calcTeamCount(t.id) < currentRoom.settings.teamSize);
+    if(!assigned){ const newId = "T"+(currentRoom.teams.length+1); assigned={id:newId, name:`チーム ${currentRoom.teams.length+1}`}; currentRoom.teams.push(assigned); }
+    newPlayer.teamId = assigned.id;
+    currentRoom.players.push(newPlayer);
+    saveRoomToStorage(currentRoom);
+    setUserRegisteredForRoom(currentRoom.id, newPlayer.id);
+    isHistoryView = false;
+    toggleMemberControlButtons(currentRoom); 
+    renderTeamsAndPlayers(); 
+    updateRoomSummary(); 
+    closeModal();
+    alert("登録しました。よろしくお願いします！");
+}
+window.handleAddPlayer = function() {
+    const nameInput = modalContent.querySelector("#newPlayerNameModal");
+    const name = (nameInput.value || "").trim(); 
+    if (!currentRoom || !currentRoom.teams) { alert("ルーム情報が取得できません。"); closeModal(); return; }
+    if(!name){ alert("プレイヤー名を入力してください"); return; }
+    const newPlayer = { id:"P"+Date.now().toString(36), name, role:'player', teamId:null, scores: Array(ARROW_COUNT).fill(null) };
+    let assigned = currentRoom.teams.find(t=>calcTeamCount(t.id) < currentRoom.settings.teamSize);
+    if(!assigned){ const newId="T"+(currentRoom.teams.length+1); assigned={id:newId, name:`チーム ${currentRoom.teams.length+1}`}; currentRoom.teams.push(assigned); }
+    newPlayer.teamId = assigned.id; currentRoom.players.push(newPlayer); saveRoomToStorage(currentRoom); nameInput.value=""; 
+    renderTeamsAndPlayers(); 
+    updateRoomSummary(); 
+    alert("プレイヤーを追加しました。");
+}
+window.handleAutoAssign = function() {
+    if (!currentRoom || !currentRoom.teams) { alert("ルーム情報が取得できません。"); return; }
+    const players = currentRoom.players;
+    const newTeams = []; let cur = {id:"T1", name:"チーム 1"}; newTeams.push(cur); let count=0;
+    players.forEach(p=> { if(count >= currentRoom.settings.teamSize){ cur = {id:"T"+(newTeams.length+1), name:`チーム ${newTeams.length+1}`}; newTeams.push(cur); count=0; } p.teamId = cur.id; count++; });
+    currentRoom.teams = newTeams; saveRoomToStorage(currentRoom); 
+    renderTeamsAndPlayers(); 
+    updateRoomSummary(); 
+    alert("チームを自動で割り当てました。");
+}
+function openModal(contentId) {
+    if (isHistoryView && contentId !== 'qrModalContent') {
+        alert("履歴閲覧モードではメンバーの追加・管理はできません。");
+        return;
+    }
+    const template = document.getElementById(contentId);
+    if (template) {
+        modalContent.innerHTML = `<div class="p-6 pb-0 flex justify-end"><button onclick="closeModal()" class="text-slate-500 hover:text-slate-700 dark:text-slate-300 dark:hover:text-slate-100 p-1 rounded-full"><span class="material-symbols-outlined">close</span></button></div>` + template.innerHTML;
+        modalWrapper.classList.remove("hidden");
+        modalWrapper.classList.add("flex");
+        if (contentId === 'registerModalContent') {
+            modalContent.querySelector('#registerSelfBtn').onclick = window.handleRegisterSelf;
+            modalContent.querySelector('#skipRegisterBtn').onclick = window.closeModal;
+        } else if (contentId === 'managementModalContent') {
+            modalContent.querySelector('#addPlayerBtnModal').onclick = window.handleAddPlayer; 
+            modalContent.querySelector('#autoAssignBtnModal').onclick = window.handleAutoAssign;
+            modalContent.querySelector('button[onclick="closeModal()"]').onclick = window.closeModal;
         }
     }
+}
 
-    // UI: モーダル表示/非表示のヘルパー関数
-    function openModal(templateId) {
-        const template = document.getElementById(templateId);
-        if (template) {
-            const modalContent = document.getElementById('modalContent');
-            modalContent.innerHTML = template.innerHTML;
-            document.getElementById('modalWrapper').style.display = 'flex';
-            // メンバー登録モーダルの特殊処理
-            if (templateId === 'registerModalContent' && registeredPlayerId) {
-                // 既に登録済みの場合、名前入力欄を非表示にしたり、表示内容を変えたりするなどのUI調整が可能
+// === ルーム制御関数 ===
+function setRoomHeader(room) {
+    document.getElementById("roomTitle").innerText = `${room.name} のルーム`;
+    document.getElementById("roomSubtitle").innerText = `ルームID: ${room.id} — 作成: ${new Date(room.createdAt).toLocaleString()}`;
+}
+function makeShortId() { return ("RM"+Math.random().toString(36).slice(2,8)).toUpperCase(); }
+function createRoomObj(name) {
+    const id = makeShortId();
+    return { id, name, createdAt: new Date().toISOString(), players: [], teams: [{id:"T1", name:"チーム 1"}], settings: { teamSize: TEAM_SIZE, selections: SELECTIONS } };
+}
+function joinRoomById(id) {
+    const rooms = JSON.parse(localStorage.getItem("MATOMA_rooms")||"{}");
+    const room = rooms[id] || null;
+    if (!room) { alert("指定されたルームが見つかりません。"); return null; }
+    return room;
+}
+function setupShareControls(room) {
+    const qrIconBtn = document.getElementById("qrIconBtn");
+    const shareIconBtn = document.getElementById("shareIconBtn");
+    qrIconBtn.classList.remove("bg-slate-200", "dark:bg-slate-700", "text-slate-700", "dark:text-slate-200");
+    qrIconBtn.classList.add("bg-primary/20", "text-primary", "dark:bg-primary/50");
+    const code = `MATOMA_JOIN:${room.id}`;
+    const link = location.href.split('#')[0] + "#room=" + room.id;
+    shareIconBtn.onclick = async () => { 
+        if (isHistoryView) return alert("履歴閲覧モードでは共有できません。");
+        const textToCopy = `【MATOMA遠的 ルーム招待】\nルーム名: ${room.name}\n\nURL:\n${link}\n\n招待コード:\n${code}`;
+        try { await navigator.clipboard.writeText(textToCopy); alert("共有リンクとコードをコピーしました！"); } catch (err) { prompt("コピーに失敗しました:", textToCopy); }
+    };
+    qrIconBtn.onclick = () => { 
+        if (isHistoryView) return alert("履歴閲覧モードでは共有できません。");
+        openModal('qrModalContent');
+        const qrDisplay = modalContent.querySelector("#qrCodeDisplayModal");
+        if (qrDisplay) {
+            qrDisplay.innerHTML = "";
+            new QRCode(qrDisplay, { text: link, width: 120, height: 120 });
+        }
+    };
+}
+function renderRoom(room) {
+    currentRoom = room;
+    document.getElementById("roomControls").style.display = "block";
+    setRoomHeader(room);
+    setupShareControls(room); 
+    toggleMemberControlButtons(room);
+    renderTeamsAndPlayers(); 
+    updateRoomSummary(); 
+    document.getElementById("createRoomBtn").style.display = 'none';
+    document.getElementById("joinRoomBtn").style.display = 'none';
+    document.getElementById("leaveRoomBtn").style.display = "block";
+    document.getElementById("roomShareIcons").style.display = "flex"; 
+    if(document.getElementById("roomHistory")) document.getElementById("roomHistory").style.display = 'none'; 
+    if (!isHistoryView) {
+        localStorage.setItem("MATOMA_last_room_id", room.id);
+    }
+    updateCenterTabButton();
+}
+function leaveRoom() {
+    const confirmMsg = isHistoryView ? `ルーム「${currentRoom.name}」の履歴閲覧を終了しますか？` : `ルーム「${currentRoom.name}」から退室しますか？\nデータはブラウザに保存され、履歴から閲覧可能です。`;
+    if (!confirm(confirmMsg)) return;
+
+    const leavingRoomId = currentRoom.id;
+    isHistoryView = false;
+    currentRoom = null;
+    
+    localStorage.removeItem("MATOMA_last_room_id");
+    localStorage.removeItem("MATOMA_user_registered_" + leavingRoomId); 
+    
+    closeModal();
+    document.getElementById("roomControls").style.display = "none";
+    document.getElementById("roomShareIcons").style.display = "none"; 
+    toggleMemberControlButtons(null);
+    document.getElementById("createRoomBtn").style.display = 'block';
+    document.getElementById("joinRoomBtn").style.display = 'block';
+    document.getElementById("leaveRoomBtn").style.display = "none";
+    document.getElementById("roomTitle").innerText = "団体用スコア管理";
+    document.getElementById("roomSubtitle").innerText = "ルームを作成して共有、メンバー登録ができます。";
+    document.getElementById("teamsContainer").innerHTML = "";
+    updateRoomSummary(); 
+    if(document.getElementById("roomHistory")) document.getElementById("roomHistory").style.display = 'block';
+    renderRoomHistory(); 
+    updateCenterTabButton();
+    alert(isHistoryView ? "履歴閲覧を終了しました。" : "ルームから退室しました。");
+}
+
+
+// ==========================================================
+// ★★★ DOMContentLoaded で実行される初期化処理 ★★★
+// ==========================================================
+
+document.addEventListener("DOMContentLoaded", () => {
+    // Tabs
+    const personalTab = document.getElementById("personalTab");
+    const teamTab = document.getElementById("teamTab");
+    const personalBtn = document.getElementById("personalTabBtn");
+    const teamBtn = document.getElementById("teamTabBtn");
+
+    function showPersonal() {
+        personalTab.classList.add("active"); teamTab.classList.remove("active");
+        personalBtn.classList.add("bg-primary","text-white");
+        personalBtn.classList.remove("bg-slate-200","dark:bg-slate-700","text-slate-800","dark:text-white");
+        teamBtn.classList.remove("bg-primary","text-white");
+        teamBtn.classList.add("bg-slate-200","dark:bg-slate-700","text-slate-800","dark:text-white");
+        updateCenterTabButton();
+    }
+    window.showTeam = function() { // グローバルスコープに公開
+        teamTab.classList.add("active"); personalTab.classList.remove("active");
+        teamBtn.classList.add("bg-primary","text-white");
+        teamBtn.classList.remove("bg-slate-200","dark:bg-slate-700","text-slate-800","dark:text-white");
+        personalBtn.classList.remove("bg-primary","text-white");
+        personalBtn.classList.add("bg-slate-200","dark:bg-slate-700","text-slate-800","dark:text-white");
+        if (!currentRoom) window.renderRoomHistory();
+        updateCenterTabButton();
+    }
+    personalBtn.addEventListener("click", showPersonal);
+    teamBtn.addEventListener("click", showTeam);
+
+    // Header buttons
+    document.getElementById("shareBtn").addEventListener("click", async () => {
+        const shareText = "矢所分析アプリMATOMA遠的で遠的記録してみよう！";
+        const shareUrl = window.location.href;
+        if (navigator.share) {
+            try { await navigator.share({ title: "MATOMA遠的", text: shareText, url: shareUrl }); }
+            catch (err) { console.error(err); }
+        } else {
+            try { await navigator.clipboard.writeText(`${shareText} ${shareUrl}`); alert("リンクをコピーしました。"); }
+            catch (err) { prompt("コピーに失敗しました:", `${shareText} ${shareUrl}`); }
+        }
+    });
+    document.getElementById("settingsBtn").addEventListener("click", () => { window.location.href = "settings.html"; });
+
+    // Room controls
+    const roomForm = document.getElementById("roomForm");
+    const joinForm = document.getElementById("joinForm");
+    const roomControls = document.getElementById("roomControls");
+    document.getElementById("leaveRoomBtn").addEventListener("click", leaveRoom);
+    document.getElementById("openRegisterModalBtn").addEventListener('click', () => openModal('registerModalContent'));
+    document.getElementById("openManagementModalBtn").addEventListener('click', () => openModal('managementModalContent'));
+
+    document.getElementById("createRoomBtn").addEventListener("click", () => { 
+        roomForm.style.display="block"; joinForm.style.display="none"; 
+        showTeam(); roomControls.style.display = "block"; closeModal();
+        isHistoryView = false; document.getElementById("leaveRoomBtn").innerText = "退室";
+    });
+    document.getElementById("cancelRoomBtn").addEventListener("click", () => { roomForm.style.display="none"; });
+    document.getElementById("submitRoomBtn").addEventListener("click", () => {
+        const n = document.getElementById("roomName").value.trim(); if(!n){ alert("ルーム名を入力してください"); return; }
+        const r = createRoomObj(n); 
+        saveRoomToStorage(r);
+        isHistoryView = false;
+        renderRoom(r);
+        roomForm.style.display="none"; 
+        alert("ルームを作成しました。参加者に共有してください。");
+    });
+
+    document.getElementById("joinRoomBtn").addEventListener("click", () => { 
+        joinForm.style.display="block"; roomForm.style.display="none"; 
+        showTeam(); roomControls.style.display="block"; closeModal();
+        isHistoryView = false; document.getElementById("leaveRoomBtn").innerText = "退室";
+    });
+    document.getElementById("cancelJoinBtn").addEventListener("click", () => { joinForm.style.display="none"; });
+    document.getElementById("doJoinBtn").addEventListener("click", () => {
+        const v = document.getElementById("joinInput").value.trim(); if(!v) return alert("招待コードまたはURLを入力してください");
+        let id = null; if(v.startsWith("MATOMA_JOIN:")) id = v.split(":")[1]; else { const m = v.match(/[#?&]room=([A-Za-z0-9]+)/); if(m) id = m[1]; }
+        if(!id) return alert("招待コードまたはURLが見つかりません");
+        const room = joinRoomById(id);
+        if(room){ 
+            isHistoryView = false; renderRoom(room); joinForm.style.display="none"; 
+            alert(`${room.name} に参加しました。`); 
+        }
+    });
+
+    // Auto-join from hash or last room
+    (function handleHashOnLoad(){
+        const m = (location.hash || "").match(/room=([A-Za-z0-9]+)/);
+        if(m){ 
+            const room = loadRoomFromStorage(m[1]); 
+            if(room){ isHistoryView = false; renderRoom(room); showTeam(); } 
+            else { 
+                joinForm.style.display="block"; document.getElementById("joinInput").value = `MATOMA_JOIN:${m[1]}`; 
+                showTeam(); roomControls.style.display="block"; 
+            } 
+            return; 
+        }
+        const lastRoomId = localStorage.getItem("MATOMA_last_room_id");
+        if (lastRoomId) {
+            const room = loadRoomFromStorage(lastRoomId);
+            if (room) {
+                joinForm.style.display="block"; document.getElementById("joinInput").value = `MATOMA_JOIN:${lastRoomId}`;
+                showTeam(); roomControls.style.display="block";
+                document.getElementById("roomTitle").innerText = `以前のルーム: ${room.name} に再参加しますか？`;
+                document.getElementById("roomSubtitle").innerText = "「参加」を押して再入室してください。";
             }
         }
-    }
-    function closeModal() {
-        document.getElementById('modalWrapper').style.display = 'none';
-        document.getElementById('modalContent').innerHTML = '';
-    }
-    window.openModal = openModal;
-    window.closeModal = closeModal;
+    })();
 
-    // ====================================================================
-    // 4. 団体用スコア管理 (Firebaseロジック)
-    // ====================================================================
+    // ストップウォッチロジック
+    let swStartTime = 0, swElapsed = 0, swTimer = null;
+    const swDisplay = document.getElementById("swDisplay");
+    const floatingSwDisplay = document.getElementById("floatingSwDisplay");
+    const lapList = document.getElementById("lapList");
 
-    // A. ルームへの入室とリアルタイム同期リスナーの設定
-    function enterRoom(roomId) {
-        if (!database) return alert('Firebaseが初期化されていません。');
-        
-        currentRoomId = roomId;
-        currentRoomRef = database.ref('rooms/' + roomId);
+    function formatTime(ms){ const c = Math.floor(ms/10)%100, s = Math.floor(ms/1000)%60, m = Math.floor(ms/60000); return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}.${String(c).padStart(2,'0')}`; }
+    function updateSwDisplay(){ const val = swElapsed + (swStartTime? (Date.now()-swStartTime) : 0); const time = formatTime(val); swDisplay.innerText = time; floatingSwDisplay.innerText = time; }
+    const startAction = () => { if(!swStartTime) swStartTime = Date.now(); if(!swTimer) swTimer = setInterval(updateSwDisplay, 50); };
+    const pauseAction = () => { if(swStartTime){ swElapsed += Date.now()-swStartTime; swStartTime = 0; } if(swTimer){ clearInterval(swTimer); swTimer = null; } updateSwDisplay(); };
+    const resetAction = () => { swStartTime = 0; swElapsed = 0; if(swTimer){ clearInterval(swTimer); swTimer = null; } lapList.innerHTML=""; updateSwDisplay(); };
+    const lapAction = () => { const val = swElapsed + (swStartTime? (Date.now()-swStartTime) : 0); const li = document.createElement("li"); li.innerText = formatTime(val); lapList.prepend(li); };
 
-        // UIをルーム接続済みに切り替え
-        document.getElementById('roomTitle').innerText = 'ルームID: ' + roomId;
-        document.getElementById('roomSubtitle').innerText = 'リアルタイム同期中です。';
-        document.getElementById('roomEntryButtons').style.display = 'none'; 
-        document.getElementById('roomControls').style.display = 'block';
-        document.getElementById('roomShareIcons').style.display = 'flex';
-        document.getElementById('joinForm').style.display = 'none';
-        document.getElementById('roomForm').style.display = 'none';
-        document.getElementById('leaveRoomBtn').style.display = 'block';
-        document.getElementById('openRegisterModalBtn').style.display = 'block'; // メンバー登録ボタンを表示
-        document.getElementById('teamsContainer').innerHTML = '<h2>スコアを読み込み中...</h2>';
-        
-        // 招待コード（URL）の共有機能
-        document.getElementById('shareIconBtn').onclick = () => {
-            const shareUrl = window.location.origin + window.location.pathname + '#room=' + roomId;
-            navigator.clipboard.writeText(shareUrl).then(() => {
-                alert('招待URLをクリップボードにコピーしました: ' + shareUrl);
-            });
-        };
-        // QRコード表示機能
-        document.getElementById('qrIconBtn').onclick = () => {
-            openModal('qrModalContent');
-            const shareUrl = window.location.origin + window.location.pathname + '#room=' + roomId;
-            const qrContainer = document.getElementById('qrCodeDisplayModal');
-            if(qrContainer) {
-                qrContainer.innerHTML = '';
-                new QRCode(qrContainer, {
-                    text: shareUrl,
-                    width: 200,
-                    height: 200,
-                });
-            }
-        };
+    // 両方のストップウォッチにイベントを割り当て
+    document.getElementById("swStart").addEventListener("click", startAction);
+    document.getElementById("floatingSwStart").addEventListener("click", startAction);
+    document.getElementById("swPause").addEventListener("click", pauseAction);
+    document.getElementById("floatingSwPause").addEventListener("click", pauseAction);
+    document.getElementById("swReset").addEventListener("click", resetAction);
+    document.getElementById("floatingSwReset").addEventListener("click", resetAction);
+    document.getElementById("swLap").addEventListener("click", lapAction);
+    document.getElementById("floatingSwLap").addEventListener("click", lapAction);
 
-        // リアルタイムリスナーの設定: データの変更を監視し、UIを更新
-        currentRoomRef.on('value', snapshot => {
-            if (snapshot.exists()) {
-                const roomData = snapshot.val();
-                renderRoomData(roomData); // データをUIに反映
-                // メンバー登録ボタンの表示制御
-                if (!registeredPlayerId) {
-                    document.getElementById('openRegisterModalBtn').style.display = 'block';
+    // フローティングストップウォッチの表示制御とドラッグ機能
+    const floatingStopwatch = document.getElementById('floatingStopwatch');
+    const sidebar = document.getElementById('sidebar-aside');
+
+    // 表示制御
+    if ('IntersectionObserver' in window && sidebar) {
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (!entry.isIntersecting) {
+                    floatingStopwatch.classList.remove('hidden');
                 } else {
-                    document.getElementById('openRegisterModalBtn').style.display = 'none';
-                    document.getElementById('openManagementModalBtn').style.display = 'block';
+                    floatingStopwatch.classList.add('hidden');
                 }
-            } else {
-                // ルームがFirebaseから削除された場合
-                alert('ルームが閉じられました。');
-                leaveRoom();
-            }
-        });
-
-        // URLハッシュを更新して共有を容易にする
-        history.pushState('', document.title, window.location.pathname + window.location.search + '#room=' + roomId);
-    }
-
-    // B. リアルタイムデータに基づいたUI描画
-    function renderRoomData(roomData) {
-        document.getElementById('roomTitle').innerText = `ルーム名: ${roomData.name || currentRoomId}`;
-        
-        const teamsContainer = document.getElementById('teamsContainer');
-        teamsContainer.innerHTML = '';
-        let totalScoreSum = 0; // 全員の合計点の総和
-
-        if (roomData.scores) {
-            // スコアの合計計算
-            const calculateTotal = (scores) => scores.reduce((a, b) => a + (parseInt(b) || 0), 0);
-            
-            // スコアで降順にソート
-            const sortedPlayerIds = Object.keys(roomData.scores).sort((idA, idB) => {
-                const totalA = calculateTotal(roomData.scores[idA].scores);
-                const totalB = calculateTotal(roomData.scores[idB].scores);
-                return totalB - totalA; 
             });
-
-            sortedPlayerIds.forEach((playerId, index) => {
-                const player = roomData.scores[playerId];
-                const totalScore = calculateTotal(player.scores);
-                totalScoreSum += totalScore;
-
-                const isRegisteredPlayer = playerId === registeredPlayerId;
-                const inputDisabled = !isRegisteredPlayer && (player.role !== 'manager'); // 自分が登録者でない場合、編集不可
-
-                const playerDiv = document.createElement('div');
-                playerDiv.className = 'app-card bg-white dark:bg-slate-900 p-4 rounded-2xl shadow w-full mt-2';
-                playerDiv.innerHTML = `
-                    <div class="player-row flex justify-between items-center" data-player-id="${playerId}">
-                        <div class="player-row-left flex-shrink-0">
-                            <span class="font-bold text-lg ${isRegisteredPlayer ? 'text-primary' : ''}">${index + 1}. ${player.name}</span>
-                            <span class="text-sm text-slate-500 dark:text-slate-400">(${player.role === 'manager' ? '監督' : '選手'})</span>
-                        </div>
-                        <div class="player-row-right flex items-center space-x-1 sm:space-x-2 overflow-x-auto ml-2">
-                            ${player.scores.map((score, idx) => `
-                                <input type="number" min="0" max="10" value="${score}" 
-                                       class="player-score-input w-10 sm:w-12 h-8 sm:h-10 rounded-md border text-center text-base
-                                              ${isRegisteredPlayer ? 'border-primary dark:border-primary-light bg-primary/10 dark:bg-primary/20' : 'border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800'}" 
-                                       data-arrow-index="${idx}" 
-                                       ${inputDisabled ? 'disabled' : ''} />
-                            `).join('')}
-                            <span class="text-xl font-bold text-primary ml-2 flex-shrink-0 w-12 text-right">${totalScore}点</span>
-                        </div>
-                    </div>
-                `;
-                teamsContainer.appendChild(playerDiv);
-            });
-            // スコア入力リスナーを再設定
-            setupScoreInputListeners();
-        }
-
-        // ルーム集計の更新
-        const playerCount = roomData.scores ? Object.keys(roomData.scores).length : 0;
-        document.getElementById('roomSummary').innerText = 
-            `ルーム名: ${roomData.name || currentRoomId}\n` +
-            `参加者数: ${playerCount}人\n` +
-            `総合計点: ${totalScoreSum}点`;
+        }, { threshold: 0.1 });
+        observer.observe(sidebar);
     }
 
-    // C. スコア入力時のリアルタイム更新処理
-    function setupScoreInputListeners() {
-        // イベントデリゲーションを使用してリスナーを一度だけ設定
-        const container = document.getElementById('teamsContainer');
-        container.removeEventListener('change', handleScoreChange); // 既存のリスナーを削除
-        container.addEventListener('change', handleScoreChange);
-    }
+    // ドラッグ機能
+    let isDragging = false, currentX, currentY, initialX, initialY, xOffset = 0, yOffset = 0;
+    const dragHandle = floatingStopwatch.querySelector('.drag-handle');
     
-    function handleScoreChange(event) {
-        const input = event.target;
-        if (input.classList.contains('player-score-input') && currentRoomRef) {
-            const row = input.closest('.player-row');
-            if (!row) return;
+    // 位置の保存と復元
+    const savedPos = JSON.parse(localStorage.getItem('floatingStopwatchPos'));
+    if (savedPos) {
+        floatingStopwatch.style.left = savedPos.x;
+        floatingStopwatch.style.top = savedPos.y;
+        floatingStopwatch.style.bottom = 'auto';
+        floatingStopwatch.style.right = 'auto';
+    }
 
-            const playerId = row.dataset.playerId;
-            const arrowIndex = parseInt(input.dataset.arrowIndex);
-            
-            // スコアを0-10に制限
-            let newScore = parseInt(input.value) || 0;
-            newScore = Math.min(10, Math.max(0, newScore));
-            input.value = newScore; // UIの値を修正
+    dragHandle.addEventListener("mousedown", dragStart);
+    dragHandle.addEventListener("touchstart", dragStart, { passive: false });
+    document.addEventListener("mouseup", dragEnd);
+    document.addEventListener("touchend", dragEnd);
+    document.addEventListener("mousemove", drag);
+    document.addEventListener("touchmove", drag, { passive: false });
 
-            const playerScoresRef = currentRoomRef.child('scores').child(playerId).child('scores');
-            
-            // データベースのトランザクションで配列の特定のインデックスを更新
-            playerScoresRef.once('value', snapshot => {
-                let scoresArray = snapshot.val();
-                if (!Array.isArray(scoresArray) || scoresArray.length < 4) {
-                    // データが存在しない場合、初期化（遠的は4射が多いと仮定）
-                    scoresArray = [0, 0, 0, 0];
-                }
-                scoresArray[arrowIndex] = newScore;
-                
-                // リアルタイムデータベースを更新。これが他の端末に即座に同期される。
-                playerScoresRef.set(scoresArray).catch(error => {
-                    console.error("スコア更新エラー:", error);
-                });
-            });
+    function dragStart(e) {
+        initialX = (e.type === "touchstart") ? e.touches[0].clientX - xOffset : e.clientX - xOffset;
+        initialY = (e.type === "touchstart") ? e.touches[0].clientY - yOffset : e.clientY - yOffset;
+        if (e.target === dragHandle || dragHandle.contains(e.target)) {
+            isDragging = true;
+            if (e.type === "touchmove" || e.type === "touchstart") e.preventDefault();
         }
     }
-    
-    // D. メンバー登録機能 (Modal)
-    function registerSelf() {
-        if (!currentRoomRef) return alert('先にルームに参加または作成してください。');
-        
-        const name = document.getElementById('registerNameInput').value.trim();
-        const role = document.getElementById('registerRoleSelect').value;
-        
-        if (!name) return alert('名前を入力してください。');
-        
-        let idToUse = registeredPlayerId || generatePlayerId();
-        
-        const newPlayer = {
-            name: name,
-            role: role,
-            scores: [0, 0, 0, 0] // 初期スコア
-        };
-
-        currentRoomRef.child('scores').child(idToUse).set(newPlayer).then(() => {
-            registeredPlayerId = idToUse;
-            localStorage.setItem('matomaRegisteredPlayerId', idToUse);
-            alert(`メンバーとして登録されました: ${name}`);
-            closeModal();
-            // UIを更新
-            document.getElementById('openRegisterModalBtn').style.display = 'none';
-            document.getElementById('openManagementModalBtn').style.display = 'block';
-
-        }).catch(error => {
-            console.error("登録エラー:", error);
-            alert('メンバー登録に失敗しました。');
-        });
+    function dragEnd() {
+        if (!isDragging) return;
+        initialX = currentX;
+        initialY = currentY;
+        isDragging = false;
+        localStorage.setItem('floatingStopwatchPos', JSON.stringify({x: floatingStopwatch.style.left, y: floatingStopwatch.style.top}));
     }
-
-    // E. メンバー管理機能 (Modal) - 新しいプレイヤーの追加
-    function addNewPlayer(name, scores = [0, 0, 0, 0], role = 'player') {
-        if (!currentRoomRef) return alert('先にルームに参加または作成してください。');
-        if (!name) return alert('プレイヤー名を入力してください。');
-
-        const newPlayerId = generatePlayerId();
-        const newPlayer = { name, role, scores };
-
-        currentRoomRef.child('scores').child(newPlayerId).set(newPlayer).then(() => {
-            // 成功しても特別なアラートは不要（リアルタイム更新で画面に反映されるため）
-        }).catch(error => {
-            console.error("プレイヤー追加エラー:", error);
-            alert('プレイヤーの追加に失敗しました。');
-        });
-    }
-
-    // F. 退室機能
-    function leaveRoom() {
-        if (currentRoomId && currentRoomRef) {
-            currentRoomRef.off('value'); // リアルタイムリスナーを解除
-            currentRoomId = null;
-            currentRoomRef = null;
-            
-            // URLハッシュをクリア
-            history.pushState('', document.title, window.location.pathname + window.location.search);
-
-            // UIを初期状態に戻す
-            document.getElementById('roomTitle').innerText = '団体用スコア管理';
-            document.getElementById('roomSubtitle').innerText = 'ルームを作成して共有、メンバー登録ができます。';
-            document.getElementById('roomEntryButtons').style.display = 'flex';
-            document.getElementById('roomControls').style.display = 'none';
-            document.getElementById('roomShareIcons').style.display = 'none';
-            document.getElementById('leaveRoomBtn').style.display = 'none';
-            document.getElementById('openRegisterModalBtn').style.display = 'none';
-            document.getElementById('openManagementModalBtn').style.display = 'none';
-            document.getElementById('teamsContainer').innerHTML = '';
+    function drag(e) {
+        if (isDragging) {
+            e.preventDefault();
+            currentX = (e.type === "touchmove") ? e.touches[0].clientX - initialX : e.clientX - initialX;
+            currentY = (e.type === "touchmove") ? e.touches[0].clientY - initialY : e.clientY - initialY;
+            xOffset = currentX;
+            yOffset = currentY;
+            setTranslate(currentX, currentY, floatingStopwatch);
         }
     }
-
-
-    // ====================================================================
-    // 5. ストップウォッチ機能 (共通)
-    // ====================================================================
-
-    let swInterval = null;
-    let swStartTime = 0;
-    let swElapsedTime = 0;
-    let swIsRunning = false;
-
-    function formatTime(ms) {
-        const totalSeconds = Math.floor(ms / 1000);
-        const minutes = String(Math.floor(totalSeconds / 60)).padStart(2, '0');
-        const seconds = String(totalSeconds % 60).padStart(2, '0');
-        const centi = String(Math.floor((ms % 1000) / 10)).padStart(2, '0');
-        return `${minutes}:${seconds}.${centi}`;
+    function setTranslate(xPos, yPos, el) {
+        el.style.transform = `translate3d(${xPos}px, ${yPos}px, 0)`;
     }
 
-    function updateStopwatch() {
-        const currentTime = Date.now();
-        swElapsedTime = currentTime - swStartTime;
-        const formattedTime = formatTime(swElapsedTime);
-        
-        // メインとフローティングの両方を更新
-        document.getElementById('swDisplay').innerText = formattedTime;
-        document.getElementById('floatingSwDisplay').innerText = formattedTime;
+    // 初期化
+    showPersonal();
+    if (document.getElementById("roomHistory")) window.renderRoomHistory();
+    updateCenterTabButton();
+});
+  </script>
+  <script>
+// ==========================================================
+// ★★★ チュートリアル機能 (変更なし) ★★★
+// ==========================================================
+    function startPersonalTour() {
+        document.getElementById("personalTabBtn").click(); 
     }
-
-    function startStopwatch() {
-        if (swIsRunning) return;
-        swIsRunning = true;
-        swStartTime = Date.now() - swElapsedTime;
-        swInterval = setInterval(updateStopwatch, 10);
-    }
-
-    function pauseStopwatch() {
-        if (!swIsRunning) return;
-        swIsRunning = false;
-        clearInterval(swInterval);
-        swInterval = null;
-    }
-
-    function resetStopwatch() {
-        pauseStopwatch();
-        swElapsedTime = 0;
-        updateStopwatch();
-        document.getElementById('lapList').innerHTML = '';
-    }
-
-    function lapStopwatch() {
-        if (!swIsRunning) return;
-        const lapTime = formatTime(swElapsedTime);
-        const lapItem = document.createElement('li');
-        lapItem.className = "text-slate-700 dark:text-slate-300";
-        lapItem.innerText = `Lap ${document.getElementById('lapList').children.length + 1}: ${lapTime}`;
-        document.getElementById('lapList').prepend(lapItem); // 最新を上に追加
-    }
-
-    // ====================================================================
-    // 6. DOM操作とイベントリスナー設定
-    // ====================================================================
-    
-    document.addEventListener('DOMContentLoaded', () => {
-        // 初期タブ設定 (個人用をアクティブ)
-        switchTab('personalTab');
-
-        // タブ切り替えリスナー
-        document.getElementById('personalTabBtn').addEventListener('click', () => switchTab('personalTab'));
-        document.getElementById('teamTabBtn').addEventListener('click', () => switchTab('teamTab'));
-        
-        // --- 団体用 (Team) タブのリスナー ---
-        
-        // ルーム作成フォーム表示
-        document.getElementById('createRoomBtn').addEventListener('click', () => {
-             document.getElementById('roomForm').style.display = 'block';
-             document.getElementById('joinForm').style.display = 'none';
-        });
-        // ルーム作成キャンセル
-        document.getElementById('cancelRoomBtn').addEventListener('click', () => {
-             document.getElementById('roomForm').style.display = 'none';
-        });
-        
-        // ルーム参加フォーム表示
-        document.getElementById('joinRoomBtn').addEventListener('click', () => {
-             document.getElementById('roomForm').style.display = 'none';
-             document.getElementById('joinForm').style.display = 'block';
-        });
-        // ルーム参加キャンセル
-        document.getElementById('cancelJoinBtn').addEventListener('click', () => {
-             document.getElementById('joinForm').style.display = 'none';
-        });
-
-        // ルーム作成ボタンのリスナー
-        document.getElementById('submitRoomBtn').addEventListener('click', () => {
-            const roomName = document.getElementById('roomName').value || '無題のルーム';
-            const roomId = generateRoomId();
-            
-            // ルーム作成者が自動で「監督者」として登録される
-            let idToUse = registeredPlayerId || generatePlayerId();
-            const initialRoomData = {
-                name: roomName,
-                createdAt: firebase.database.ServerValue.TIMESTAMP,
-                scores: {
-                    [idToUse]: { name: 'ルーム作成者', role: 'manager', scores: [0, 0, 0, 0] }
+    document.addEventListener("DOMContentLoaded", () => {
+        const teamTour = new Shepherd.Tour({ defaultStepOptions: { cancelIcon: { enabled: true }, classes: 'shadow-2xl bg-white p-4 rounded-xl dark:bg-slate-800 dark:text-white', scrollTo: true, exitOnEsc: true }});
+        teamTour.addSteps([
+            { id: 'team-intro', text: '団体戦やグループでの記録管理に使うタブです。', title: '団体用タブ', attachTo: { element: '#teamTabBtn', on: 'bottom' }, buttons: [ { text: '次へ', action: teamTour.next } ]},
+            { id: 'team-create-join', text: '「ルーム作成」で部屋を作り、「ルームに参加」からメンバーが入室します。', title: 'ルーム作成と参加', attachTo: { element: '#roomEntryButtons', on: 'bottom' }, buttons: [ { text: '戻る', action: teamTour.back }, { text: '次へ', action: teamTour.next } ]},
+            { id: 'team-register-member', text: 'ルーム参加後、「メンバー登録」をします。登録後は「メンバー管理」に変わります。', title: 'メンバー登録', attachTo: { element: '#openRegisterModalBtn', on: 'bottom' }, buttons: [ { text: '戻る', action: teamTour.back }, { text: '次へ', action: teamTour.next } ], canClickTarget: false },
+            { id: 'team-score-input', text: 'メンバーのスコアはここに一覧表示されます。ドロップダウンから点数を選択してください。', title: 'スコア入力', attachTo: { element: '#teamsContainer', on: 'top' }, buttons: [ { text: '戻る', action: teamTour.back }, { text: '次へ', action: teamTour.next } ]},
+            { id: 'team-share', text: 'ルーム作成後、この共有ボタンから招待リンクやQRコードを渡せます。', title: 'ルーム共有', attachTo: { element: '#roomShareIcons', on: 'bottom' }, buttons: [ { text: '戻る', action: teamTour.back }, { text: '完了', action: teamTour.complete } ]}
+        ]);
+        function startTeamTour() {
+            document.getElementById("teamTabBtn").click(); 
+            document.getElementById("roomForm").style.display="none"; 
+            document.getElementById("joinForm").style.display="none"; 
+            document.getElementById("roomControls").style.display = "block";
+            document.getElementById("roomShareIcons").style.display = "flex"; 
+            document.getElementById("openRegisterModalBtn").style.display = 'block';
+            document.getElementById("leaveRoomBtn").innerText = "退室";
+            teamTour.start();
+            const cleanup = () => {
+                document.getElementById("openRegisterModalBtn").style.display = 'none';
+                if (!currentRoom) {
+                    document.getElementById("roomControls").style.display = "none";
+                    document.getElementById("roomShareIcons").style.display = "none";
                 }
             };
-            
-            // LocalStorageに登録IDを保存
-            registeredPlayerId = idToUse;
-            localStorage.setItem('matomaRegisteredPlayerId', idToUse);
-
-            const roomRef = database.ref('rooms/' + roomId);
-            roomRef.set(initialRoomData).then(() => {
-                alert(`ルーム「${roomName}」を作成しました。招待コード: ${roomId}`);
-                enterRoom(roomId);
-            }).catch(error => {
-                console.error("ルーム作成エラー:", error);
-                alert('ルームの作成に失敗しました。');
-            });
-        });
-
-        // 招待コード/URLで参加ボタンのリスナー
-        document.getElementById('doJoinBtn').addEventListener('click', () => {
-            const joinInput = document.getElementById('joinInput').value.trim();
-            let roomId = null;
-
-            // 招待コードの形式をパース（MATOMA_JOIN:RMXXXX, URLのハッシュ, またはRMXXXXのみ）
-            if (joinInput.startsWith('MATOMA_JOIN:')) {
-                roomId = joinInput.replace('MATOMA_JOIN:', '').trim();
-            } else if (joinInput.includes('#room=')) {
-                try {
-                    const url = new URL(joinInput);
-                    roomId = url.hash.substring(url.hash.indexOf('room=') + 5);
-                } catch (e) {
-                    // URLとして無効な場合は、そのままコードとして試行（主に開発用）
-                    roomId = joinInput.substring(joinInput.indexOf('#room=') + 6);
-                }
-            } else if (joinInput.length > 3 && joinInput.length <= 8 && /^[A-Z0-9]+$/.test(joinInput)) {
-                roomId = joinInput;
-            }
-
-            if (roomId) {
-                database.ref('rooms/' + roomId).once('value', snapshot => {
-                    if (snapshot.exists()) {
-                        enterRoom(roomId);
-                        alert(`ルームID: ${roomId} に参加しました。`);
-                    } else {
-                        alert('無効な招待コードです。');
-                    }
-                });
-            } else {
-                alert('有効な招待コードまたはURLを入力してください。');
-            }
-        });
-        
-        // 退室ボタンのリスナー
-        document.getElementById('leaveRoomBtn').addEventListener('click', leaveRoom);
-        
-        // メンバー登録モーダルを開く
-        document.getElementById('openRegisterModalBtn').addEventListener('click', () => openModal('registerModalContent'));
-        // メンバー管理モーダルを開く（UI要素は残しつつ、中身は未実装）
-        document.getElementById('openManagementModalBtn')?.addEventListener('click', () => openModal('managementModalContent'));
-        
-        // メンバー登録アクション (Modal内)
-        document.getElementById('modalWrapper').addEventListener('click', (event) => {
-             if (event.target.id === 'registerSelfBtn') {
-                registerSelf();
-             } else if (event.target.id === 'skipRegisterBtn') {
-                closeModal();
-             } else if (event.target.id === 'addPlayerBtnModal') {
-                const name = document.getElementById('newPlayerNameModal').value.trim();
-                addNewPlayer(name);
-                document.getElementById('newPlayerNameModal').value = ''; // 入力欄をクリア
-             } else if (event.target.id === 'autoAssignBtnModal') {
-                for (let i = 1; i <= 3; i++) {
-                    addNewPlayer(`プレイヤー ${i + 1}`);
-                }
-             }
-        });
-
-        // --- ストップウォッチのリスナー (サイドバー) ---
-        document.getElementById('swStart').addEventListener('click', startStopwatch);
-        document.getElementById('swPause').addEventListener('click', pauseStopwatch);
-        document.getElementById('swReset').addEventListener('click', resetStopwatch);
-        document.getElementById('swLap').addEventListener('click', lapStopwatch);
-
-        // --- ストップウォッチのリスナー (フローティング) ---
-        document.getElementById('floatingSwStart').addEventListener('click', startStopwatch);
-        document.getElementById('floatingSwPause').addEventListener('click', pauseStopwatch);
-        document.getElementById('floatingSwReset').addEventListener('click', resetStopwatch);
-        document.getElementById('floatingSwLap').addEventListener('click', lapStopwatch);
-
-        // --- フローティングストップウォッチのドラッグ機能 ---
-        const floatingSw = document.getElementById('floatingStopwatch');
-        const swHandle = floatingSw.querySelector('.drag-handle');
-        let isDragging = false;
-        let startX, startY, initialX, initialY;
-
-        swHandle.addEventListener('mousedown', (e) => {
-            isDragging = true;
-            initialX = floatingSw.offsetLeft;
-            initialY = floatingSw.offsetTop;
-            startX = e.clientX;
-            startY = e.clientY;
-            e.preventDefault(); // テキスト選択を防ぐ
-        });
-        swHandle.addEventListener('touchstart', (e) => {
-            isDragging = true;
-            initialX = floatingSw.offsetLeft;
-            initialY = floatingSw.offsetTop;
-            startX = e.touches[0].clientX;
-            startY = e.touches[0].clientY;
-            e.preventDefault();
-        });
-
-        document.addEventListener('mousemove', (e) => {
-            if (!isDragging) return;
-            const dx = e.clientX - startX;
-            const dy = e.clientY - startY;
-            floatingSw.style.left = `${initialX + dx}px`;
-            floatingSw.style.top = `${initialY + dy}px`;
-        });
-        document.addEventListener('touchmove', (e) => {
-            if (!isDragging || e.touches.length === 0) return;
-            const dx = e.touches[0].clientX - startX;
-            const dy = e.touches[0].clientY - startY;
-            floatingSw.style.left = `${initialX + dx}px`;
-            floatingSw.style.top = `${initialY + dy}px`;
-        });
-
-        document.addEventListener('mouseup', () => {
-            isDragging = false;
-        });
-        document.addEventListener('touchend', () => {
-            isDragging = false;
-        });
-        
-        // サイドバーのストップウォッチ表示/非表示に連動
-        document.getElementById('swStart').addEventListener('click', () => floatingSw.classList.remove('hidden'));
-        document.getElementById('swReset').addEventListener('click', () => floatingSw.classList.add('hidden'));
-
-
-        // --- URLハッシュからの自動参加 ---
-        const hash = window.location.hash;
-        if (hash.startsWith('#room=')) {
-            const roomIdFromUrl = hash.substring(6);
-            if (roomIdFromUrl) {
-                // 自動参加を試みる
-                document.getElementById('joinInput').value = roomIdFromUrl;
-                // 自動参加は非同期のFirebase呼び出しに依存するため、少し遅延させてUIレンダリングを優先
-                setTimeout(() => {
-                    document.getElementById('doJoinBtn').click();
-                    switchTab('teamTab'); // 団体用タブに切り替え
-                }, 100);
-            }
+            teamTour.on('complete', cleanup);
+            teamTour.on('cancel', cleanup);
         }
-        
-        // --- その他の初期化 (ダミー/未実装機能) ---
-        // 個人用タブの立ちセット追加ボタン
-        document.getElementById('addSetBtnTab')?.addEventListener('click', () => {
-             alert('個人用機能は現在実装中です。'); 
-        });
-        
-        // ページロード時に団体用タブのストップウォッチを隠す
-        floatingSw.classList.add('hidden');
+        document.getElementById("tutorialBtn")?.addEventListener("click", startPersonalTour);
+        document.getElementById("tutorialBtnMobile")?.addEventListener("click", startPersonalTour);
+        document.getElementById("tutorialBtnTeam")?.addEventListener("click", startTeamTour);
+        document.getElementById("tutorialBtnMobileTeam")?.addEventListener("click", startTeamTour);
     });
   </script>
-  
   <script>
     // Service Workerのエラー（404）を回避するため、登録処理自体をコメントアウト/削除することを推奨します。
   </script>
