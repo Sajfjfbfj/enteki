@@ -4,9 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <!-- ===========================
-       ファビコン・PWA設定
-  ============================ -->
   <link rel="apple-touch-icon" sizes="57x57" href="/apple-icon-57x57.png">
   <link rel="apple-touch-icon" sizes="60x60" href="/apple-icon-60x60.png">
   <link rel="apple-touch-icon" sizes="72x72" href="/apple-icon-72x72.png">
@@ -25,17 +22,11 @@
   <meta name="msapplication-TileColor" content="#ffffff">
   <meta name="msapplication-TileImage" content="/ms-icon-144x144.png">
 
-  <!-- ===========================
-       SEO基本設定
-  ============================ -->
   <title>MATOMA | 遠的スコア管理アプリ - 弓道の記録をスマホで簡単に分析</title>
   <meta name="description" content="MATOMA遠的は弓道の遠的スコアをスマホで簡単に記録・分析・共有できるアプリです。立ちごとの点数管理や矢所分析で、自分の射を可視化しましょう。" />
   <meta name="keywords" content="弓道,遠的,スコア管理,矢所分析,アプリ,MATOMA" />
   <meta name="robots" content="index, follow" />
 
-  <!-- ===========================
-       OGP設定
-  ============================ -->
   <meta property="og:title" content="MATOMA | 遠的スコア管理アプリ" />
   <meta property="og:description" content="遠的スコアをスマホで簡単に分析・共有！MATOMAで弓道の記録をもっと楽しく。" />
   <meta property="og:type" content="website" />
@@ -43,18 +34,12 @@
   <meta property="og:image" content="https://enteki.vercel.app/assets/img/aikonmato.png" />
   <meta property="og:site_name" content="MATOMA 遠的" />
 
-  <!-- ===========================
-       Twitterカード設定
-  ============================ -->
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="MATOMA | 遠的スコア管理アプリ" />
-  <meta name="twitter:description" content="遠的スコアをスマホで簡単に分析・共有！MATOMAで弓道の記録をもっと楽しく。" />
-  <meta name="twitter:image" content="https://enteki.vercel.app/assets/img/aikonmato.png" />
-  <meta name="twitter:url" content="https://enteki.vercel.app/" />
+  <meta property="twitter:description" content="遠的スコアをスマホで簡単に分析・共有！MATOMAで弓道の記録をもっと楽しく。" />
+  <meta property="twitter:image" content="https://enteki.vercel.app/assets/img/aikonmato.png" />
+  <meta property="twitter:url" content="https://enteki.vercel.app/" />
 
-  <!-- ===========================
-       構造化データ（JSON-LD）
-  ============================ -->
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -70,9 +55,6 @@
   }
   </script>
 
-  <!-- ===========================
-       Tailwind CSS
-  ============================ -->
   <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
   <script>
     tailwind.config = {
@@ -86,287 +68,1105 @@
           },
           fontFamily: {
             "display": ["Manrope", "Yu Gothic", "Hiragino Maru Gothic ProN", "sans-serif"]
-          },
-          borderRadius: {
-            "DEFAULT": "0.5rem",
-            "lg": "1rem",
-            "xl": "1.5rem",
-            "2xl": "2rem",
-            "full": "9999px"
           }
         }
       }
     }
   </script>
 
-  <!-- ===========================
-       Google Fonts & 外部CSS
-  ============================ -->
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&display=swap" rel="stylesheet" />
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/shepherd.js/dist/css/shepherd.css">
-  <link rel="stylesheet" href="css/style.css">
-  <link rel="stylesheet" href="css/styles.css">
-  <meta name="google-site-verification" content="BPIz999ax7wid03IH2bc6D9QQT1WzAw4Ej9VHfXODMo" />
 
-  <!-- ===========================
-       カスタムスタイル
-  ============================ -->
   <style>
-    .app-card {
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    /* custom styles */
+    body { padding-bottom: 120px; }
+    .app-card { transition: transform .18s ease, box-shadow .18s ease; }
+    .app-card:hover { transform: translateY(-4px); box-shadow: 0 18px 30px rgba(0,0,0,.08); }
+    .center-tab-button { position: relative; top: -20px; width:64px; height:64px; border-radius:50%; display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg,#1969e1,#1557c7); color:white; border:none; box-shadow:0 8px 24px rgba(25,105,225,0.4); }
+    .tab-content { display:none; }
+    .tab-content.active { display:block; }
+    .player-score-input { width:60px; max-width:60px; } 
+    @media (min-width:768px){ .player-score-input{ width:70px; } }
+    .canvas-container{ width:100%; max-width:600px; margin:0 auto; aspect-ratio:1/1; position:relative; }
+    .canvas-container canvas{ width:100% !important; height:100% !important; display:block; }
+    
+    /* ★★★ 変更: スマホ表示用にレスポンシブ対応を追加 ★★★ */
+    .player-row {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.5rem;
     }
-    .app-card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+    .player-row-left, .player-row-right {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
     }
-    .tab-bar {
-      background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(255, 255, 255, 0.95));
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border-top: 1px solid rgba(0, 0, 0, 0.1);
+    .player-row-right {
+        flex-wrap: nowrap; /* PCでは折り返さない */
     }
-    .dark .tab-bar {
-      background: linear-gradient(180deg, rgba(17, 23, 33, 0.98), rgba(17, 23, 33, 0.95));
-      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    @media (max-width: 767px) {
+        .player-row {
+            flex-direction: column; /* スマホでは縦並び */
+            align-items: stretch;
+        }
+        .player-row-left {
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+        .player-row-right {
+            justify-content: space-between;
+            flex-wrap: wrap; /* スマホではスコア入力を折り返す */
+        }
+        .player-score-input {
+            flex-grow: 1;
+            min-width: 60px;
+        }
     }
-    body { padding-bottom: 80px; }
 
-    /* 中央の立ち追加ボタン */
-    .center-tab-button {
-      position: relative;
-      top: -20px;
-      width: 64px;
-      height: 64px;
-      background: linear-gradient(135deg, #1969e1, #1557c7);
-      border-radius: 50%;
-      box-shadow: 0 8px 24px rgba(25, 105, 225, 0.4);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.3s ease;
-      border: none;
-      cursor: pointer;
+    /* ★★★ 新規追加: フローティングストップウォッチのスタイル ★★★ */
+    #floatingStopwatch {
+        position: fixed;
+        bottom: 80px;
+        right: 16px;
+        z-index: 100;
+        background-color: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(8px);
+        border-radius: 12px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        padding: 12px;
+        width: 280px;
+        touch-action: none; /* ドラッグ中のページスクロールを防止 */
+        transition: opacity 0.3s ease, transform 0.3s ease;
     }
-
-    /* 的キャンバス */
-    .canvas-container {
-      width: 100%;
-      max-width: 600px;
-      margin: 0 auto;
-      aspect-ratio: 1 / 1;
-      position: relative;
+    .dark #floatingStopwatch {
+        background-color: rgba(30, 41, 59, 0.9);
     }
-    .canvas-container canvas {
-      width: 100% !important;
-      height: 100% !important;
-      display: block;
+    #floatingStopwatch.hidden {
+        opacity: 0;
+        transform: scale(0.9);
+        pointer-events: none;
+    }
+    #floatingStopwatch .drag-handle {
+        cursor: move;
+        padding: 4px;
+        text-align: center;
+        color: #94a3b8;
+    }
+    #floatingStopwatch .drag-handle .material-symbols-outlined {
+        font-size: 20px;
     }
   </style>
 </head>
 
 <body class="bg-background-light dark:bg-background-dark font-display text-slate-800 dark:text-slate-200">
-<div class="flex flex-col min-h-screen">
+  <div class="flex flex-col min-h-screen">
 
-  <!-- ===========================
-       ヘッダー
-  ============================ -->
-  <header class="sticky top-0 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-sm z-10 shadow-sm">
-    <div class="flex items-center justify-between h-14">
-  <h1 class="text-lg font-bold text-slate-900 dark:text-white">MATOMA遠的</h1>
-  <div class="flex items-center gap-2">
-    <!-- 共有ボタン -->
-    <button id="shareBtn"
-      class="px-4 py-2 bg-primary text-white rounded-full hover:bg-blue-600 text-sm font-semibold shadow-md transition-all">
-      共有
-    </button>
+    <header class="sticky top-0 z-20 bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm border-b border-slate-100 dark:border-slate-800">
+      <div class="container mx-auto px-4 py-3 flex items-center justify-between">
+        <h1 class="text-lg font-bold text-slate-900 dark:text-white">MATOMA遠的</h1>
+        <div class="flex items-center gap-2">
+          <button id="shareBtn" class="px-4 py-2 bg-primary text-white rounded-full text-sm font-semibold shadow-md">共有</button>
+          <button id="settingsBtn" class="p-2 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200" title="設定">
+            <span class="material-symbols-outlined text-2xl">settings</span>
+          </button>
+        </div>
+      </div>
+    </header>
 
-    <!-- 設定ボタン（歯車） -->
-    <button id="settingsBtn"
-      class="p-2 rounded-full bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 transition-all shadow-sm"
-      title="設定ページ">
-      <span class="material-symbols-outlined text-2xl">settings</span>
-    </button>
-  </div>
-</div>
-
-  </header>
-
-  <!-- ===========================
-       初めての方へボタン
-  ============================ -->
-  <div class="hidden md:block fixed bottom-24 right-4 z-50">
-    <button id="tutorialBtn" class="px-5 py-3 text-sm sm:text-base bg-primary text-white rounded-full shadow-xl hover:bg-primary/90 font-semibold transition-all hover:scale-105">初めての方へ</button>
-  </div>
-  <div class="md:hidden w-full py-3 bg-background-light dark:bg-background-dark">
-    <div class="container mx-auto px-4 flex justify-center">
-      <button id="tutorialBtnMobile" class="px-6 py-3 text-base bg-primary text-white rounded-full shadow-lg hover:bg-primary/90 font-semibold transition-all">初めての方へ</button>
+    <div class="container mx-auto px-4 py-4">
+      <div class="flex gap-2 justify-center">
+        <button id="personalTabBtn" class="px-4 py-2 rounded-lg font-semibold bg-primary text-white">個人用</button>
+        <button id="teamTabBtn" class="px-4 py-2 rounded-lg font-semibold bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-white">団体用</button>
+      </div>
     </div>
-  </div>
 
-  <!-- ===========================
-       メインコンテンツ
-  ============================ -->
-  <main class="flex-grow container mx-auto px-4 py-6 space-y-6">
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <!-- 日付選択 -->
-      <section class="app-card bg-white dark:bg-slate-900 p-5 rounded-2xl shadow-lg" id="matchDateSection">
-        <label for="matchDate" class="block mb-3 font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2">
-          <span class="material-symbols-outlined text-primary">calendar_today</span>
-          日付選択
-        </label>
-        <input type="date" id="matchDate" class="w-full rounded-xl border-2 border-slate-200 dark:border-slate-700 px-4 py-3 text-slate-800 dark:text-slate-200 bg-white dark:bg-slate-800 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all">
-      </section>
+    <main class="flex-grow container mx-auto px-4 pb-12">
 
-      <!-- 日別集計 -->
-      <section id="dailySummary">
-        <h2 class="text-xl font-bold mb-3 text-slate-900 dark:text-white">日別集計</h2>
-        <div class="app-card bg-white dark:bg-slate-900 rounded-2xl shadow-lg p-5">
-          <div class="flex items-center gap-3 text-slate-500 dark:text-slate-400">
-            <span class="material-symbols-outlined text-3xl text-primary">analytics</span>
-            <p class="text-sm">ここに日別集計（立ち数・合計点）が表示されます</p>
+      <section id="personalTab" class="tab-content active">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <section class="app-card bg-white dark:bg-slate-900 p-5 rounded-2xl shadow-lg" id="matchDateSection">
+            <label for="matchDate" class="block mb-3 font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2">
+              <span class="material-symbols-outlined text-primary">calendar_today</span>
+              日付選択
+            </label>
+            <input type="date" id="matchDate" class="w-full rounded-xl border-2 border-slate-200 dark:border-slate-700 px-4 py-3 text-slate-800 dark:text-slate-200 bg-white dark:bg-slate-800 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all">
+          </section>
+
+          <section id="dailySummary">
+            <h2 class="text-xl font-bold mb-3 text-slate-900 dark:text-white">日別集計</h2>
+            <div class="app-card bg-white dark:bg-slate-900 rounded-2xl shadow-lg p-5">
+              <div class="flex items-center gap-3 text-slate-500 dark:text-slate-400">
+                <span class="material-symbols-outlined text-3xl text-primary">analytics</span>
+                <p class="text-sm">ここに日別集計（立ち数・合計点）が表示されます</p>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <section class="mt-6">
+          <h2 class="text-xl font-bold mb-4 text-slate-900 dark:text-white">立ちセット</h2>
+          <div id="setsContainer" class="space-y-4"></div>
+        </section>
+
+        <div class="mt-6">
+          <div class="hidden md:block fixed bottom-24 right-4 z-50">
+            <button id="tutorialBtn" class="px-5 py-3 text-sm bg-primary text-white rounded-full shadow-xl">初めての方へ</button>
+          </div>
+          <div class="md:hidden w-full py-3 bg-background-light dark:bg-background-dark">
+            <div class="container mx-auto px-4 flex justify-center">
+              <button id="tutorialBtnMobile" class="px-6 py-3 text-base bg-primary text-white rounded-full shadow-lg">初めての方へ</button>
+            </div>
           </div>
         </div>
       </section>
+
+      <section id="teamTab" class="tab-content">
+
+        <div class="py-2">
+          <div class="flex items-center justify-between mb-3">
+            <div>
+              <div class="flex items-center gap-2"> 
+                <h2 id="roomTitle" class="text-2xl font-bold text-slate-900 dark:text-white">団体用スコア管理</h2>
+                <div id="roomShareIcons" class="flex gap-1" style="display:none;">
+                    <button id="shareIconBtn" class="p-1.5 rounded-full bg-primary/20 text-primary dark:bg-primary/50" title="共有リンク・コードをコピー">
+                        <span class="material-symbols-outlined text-xl">content_copy</span>
+                    </button>
+                    <button id="qrIconBtn" class="p-1.5 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200" title="QRコードを表示/非表示">
+                        <span class="material-symbols-outlined text-xl">qr_code_2</span>
+                    </button>
+                </div>
+              </div>
+              <p id="roomSubtitle" class="text-sm text-slate-600 dark:text-slate-300">ルームを作成して共有、メンバー登録ができます。</p>
+            </div>
+            <div id="roomEntryButtons" class="flex gap-2">
+              <button id="createRoomBtn" class="px-4 py-2 bg-blue-500 text-white rounded-md">ルーム作成</button>
+              <button id="joinRoomBtn" class="px-4 py-2 bg-indigo-600 text-white rounded-md">ルームに参加</button>
+              <button id="leaveRoomBtn" style="display:none;" class="px-4 py-2 bg-red-500 text-white rounded-md">退室</button>
+            </div>
+          </div>
+
+          <div id="roomControls" style="display:none;">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <div id="roomForm" style="display:none;" class="app-card bg-white dark:bg-slate-900 p-4 rounded-2xl shadow">
+                <label class="block mb-2 font-bold text-slate-800 dark:text-slate-200">ルーム名</label>
+                <input id="roomName" class="w-full rounded-xl border-2 border-slate-200 dark:border-slate-700 px-4 py-3 bg-white dark:bg-slate-800" placeholder="ルーム名を入力" />
+                <div class="flex gap-2 mt-3">
+                  <button id="submitRoomBtn" class="px-4 py-2 bg-green-500 text-white rounded-md">ルーム作成</button>
+                  <button id="cancelRoomBtn" class="px-4 py-2 bg-slate-300 text-slate-800 rounded-md">キャンセル</button>
+                </div>
+              </div>
+
+              <div id="joinForm" style="display:none;" class="app-card bg-white dark:bg-slate-900 p-4 rounded-2xl shadow">
+                <label class="block mb-2 font-bold text-slate-800 dark:text-slate-200">招待コードまたはURLを入力</label>
+                <input id="joinInput" class="w-full rounded-xl border-2 border-slate-200 dark:border-slate-700 px-4 py-3 bg-white dark:bg-slate-800" placeholder="例: MATOMA_JOIN:RMXXXX または https://...#room=RMXXXX" />
+                <div class="flex gap-2 mt-3">
+                  <button id="doJoinBtn" class="px-4 py-2 bg-green-500 text-white rounded-md">参加</button>
+                  <button id="cancelJoinBtn" class="px-4 py-2 bg-slate-300 text-slate-800 rounded-md">キャンセル</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="flex flex-col lg:flex-row gap-4">
+              <div class="flex-1 space-y-4">
+                <div id="memberControlButtons" class="flex gap-2">
+                    <button id="openRegisterModalBtn" class="px-4 py-2 bg-primary text-white rounded-md font-semibold" style="display:none;">メンバー登録</button>
+                    <button id="openManagementModalBtn" class="px-4 py-2 bg-blue-500 text-white rounded-md font-semibold" style="display:none;">メンバー管理</button>
+                </div>
+                <div id="teamsContainer" class="flex flex-col md:flex-row md:flex-wrap gap-4"></div>
+              </div>
+
+              <aside id="sidebar-aside" class="w-full lg:w-96 space-y-4">
+                <div class="app-card bg-white dark:bg-slate-900 rounded-2xl shadow p-4">
+                  <h3 class="font-bold mb-3">ストップウォッチ</h3>
+                  <div id="swDisplay" class="text-2xl font-mono mb-3">00:00.00</div>
+                  <div class="flex gap-2 mb-3">
+                    <button id="swStart" class="px-3 py-2 bg-green-500 text-white rounded-md flex-1">Start</button>
+                    <button id="swPause" class="px-3 py-2 bg-yellow-500 text-white rounded-md flex-1">Pause</button>
+                    <button id="swReset" class="px-3 py-2 bg-red-500 text-white rounded-md flex-1">Reset</button>
+                  </div>
+                  <button id="swLap" class="px-3 py-2 bg-slate-100 dark:bg-slate-700 rounded-md w-full">Lap</button>
+                  <ul id="lapList" class="mt-3 text-sm list-disc list-inside max-h-48 overflow-auto"></ul>
+                </div>
+                <div class="app-card bg-white dark:bg-slate-900 rounded-2xl shadow p-4">
+                  <h3 class="font-bold mb-2">ルーム集計</h3>
+                  <pre id="roomSummary" class="text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap">—</pre>
+                </div>
+              </aside>
+            </div>
+          </div>
+          
+          <div id="roomHistory" class="mt-8 pt-4 border-t border-slate-200 dark:border-slate-700">
+              <h2 class="text-xl font-bold mb-3 text-slate-900 dark:text-white">過去のルーム履歴（ブラウザ保存）</h2>
+              <div id="historyList" class="space-y-2">
+                  <p class="text-sm text-slate-500" id="noHistoryMessage">履歴はありません。</p>
+              </div>
+          </div>
+          </div>
+
+        <div class="mt-6">
+          <div class="hidden md:block fixed bottom-24 right-4 z-50">
+            <button id="tutorialBtnTeam" class="px-5 py-3 text-sm bg-primary text-white rounded-full shadow-xl">初めての方へ（団体用）</button>
+          </div>
+          <div class="md:hidden w-full py-3 bg-background-light dark:bg-background-dark">
+            <div class="container mx-auto px-4 flex justify-center">
+              <button id="tutorialBtnMobileTeam" class="px-6 py-3 text-base bg-primary text-white rounded-full shadow-lg">初めての方へ（団体用）</button>
+            </div>
+          </div>
+        </div>
+        </section>
+
+    </main>
+
+    <nav class="fixed bottom-0 left-0 right-0 z-40 bg-white/90 dark:bg-slate-900/90 border-t border-slate-100 dark:border-slate-800">
+      <div class="max-w-5xl mx-auto px-4 py-2 flex items-end justify-around relative">
+        <a href="tools.html" class="flex flex-col items-center gap-1 py-1 px-2 text-slate-500 dark:text-slate-400">
+          <span class="material-symbols-outlined text-2xl">construction</span>
+          <span class="text-xs font-semibold">道具</span>
+        </a>
+        <a href="index.html" class="flex flex-col items-center gap-1 py-1 px-2 text-primary">
+          <span class="material-symbols-outlined text-2xl">today</span>
+          <span class="text-xs font-semibold">今日の記録</span>
+        </a>
+
+        <button id="addSetBtnTab" class="center-tab-button" title="立ちセットを追加">
+          <span class="material-symbols-outlined text-3xl">add_circle</span>
+        </button>
+
+        <a href="yadokoro.html" class="flex flex-col items-center gap-1 py-1 px-2 text-slate-500 dark:text-slate-400">
+          <span class="material-symbols-outlined text-2xl">analytics</span>
+          <span class="text-xs font-semibold">分析</span>
+        </a>
+        <a href="help.html" class="flex flex-col items-center gap-1 py-1 px-2 text-slate-500 dark:text-slate-400">
+          <span class="material-symbols-outlined text-2xl">help</span>
+          <span class="text-xs font-semibold">ヘルプ</span>
+        </a>
+      </div>
+    </nav>
+  </div>
+
+  <div id="modalWrapper" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 backdrop-blur-sm p-4" onclick="if(event.target.id==='modalWrapper') closeModal()">
+    <div id="modalContent" class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden max-h-[90vh] flex flex-col">
+      </div>
+  </div>
+
+  <div id="modalTemplates" class="hidden">
+    <div id="qrModalContent" class="p-6 text-center">
+      <h3 class="text-xl font-bold mb-4 text-slate-900 dark:text-white">ルーム招待QRコード</h3>
+      <div id="qrCodeDisplayModal" class="flex justify-center mb-4"></div>
+      <p class="text-sm text-slate-600 dark:text-slate-400">このQRコードを読み込むか、上部のコピーボタンでリンクを共有してください。</p>
+      <button onclick="closeModal()" class="mt-4 px-4 py-2 bg-slate-500 text-white rounded-lg">閉じる</button>
     </div>
 
-    <!-- 立ちセクション -->
-    <section>
-      <h2 class="text-xl font-bold mb-4 text-slate-900 dark:text-white">立ちセット</h2>
-      <div id="setsContainer" class="space-y-4"></div>
-    </section>
-  </main>
-
-  <!-- ===========================
-       タブバー（JAL Pay風）
-  ============================ -->
-  <nav class="tab-bar fixed bottom-0 left-0 right-0 z-40 px-4 py-2">
-    <div class="max-w-2xl mx-auto flex items-end justify-around relative">
-      <a href="tools.html" class="flex flex-col items-center gap-1 py-2 px-3 text-slate-500 dark:text-slate-400 hover:text-primary transition-colors">
-        <span class="material-symbols-outlined text-2xl">construction</span>
-        <span class="text-xs font-semibold">道具</span>
-      </a>
-
-      <a href="index.html" class="flex flex-col items-center gap-1 py-2 px-3 text-primary">
-        <span class="material-symbols-outlined text-2xl">today</span>
-        <span class="text-xs font-semibold">今日の記録</span>
-      </a>
-
-      <button id="addSetBtnTab" class="center-tab-button">
-        <span class="material-symbols-outlined text-3xl text-white">add_circle</span>
-      </button>
-
-      <a href="yadokoro.html" class="flex flex-col items-center gap-1 py-2 px-3 text-slate-500 dark:text-slate-400 hover:text-primary transition-colors">
-        <span class="material-symbols-outlined text-2xl">analytics</span>
-        <span class="text-xs font-semibold">分析</span>
-      </a>
-
-      <a href="help.html" class="flex flex-col items-center gap-1 py-2 px-3 text-slate-500 dark:text-slate-400 hover:text-primary transition-colors">
-        <span class="material-symbols-outlined text-2xl">help</span>
-        <span class="text-xs font-semibold">ヘルプ</span>
-      </a>
+    <div id="registerModalContent" class="p-6">
+      <h3 class="text-xl font-bold mb-4 text-slate-900 dark:text-white">はじめて参加する方へ（メンバー登録）</h3>
+      <p class="text-sm text-slate-600 dark:text-slate-300 mb-3">あなたの名前と役割を入力して登録してください。登録後はスコアを入力できるようになります。</p>
+      <input type="text" id="registerNameInput" placeholder="あなたの名前を入力" class="w-full rounded-xl border-2 border-slate-200 dark:border-slate-700 px-3 py-2 bg-white dark:bg-slate-800 mb-2" />
+      <select id="registerRoleSelect" class="w-full rounded-xl border-2 border-slate-200 dark:border-slate-700 px-3 py-2 text-slate-800 dark:text-slate-200 bg-white dark:bg-slate-800 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all mb-4">
+        <option value="player">プレーヤー（スコア編集可能）</option>
+        <option value="manager">監督者（スコア編集・管理操作可能）</option>
+        <option value="other">その他（閲覧のみ）</option>
+      </select>
+      <div class="flex gap-2">
+        <button id="registerSelfBtn" class="px-4 py-2 bg-primary text-white rounded-md flex-1">登録</button>
+        <button id="skipRegisterBtn" class="px-4 py-2 bg-slate-200 text-slate-800 rounded-md">キャンセル</button>
+      </div>
     </div>
-  </nav>
-</div>
 
-<!-- ===========================
-     JSスクリプト
-=========================== -->
+    <div id="managementModalContent" class="p-6">
+      <h3 class="text-xl font-bold mb-4 text-slate-900 dark:text-white">メンバー操作（管理）</h3>
+      <div class="space-y-2">
+          <label for="newPlayerNameModal" class="block text-sm font-medium mb-1 text-slate-800 dark:text-slate-200">新しいプレイヤーの追加</label>
+          <div class="flex gap-2">
+              <input type="text" id="newPlayerNameModal" placeholder="プレイヤー名を入力" class="w-full rounded-xl border-2 border-slate-200 dark:border-slate-700 px-3 py-2 bg-white dark:bg-slate-800" />
+              <button id="addPlayerBtnModal" class="px-4 py-2 bg-primary text-white rounded-md">追加</button>
+          </div>
+          <div class="pt-2">
+              <button id="autoAssignBtnModal" class="w-full px-4 py-2 bg-slate-300 text-slate-800 rounded-md">自動割当（3人）</button>
+          </div>
+      </div>
+      <div class="mt-4 pt-4 border-t border-slate-200 dark:border-slate-700">
+          <button onclick="closeModal()" class="w-full px-4 py-2 bg-slate-500 text-white rounded-md">閉じる</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="floatingStopwatch" class="hidden">
+    <div class="drag-handle">
+      <span class="material-symbols-outlined">drag_indicator</span>
+    </div>
+    <div id="floatingSwDisplay" class="text-2xl font-mono mb-3 text-center">00:00.00</div>
+    <div class="flex gap-2 mb-2">
+        <button id="floatingSwStart" class="px-3 py-2 bg-green-500 text-white rounded-md flex-1 text-sm">Start</button>
+        <button id="floatingSwPause" class="px-3 py-2 bg-yellow-500 text-white rounded-md flex-1 text-sm">Pause</button>
+        <button id="floatingSwReset" class="px-3 py-2 bg-red-500 text-white rounded-md flex-1 text-sm">Reset</button>
+    </div>
+    <button id="floatingSwLap" class="px-3 py-2 bg-slate-100 dark:bg-slate-700 rounded-md w-full text-sm">Lap</button>
+  </div>
+
+<script src="https://cdn.jsdelivr.net/npm/shepherd.js/dist/js/shepherd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lz-string/libs/lz-string.min.js"></script>
 <script src="js/main.js"></script>
 <script src="js/matchSet.js"></script>
 <script src="js/navbar.js"></script>
 <script src="js/page.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/shepherd.js/dist/js/shepherd.min.js"></script>
-
-<!-- 共有ボタン -->
 <script>
-document.addEventListener("DOMContentLoaded", () => {
-  const shareBtn = document.getElementById("shareBtn");
-  const shareText = "矢所分析アプリMATOMA遠的で遠的記録してみよう！";
-  const shareUrl = window.location.href;
+// ==========================================================
+// ★★★ グローバルスコープで定義する主要な関数と変数 (中央ボタン連動防止ロジックを含む最終修正版) ★★★
+// ==========================================================
 
-  shareBtn.addEventListener("click", async () => {
-    if (navigator.share) {
-      try { await navigator.share({ title: "MATOMA遠的", text: shareText, url: shareUrl }); }
-      catch (err) { console.error("Share failed:", err); }
-    } else {
-      try { await navigator.clipboard.writeText(`${shareText} ${shareUrl}`); alert("リンクをコピーしました。"); }
-      catch (err) { prompt("コピーに失敗しました。手動でコピーしてください:", `${shareText} ${shareUrl}`); }
-    }
-  });
-});
-</script>
+// ======= Settings & Global Variables =======
+const SELECTIONS = [0,3,5,7,9,10];
+const TEAM_SIZE = 3;
+const ARROW_COUNT = 4;
+let currentRoom = null; 
+let isHistoryView = false;
 
-<!-- Service Worker -->
-<script>
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/service-worker-v1.0.6.js')
-      .then(reg => console.log('✅ Service Worker registered:', reg))
-      .catch(err => console.error('❌ SW registration failed:', err));
-  });
+// === UI要素の取得（DOMContentLoadedの前に実行可能） ===
+const openRegisterModalBtn = document.getElementById("openRegisterModalBtn");
+const openManagementModalBtn = document.getElementById("openManagementModalBtn");
+const modalWrapper = document.getElementById("modalWrapper");
+const modalContent = document.getElementById("modalContent");
+const qrCodeDisplayModal = document.getElementById("qrCodeDisplayModal");
+const teamsContainer = document.getElementById("teamsContainer");
+const roomSummary = document.getElementById("roomSummary");
+
+// ★★★ 追跡用の変数: 中央ボタン ★★★
+let centerButton = null;
+
+
+// ==========================================================
+// ★★★ 実行関数定義: addSet (個人用) と addNewTeam (団体用) ★★★
+// ==========================================================
+
+// 外部ファイルで定義されている 'addSet' 関数がグローバルスコープにあることを前提とします。
+// 見つからない場合に備えたダミー定義
+if (typeof window.addSet !== 'function') {
+    window.addSet = function() {
+        alert("【個人用】新しい立ちセットを追加しました！"); 
+        console.log("✅ 個人用セットを追加します (addSet 実行)");
+    };
 }
-</script>
 
-<!-- Shepherd チュートリアル -->
-<script>
-document.addEventListener("DOMContentLoaded", () => {
-  const createTour = () => {
-    const tour = new Shepherd.Tour({
-      defaultStepOptions: { 
-        classes: 'shadow-lg rounded-md bg-white dark:bg-slate-800 p-4', 
-        scrollTo: true, 
-        cancelIcon: { enabled: true } 
-      }
-    });
-    tour.addStep({ id:'step-1', text:'日付を選択します', attachTo:{element:'#matchDateSection', on:'bottom'}, buttons:[{text:'次へ', action: tour.next}] });
-    tour.addStep({ id:'step-2', text:'日別集計がここに表示されます', attachTo:{element:'#dailySummary', on:'bottom'}, buttons:[{text:'前へ', action: tour.back},{text:'次へ', action: tour.next}] });
-    tour.addStep({ id:'step-3', text:'下部の「立ち追加」ボタンで新しい立ちを作ります', attachTo:{element:'#addSetBtnTab', on:'top'}, buttons:[{text:'前へ', action: tour.back},{text:'次へ', action: tour.next}] });
-    tour.addStep({ id:'step-4', text:'的をタップすると点数が付き、外に出すと消えます', attachTo:{element:'#setsContainer', on:'top'}, buttons:[{text:'前へ', action: tour.back},{text:'次へ', action: tour.next}] });
-    tour.addStep({ id:'step-5', text:'リセットで内容、削除で立ちごと削除', attachTo:{element:'#setsContainer', on:'top'}, buttons:[{text:'前へ', action: tour.back},{text:'終了', action: tour.complete}] });
-    return tour;
-  };
-
-  if (!localStorage.getItem('hasSeenTour')) {
-    const initialTour = createTour();
-    initialTour.start();
-    localStorage.setItem('hasSeenTour', 'true');
-  }
-
-  const tutorialBtns = [document.getElementById('tutorialBtn'), document.getElementById('tutorialBtnMobile')];
-  tutorialBtns.forEach(btn => {
-    if (btn) btn.addEventListener('click', () => { createTour().start(); });
-  });
-
-  const addSetBtnTab = document.getElementById("addSetBtnTab");
-  if (addSetBtnTab) {
-    addSetBtnTab.addEventListener("click", () => { 
-      if (Shepherd.activeTour) Shepherd.activeTour.next(); 
-    });
-  }
-});
-</script>
-<script>
-  // ======== ページ読込時にテーマを反映 ========
-  (function() {
-    const theme = localStorage.getItem("theme");
-    if (theme === "dark") {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
+/**
+ * 団体用: 新しいチームを追加する処理
+ */
+function addNewTeam() {
+    if (!currentRoom || isHistoryView) {
+        alert("履歴の閲覧中はチームを追加できません。");
+        return;
     }
-  })();
-</script>
-<script>
-document.addEventListener("DOMContentLoaded", () => {
-  const settingsBtn = document.getElementById("settingsBtn");
-  if (settingsBtn) {
-    settingsBtn.addEventListener("click", () => {
-      window.location.href = "settings.html"; // ← 設定ページへ遷移
-    });
-  }
-});
-</script>
+    const newId = "T" + (currentRoom.teams.length + 1);
+    currentRoom.teams.push({ id: newId, name: `チーム ${currentRoom.teams.length + 1}` });
+    saveRoomToStorage(currentRoom);
+    renderTeamsAndPlayers();
+    updateRoomSummary();
+    alert("【団体用】新しいチームを追加しました！"); 
+}
 
-</body>
+
+// ==========================================================
+// ★★★ 中央タブボタンの動的変更機能 (連動解消ロジック: onclick & stopPropagation) ★★★
+// ==========================================================
+function updateCenterTabButton() {
+    if (!centerButton) {
+        centerButton = document.getElementById('addSetBtnTab');
+        if (!centerButton) return;
+    }
+    
+    const centerButtonIcon = centerButton.querySelector('span.material-symbols-outlined');
+    
+    // currentRoomが存在することを前提に、ルーム内の状態をシミュレート
+    const isRoomActive = currentRoom && !isHistoryView;
+    // タブの色で団体モードか判定
+    const isTeamModeActive = document.getElementById('teamTabBtn').classList.contains('bg-primary') && isRoomActive;
+    
+    // ★★★ 核心的な修正: onclickプロパティを上書きし、イベント伝播を停止するハンドラを設定 ★★★
+    
+    if (isTeamModeActive) {
+        // 団体モードの設定
+        centerButton.title = "チームを追加";
+        centerButtonIcon.innerText = "group_add";
+        
+        centerButton.onclick = (e) => {
+            e.stopPropagation(); // ★重要: 他のリスナー（個人用）へのイベント伝播を停止
+            e.preventDefault();
+            addNewTeam();
+        };
+
+    } else {
+        // 個人モードの設定
+        centerButton.title = "立ちセットを追加";
+        centerButtonIcon.innerText = "add_circle";
+        
+        centerButton.onclick = (e) => {
+            e.stopPropagation(); // ★重要: 他のリスナーへのイベント伝播を停止
+            e.preventDefault();
+            window.addSet();
+        };
+    }
+}
+
+
+// === Storageヘルパー関数 ===
+function saveRoomToStorage(room) { 
+    if (!room || !room.id) return;
+    const rooms = JSON.parse(localStorage.getItem("MATOMA_rooms")||"{}");
+    rooms[room.id] = room;
+    localStorage.setItem("MATOMA_rooms", JSON.stringify(rooms));
+}
+function loadRoomFromStorage(id) { 
+    const rooms = JSON.parse(localStorage.getItem("MATOMA_rooms")||"{}");
+    return rooms[id] || null;
+}
+function isUserRegisteredForRoom(roomId) { return !!localStorage.getItem("MATOMA_user_registered_"+roomId); }
+function setUserRegisteredForRoom(roomId, playerId) { localStorage.setItem("MATOMA_user_registered_"+roomId, playerId || "1"); }
+
+
+// === ユーティリティ関数 ===
+function calcPlayerTotal(player) { 
+    if(!player || !player.scores) return 0; 
+    return player.scores.reduce((acc,v)=> acc + (Number.isFinite(v)? v:0), 0); 
+}
+function calcTeamTotal(teamId) { 
+    if (!currentRoom) return 0;
+    const ps = currentRoom.players.filter(p=>p.teamId===teamId); 
+    return ps.reduce((acc,p)=>acc+calcPlayerTotal(p),0); 
+}
+function calcTeamCount(teamId) { 
+    if (!currentRoom) return 0;
+    return currentRoom.players.filter(p=>p.teamId===teamId).length; 
+}
+function toggleMemberControlButtons(room) {
+    if (!room || isHistoryView) {
+        openRegisterModalBtn.style.display = 'none';
+        openManagementModalBtn.style.display = 'none';
+        return;
+    }
+    const registered = isUserRegisteredForRoom(room.id);
+    if(registered) {
+        openRegisterModalBtn.style.display = 'none';
+        openManagementModalBtn.style.display = 'block';
+    } else {
+        openRegisterModalBtn.style.display = 'block';
+        openManagementModalBtn.style.display = 'none';
+    }
+}
+function updateTeamTotalDisplay(teamId) {
+    const total = calcTeamTotal(teamId);
+    document.querySelectorAll(`.team-${teamId}-total`).forEach(el => {
+        el.innerText = `チーム合計: ${total}`;
+    });
+}
+window.updateRoomSummary = function() {
+    if(!currentRoom){ roomSummary.innerText = "—"; return; }
+    const totalPlayers = currentRoom.players.length;
+    const teamTotals = currentRoom.teams.map(t => `${t.name}=${calcTeamTotal(t.id)}`);
+    roomSummary.innerText = `プレイヤー数: ${totalPlayers}\nチーム数: ${currentRoom.teams.length}\n各チーム合計: ${teamTotals.join(" , ")}`;
+}
+
+
+// === メインのUIレンダリング関数 (変更なし) ===
+window.renderTeamsAndPlayers = function() {
+    teamsContainer.innerHTML = "";
+    if (!currentRoom) return;
+    
+    const scoreOptionsHtml = SELECTIONS.map(score => `<option value="${score}">${score}</option>`).join('');
+
+    currentRoom.players.forEach(p => {
+        if (!p.role) p.role = 'player';
+        p.scores = p.scores || [];
+        p.scores = Array.from({ length: ARROW_COUNT }, (_, i) => p.scores[i] ?? null);
+    });
+
+    if (!currentRoom.teams || currentRoom.teams.length===0) currentRoom.teams=[{id:"T1", name:"チーム 1"}];
+
+    currentRoom.teams.forEach(team => {
+      const teamPlayers = currentRoom.players.filter(p=>p.teamId===team.id);
+      const card = document.createElement("div"); card.className="team-card app-card bg-white dark:bg-slate-900 rounded-2xl shadow p-4";
+      const header = document.createElement("div"); header.className="flex items-center justify-between mb-3";
+      header.innerHTML = `<div><strong>${team.name}</strong><div class="text-sm text-slate-500">メンバー: ${teamPlayers.length}/${currentRoom.settings.teamSize}</div></div>`;
+      
+      const btns = document.createElement("div"); btns.className="flex gap-2";
+      if (!isHistoryView) {
+          const addTeamBtn = document.createElement("button"); addTeamBtn.className="px-2 py-1 bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-slate-200 rounded-md text-sm"; addTeamBtn.innerText="チーム追加";
+          addTeamBtn.onclick = addNewTeam;
+          const renameBtn = document.createElement("button"); renameBtn.className="px-2 py-1 bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-slate-200 rounded-md text-sm"; renameBtn.innerText="名前変更";
+          renameBtn.onclick = () => { const n = prompt("チーム名を入力してください", team.name); if(n){ team.name=n; saveRoomToStorage(currentRoom); renderTeamsAndPlayers(); updateRoomSummary(); } };
+          btns.appendChild(addTeamBtn); btns.appendChild(renameBtn);
+      }
+      header.appendChild(btns); card.appendChild(header);
+
+      const list = document.createElement("div"); list.className="space-y-2";
+      teamPlayers.forEach(player => {
+        const row = document.createElement("div"); row.className="player-row";
+        const left = document.createElement("div"); left.className="player-row-left";
+        const right = document.createElement("div"); right.className="player-row-right";
+        
+        const nameInp = document.createElement("input"); 
+        nameInp.value = player.name||""; 
+        nameInp.className = "rounded-md border-2 border-slate-200 dark:border-slate-700 px-2 py-1 text-sm bg-white dark:bg-slate-800";
+        
+        const canEditRoom = !isHistoryView;
+        const isRegistered = isUserRegisteredForRoom(currentRoom.id);
+        
+        if (!canEditRoom || !isRegistered) { 
+            nameInp.disabled = true;
+            nameInp.classList.add("bg-gray-100", "dark:bg-slate-700", "opacity-70", "cursor-not-allowed");
+        }
+        if (canEditRoom && isRegistered) {
+             nameInp.onchange = () => { player.name = nameInp.value; saveRoomToStorage(currentRoom); updateRoomSummary(); };
+        }
+        left.appendChild(nameInp);
+
+        if (canEditRoom && isRegistered) {
+            const moveBtn = document.createElement("button"); moveBtn.className="px-2 py-1 bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-slate-200 rounded-md text-xs"; moveBtn.innerText="移動";
+            moveBtn.onclick = () => {
+              const options = currentRoom.teams.map(t=>`${t.id}:${t.name}`).join("\n");
+              const sel = prompt("移動先のIDを入力（例: T2）\n"+options);
+              if(sel){ const found = currentRoom.teams.find(t=>t.id===sel.trim()); if(found){ player.teamId = found.id; saveRoomToStorage(currentRoom); renderTeamsAndPlayers(); updateRoomSummary(); } else alert("チームが見つかりませんでした"); }
+            };
+            left.appendChild(moveBtn);
+        }
+        row.appendChild(left);
+        
+        const canEditScore = canEditRoom && (player.role === 'player' || player.role === 'manager'); 
+
+        for (let arrowIndex = 0; arrowIndex < ARROW_COUNT; arrowIndex++) {
+            const select = document.createElement("select"); 
+            select.innerHTML = `<option value="" disabled selected hidden>${arrowIndex+1}射</option>` + scoreOptionsHtml;
+            const score = player.scores[arrowIndex];
+            if (score !== null && score !== undefined) { select.value = score.toString(); } else { select.value = ""; }
+            select.className = "player-score-input rounded-md border-2 border-slate-200 dark:border-slate-700 px-1 py-1 text-sm text-slate-800 dark:text-slate-200 bg-white dark:bg-slate-800 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all";
+
+            if (!canEditScore) {
+                select.disabled = true;
+                select.classList.add("bg-gray-100", "dark:bg-slate-700", "opacity-70", "cursor-not-allowed");
+            }
+
+            if (canEditScore) {
+                select.onchange = () => {
+                    const v = parseInt(select.value);
+                    player.scores[arrowIndex] = Number.isNaN(v) ? null : v;
+                    saveRoomToStorage(currentRoom); 
+                    document.getElementById(`player-total-${player.id}`).innerText = calcPlayerTotal(player);
+                    updateTeamTotalDisplay(team.id);
+                    updateRoomSummary(); 
+                };
+            }
+            right.appendChild(select);
+        }
+        
+        const total = document.createElement("div"); 
+        total.id = `player-total-${player.id}`; 
+        total.className="w-14 text-right font-semibold"; 
+        total.innerText = calcPlayerTotal(player);
+        right.appendChild(total);
+        
+        if (canEditRoom && isRegistered) {
+            const del = document.createElement("button"); del.className="px-2 py-1 bg-red-500 text-white rounded-md text-xs"; del.innerText="削除";
+            del.onclick = () => { if(!confirm(`${player.name} を削除しますか？`)) return; currentRoom.players = currentRoom.players.filter(p=>p.id!==player.id); saveRoomToStorage(currentRoom); renderTeamsAndPlayers(); updateRoomSummary(); };
+            right.appendChild(del);
+        }
+
+        row.appendChild(right);
+        list.appendChild(row);
+      });
+
+      const teamTotal = document.createElement("div"); 
+      teamTotal.className=`mt-3 text-sm font-bold team-total-display team-${team.id}-total`; 
+      teamTotal.innerText = `チーム合計: ${calcTeamTotal(team.id)}`;
+      card.appendChild(list); card.appendChild(teamTotal);
+      teamsContainer.appendChild(card);
+    });
+
+    const unassigned = currentRoom.players.filter(p=>!p.teamId);
+    if(unassigned.length>0){
+      const ucard = document.createElement("div"); ucard.className="team-card app-card bg-white dark:bg-slate-900 rounded-2xl shadow p-4";
+      ucard.innerHTML = `<strong>未割当プレイヤー</strong><div class="text-sm text-slate-500">合計 ${unassigned.length}</div>`;
+      unassigned.forEach(player => {
+        const el = document.createElement("div"); el.className="flex items-center justify-between mt-2";
+        el.innerHTML = `<div>${player.name}</div>${!isHistoryView ? `<div class="flex gap-2"><button class="px-2 py-1 bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-slate-200 rounded-md text-xs assign-btn">割当</button></div>` : ''}`;
+        
+        if (!isHistoryView) {
+            const btn = el.querySelector("button");
+            if(btn) {
+                 btn.onclick = () => {
+                    let target = currentRoom.teams.find(t=>calcTeamCount(t.id) < currentRoom.settings.teamSize);
+                    if(!target){ const newId = "T"+(currentRoom.teams.length+1); target = {id:newId, name:`チーム ${currentRoom.teams.length+1}`}; currentRoom.teams.push(target); }
+                    player.teamId = target.id; saveRoomToStorage(currentRoom); renderTeamsAndPlayers(); updateRoomSummary();
+                 };
+            }
+        }
+        ucard.appendChild(el);
+      });
+      teamsContainer.appendChild(ucard);
+    }
+}
+
+
+// === 過去のルーム履歴表示関数 (変更なし) ===
+window.renderRoomHistory = function() {
+    const historyList = document.getElementById("historyList");
+    const roomHistoryElement = document.getElementById("roomHistory");
+    const rooms = JSON.parse(localStorage.getItem("MATOMA_rooms") || "{}");
+    const roomIds = Object.keys(rooms).sort((a,b) => new Date(rooms[b].createdAt) - new Date(rooms[a].createdAt));
+    
+    if (currentRoom) {
+        if(roomHistoryElement) roomHistoryElement.style.display = 'none';
+        return;
+    } else {
+        if(roomHistoryElement) roomHistoryElement.style.display = 'block';
+    }
+    historyList.innerHTML = "";
+    if (roomIds.length === 0) {
+        historyList.innerHTML = '<p class="text-sm text-slate-500" id="noHistoryMessage">履歴はありません。</p>';
+        return;
+    }
+    roomIds.forEach(id => {
+        const room = rooms[id];
+        const item = document.createElement("div");
+        item.className = "flex items-center justify-between p-3 bg-slate-100 dark:bg-slate-800 rounded-lg";
+        item.innerHTML = `
+            <div>
+                <strong class="block">${room.name}</strong>
+                <span class="text-xs text-slate-600 dark:text-slate-400">${room.id} (${new Date(room.createdAt).toLocaleDateString()})</span>
+            </div>
+            <button data-room-id="${id}" class="join-history-btn px-3 py-1 bg-blue-500 hover:bg-blue-600 text-white rounded-md text-sm transition-colors">詳細閲覧</button>
+        `;
+        historyList.appendChild(item);
+    });
+    historyList.querySelectorAll('.join-history-btn').forEach(button => {
+        button.addEventListener('click', (e) => {
+            const roomId = e.target.getAttribute('data-room-id');
+            const room = loadRoomFromStorage(roomId);
+            if (room) {
+                isHistoryView = true; 
+                renderRoom(room);
+                showTeam();
+                const title = document.getElementById("roomTitle");
+                const subtitle = document.getElementById("roomSubtitle");
+                title.innerText = `${room.name} の【履歴閲覧中】`;
+                subtitle.innerText = `ルームID: ${room.id} - これは過去の記録です。スコア編集はできません。`;
+                document.getElementById("leaveRoomBtn").innerText = "履歴閲覧を終了";
+                alert(`${room.name} の過去の記録を閲覧しています。編集はできません。`);
+            }
+        });
+    });
+}
+
+
+// === モーダルアクションハンドラ ===
+window.closeModal = function() {
+    modalWrapper.classList.add("hidden");
+    modalWrapper.classList.remove("flex");
+    modalContent.innerHTML = '';
+    if (document.getElementById("qrIconBtn")) {
+        document.getElementById("qrIconBtn").classList.remove("bg-primary/20", "text-primary", "dark:bg-primary/50");
+        document.getElementById("qrIconBtn").classList.add("bg-slate-200", "dark:bg-slate-700", "text-slate-700", "dark:text-slate-200");
+    }
+}
+window.handleRegisterSelf = function() {
+    const name = (modalContent.querySelector('#registerNameInput').value || "").trim();
+    const role = modalContent.querySelector('#registerRoleSelect').value;
+    if(!currentRoom || !currentRoom.teams){ alert("ルーム情報が取得できません。"); closeModal(); return; }
+    if(!name){ alert("名前を入力してください"); return; }
+    const newPlayer = { id:"P"+Date.now().toString(36), name, role, teamId:null, scores: Array(ARROW_COUNT).fill(null), local:true };
+    let assigned = currentRoom.teams.find(t=>calcTeamCount(t.id) < currentRoom.settings.teamSize);
+    if(!assigned){ const newId = "T"+(currentRoom.teams.length+1); assigned={id:newId, name:`チーム ${currentRoom.teams.length+1}`}; currentRoom.teams.push(assigned); }
+    newPlayer.teamId = assigned.id;
+    currentRoom.players.push(newPlayer);
+    saveRoomToStorage(currentRoom);
+    setUserRegisteredForRoom(currentRoom.id, newPlayer.id);
+    isHistoryView = false;
+    toggleMemberControlButtons(currentRoom); 
+    renderTeamsAndPlayers(); 
+    updateRoomSummary(); 
+    closeModal();
+    alert("登録しました。よろしくお願いします！");
+}
+window.handleAddPlayer = function() {
+    const nameInput = modalContent.querySelector("#newPlayerNameModal");
+    const name = (nameInput.value || "").trim(); 
+    if (!currentRoom || !currentRoom.teams) { alert("ルーム情報が取得できません。"); closeModal(); return; }
+    if(!name){ alert("プレイヤー名を入力してください"); return; }
+    const newPlayer = { id:"P"+Date.now().toString(36), name, role:'player', teamId:null, scores: Array(ARROW_COUNT).fill(null) };
+    let assigned = currentRoom.teams.find(t=>calcTeamCount(t.id) < currentRoom.settings.teamSize);
+    if(!assigned){ const newId="T"+(currentRoom.teams.length+1); assigned={id:newId, name:`チーム ${currentRoom.teams.length+1}`}; currentRoom.teams.push(assigned); }
+    newPlayer.teamId = assigned.id; currentRoom.players.push(newPlayer); saveRoomToStorage(currentRoom); nameInput.value=""; 
+    renderTeamsAndPlayers(); 
+    updateRoomSummary(); 
+    alert("プレイヤーを追加しました。");
+}
+window.handleAutoAssign = function() {
+    if (!currentRoom || !currentRoom.teams) { alert("ルーム情報が取得できません。"); return; }
+    const players = currentRoom.players;
+    const newTeams = []; let cur = {id:"T1", name:"チーム 1"}; newTeams.push(cur); let count=0;
+    players.forEach(p=> { if(count >= currentRoom.settings.teamSize){ cur = {id:"T"+(newTeams.length+1), name:`チーム ${newTeams.length+1}`}; newTeams.push(cur); count=0; } p.teamId = cur.id; count++; });
+    currentRoom.teams = newTeams; saveRoomToStorage(currentRoom); 
+    renderTeamsAndPlayers(); 
+    updateRoomSummary(); 
+    alert("チームを自動で割り当てました。");
+}
+function openModal(contentId) {
+    if (isHistoryView && contentId !== 'qrModalContent') {
+        alert("履歴閲覧モードではメンバーの追加・管理はできません。");
+        return;
+    }
+    const template = document.getElementById(contentId);
+    if (template) {
+        modalContent.innerHTML = `<div class="p-6 pb-0 flex justify-end"><button onclick="closeModal()" class="text-slate-500 hover:text-slate-700 dark:text-slate-300 dark:hover:text-slate-100 p-1 rounded-full"><span class="material-symbols-outlined">close</span></button></div>` + template.innerHTML;
+        modalWrapper.classList.remove("hidden");
+        modalWrapper.classList.add("flex");
+        if (contentId === 'registerModalContent') {
+            modalContent.querySelector('#registerSelfBtn').onclick = window.handleRegisterSelf;
+            modalContent.querySelector('#skipRegisterBtn').onclick = window.closeModal;
+        } else if (contentId === 'managementModalContent') {
+            modalContent.querySelector('#addPlayerBtnModal').onclick = window.handleAddPlayer; 
+            modalContent.querySelector('#autoAssignBtnModal').onclick = window.handleAutoAssign;
+            modalContent.querySelector('button[onclick="closeModal()"]').onclick = window.closeModal;
+        }
+    }
+}
+
+// === ルーム制御関数 ===
+function setRoomHeader(room) {
+    document.getElementById("roomTitle").innerText = `${room.name} のルーム`;
+    document.getElementById("roomSubtitle").innerText = `ルームID: ${room.id} — 作成: ${new Date(room.createdAt).toLocaleString()}`;
+}
+function makeShortId() { return ("RM"+Math.random().toString(36).slice(2,8)).toUpperCase(); }
+function createRoomObj(name) {
+    const id = makeShortId();
+    return { id, name, createdAt: new Date().toISOString(), players: [], teams: [{id:"T1", name:"チーム 1"}], settings: { teamSize: TEAM_SIZE, selections: SELECTIONS } };
+}
+function joinRoomById(id) {
+    const rooms = JSON.parse(localStorage.getItem("MATOMA_rooms")||"{}");
+    const room = rooms[id] || null;
+    if (!room) { alert("指定されたルームが見つかりません。"); return null; }
+    return room;
+}
+function setupShareControls(room) {
+    const qrIconBtn = document.getElementById("qrIconBtn");
+    const shareIconBtn = document.getElementById("shareIconBtn");
+    qrIconBtn.classList.remove("bg-slate-200", "dark:bg-slate-700", "text-slate-700", "dark:text-slate-200");
+    qrIconBtn.classList.add("bg-primary/20", "text-primary", "dark:bg-primary/50");
+    const code = `MATOMA_JOIN:${room.id}`;
+    const link = location.href.split('#')[0] + "#room=" + room.id;
+    shareIconBtn.onclick = async () => { 
+        if (isHistoryView) return alert("履歴閲覧モードでは共有できません。");
+        const textToCopy = `【MATOMA遠的 ルーム招待】\nルーム名: ${room.name}\n\nURL:\n${link}\n\n招待コード:\n${code}`;
+        try { await navigator.clipboard.writeText(textToCopy); alert("共有リンクとコードをコピーしました！"); } catch (err) { prompt("コピーに失敗しました:", textToCopy); }
+    };
+    qrIconBtn.onclick = () => { 
+        if (isHistoryView) return alert("履歴閲覧モードでは共有できません。");
+        openModal('qrModalContent');
+        const qrDisplay = modalContent.querySelector("#qrCodeDisplayModal");
+        if (qrDisplay) {
+            qrDisplay.innerHTML = "";
+            new QRCode(qrDisplay, { text: link, width: 120, height: 120 });
+        }
+    };
+}
+function renderRoom(room) {
+    currentRoom = room;
+    document.getElementById("roomControls").style.display = "block";
+    setRoomHeader(room);
+    setupShareControls(room); 
+    toggleMemberControlButtons(room);
+    renderTeamsAndPlayers(); 
+    updateRoomSummary(); 
+    document.getElementById("createRoomBtn").style.display = 'none';
+    document.getElementById("joinRoomBtn").style.display = 'none';
+    document.getElementById("leaveRoomBtn").style.display = "block";
+    document.getElementById("roomShareIcons").style.display = "flex"; 
+    if(document.getElementById("roomHistory")) document.getElementById("roomHistory").style.display = 'none'; 
+    if (!isHistoryView) {
+        localStorage.setItem("MATOMA_last_room_id", room.id);
+    }
+    updateCenterTabButton();
+}
+function leaveRoom() {
+    const confirmMsg = isHistoryView ? `ルーム「${currentRoom.name}」の履歴閲覧を終了しますか？` : `ルーム「${currentRoom.name}」から退室しますか？\nデータはブラウザに保存され、履歴から閲覧可能です。`;
+    if (!confirm(confirmMsg)) return;
+
+    const leavingRoomId = currentRoom.id;
+    isHistoryView = false;
+    currentRoom = null;
+    
+    localStorage.removeItem("MATOMA_last_room_id");
+    localStorage.removeItem("MATOMA_user_registered_" + leavingRoomId); 
+    
+    closeModal();
+    document.getElementById("roomControls").style.display = "none";
+    document.getElementById("roomShareIcons").style.display = "none"; 
+    toggleMemberControlButtons(null);
+    document.getElementById("createRoomBtn").style.display = 'block';
+    document.getElementById("joinRoomBtn").style.display = 'block';
+    document.getElementById("leaveRoomBtn").style.display = "none";
+    document.getElementById("roomTitle").innerText = "団体用スコア管理";
+    document.getElementById("roomSubtitle").innerText = "ルームを作成して共有、メンバー登録ができます。";
+    document.getElementById("teamsContainer").innerHTML = "";
+    updateRoomSummary(); 
+    if(document.getElementById("roomHistory")) document.getElementById("roomHistory").style.display = 'block';
+    renderRoomHistory(); 
+    updateCenterTabButton();
+    alert(isHistoryView ? "履歴閲覧を終了しました。" : "ルームから退室しました。");
+}
+
+
+// ==========================================================
+// ★★★ DOMContentLoaded で実行される初期化処理 ★★★
+// ==========================================================
+
+document.addEventListener("DOMContentLoaded", () => {
+    // Tabs
+    const personalTab = document.getElementById("personalTab");
+    const teamTab = document.getElementById("teamTab");
+    const personalBtn = document.getElementById("personalTabBtn");
+    const teamBtn = document.getElementById("teamTabBtn");
+
+    function showPersonal() {
+        personalTab.classList.add("active"); teamTab.classList.remove("active");
+        personalBtn.classList.add("bg-primary","text-white");
+        personalBtn.classList.remove("bg-slate-200","dark:bg-slate-700","text-slate-800","dark:text-white");
+        teamBtn.classList.remove("bg-primary","text-white");
+        teamBtn.classList.add("bg-slate-200","dark:bg-slate-700","text-slate-800","dark:text-white");
+        updateCenterTabButton();
+    }
+    window.showTeam = function() { // グローバルスコープに公開
+        teamTab.classList.add("active"); personalTab.classList.remove("active");
+        teamBtn.classList.add("bg-primary","text-white");
+        teamBtn.classList.remove("bg-slate-200","dark:bg-slate-700","text-slate-800","dark:text-white");
+        personalBtn.classList.remove("bg-primary","text-white");
+        personalBtn.classList.add("bg-slate-200","dark:bg-slate-700","text-slate-800","dark:text-white");
+        if (!currentRoom) window.renderRoomHistory();
+        updateCenterTabButton();
+    }
+    personalBtn.addEventListener("click", showPersonal);
+    teamBtn.addEventListener("click", showTeam);
+
+    // Header buttons
+    document.getElementById("shareBtn").addEventListener("click", async () => {
+        const shareText = "矢所分析アプリMATOMA遠的で遠的記録してみよう！";
+        const shareUrl = window.location.href;
+        if (navigator.share) {
+            try { await navigator.share({ title: "MATOMA遠的", text: shareText, url: shareUrl }); }
+            catch (err) { console.error(err); }
+        } else {
+            try { await navigator.clipboard.writeText(`${shareText} ${shareUrl}`); alert("リンクをコピーしました。"); }
+            catch (err) { prompt("コピーに失敗しました:", `${shareText} ${shareUrl}`); }
+        }
+    });
+    document.getElementById("settingsBtn").addEventListener("click", () => { window.location.href = "settings.html"; });
+
+    // Room controls
+    const roomForm = document.getElementById("roomForm");
+    const joinForm = document.getElementById("joinForm");
+    const roomControls = document.getElementById("roomControls");
+    document.getElementById("leaveRoomBtn").addEventListener("click", leaveRoom);
+    document.getElementById("openRegisterModalBtn").addEventListener('click', () => openModal('registerModalContent'));
+    document.getElementById("openManagementModalBtn").addEventListener('click', () => openModal('managementModalContent'));
+
+    document.getElementById("createRoomBtn").addEventListener("click", () => { 
+        roomForm.style.display="block"; joinForm.style.display="none"; 
+        showTeam(); roomControls.style.display = "block"; closeModal();
+        isHistoryView = false; document.getElementById("leaveRoomBtn").innerText = "退室";
+    });
+    document.getElementById("cancelRoomBtn").addEventListener("click", () => { roomForm.style.display="none"; });
+    document.getElementById("submitRoomBtn").addEventListener("click", () => {
+        const n = document.getElementById("roomName").value.trim(); if(!n){ alert("ルーム名を入力してください"); return; }
+        const r = createRoomObj(n); 
+        saveRoomToStorage(r);
+        isHistoryView = false;
+        renderRoom(r);
+        roomForm.style.display="none"; 
+        alert("ルームを作成しました。参加者に共有してください。");
+    });
+
+    document.getElementById("joinRoomBtn").addEventListener("click", () => { 
+        joinForm.style.display="block"; roomForm.style.display="none"; 
+        showTeam(); roomControls.style.display="block"; closeModal();
+        isHistoryView = false; document.getElementById("leaveRoomBtn").innerText = "退室";
+    });
+    document.getElementById("cancelJoinBtn").addEventListener("click", () => { joinForm.style.display="none"; });
+    document.getElementById("doJoinBtn").addEventListener("click", () => {
+        const v = document.getElementById("joinInput").value.trim(); if(!v) return alert("招待コードまたはURLを入力してください");
+        let id = null; if(v.startsWith("MATOMA_JOIN:")) id = v.split(":")[1]; else { const m = v.match(/[#?&]room=([A-Za-z0-9]+)/); if(m) id = m[1]; }
+        if(!id) return alert("招待コードまたはURLが見つかりません");
+        const room = joinRoomById(id);
+        if(room){ 
+            isHistoryView = false; renderRoom(room); joinForm.style.display="none"; 
+            alert(`${room.name} に参加しました。`); 
+        }
+    });
+
+    // Auto-join from hash or last room
+    (function handleHashOnLoad(){
+        const m = (location.hash || "").match(/room=([A-Za-z0-9]+)/);
+        if(m){ 
+            const room = loadRoomFromStorage(m[1]); 
+            if(room){ isHistoryView = false; renderRoom(room); showTeam(); } 
+            else { 
+                joinForm.style.display="block"; document.getElementById("joinInput").value = `MATOMA_JOIN:${m[1]}`; 
+                showTeam(); roomControls.style.display="block"; 
+            } 
+            return; 
+        }
+        const lastRoomId = localStorage.getItem("MATOMA_last_room_id");
+        if (lastRoomId) {
+            const room = loadRoomFromStorage(lastRoomId);
+            if (room) {
+                joinForm.style.display="block"; document.getElementById("joinInput").value = `MATOMA_JOIN:${lastRoomId}`;
+                showTeam(); roomControls.style.display="block";
+                document.getElementById("roomTitle").innerText = `以前のルーム: ${room.name} に再参加しますか？`;
+                document.getElementById("roomSubtitle").innerText = "「参加」を押して再入室してください。";
+            }
+        }
+    })();
+
+    // ストップウォッチロジック
+    let swStartTime = 0, swElapsed = 0, swTimer = null;
+    const swDisplay = document.getElementById("swDisplay");
+    const floatingSwDisplay = document.getElementById("floatingSwDisplay");
+    const lapList = document.getElementById("lapList");
+
+    function formatTime(ms){ const c = Math.floor(ms/10)%100, s = Math.floor(ms/1000)%60, m = Math.floor(ms/60000); return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}.${String(c).padStart(2,'0')}`; }
+    function updateSwDisplay(){ const val = swElapsed + (swStartTime? (Date.now()-swStartTime) : 0); const time = formatTime(val); swDisplay.innerText = time; floatingSwDisplay.innerText = time; }
+    const startAction = () => { if(!swStartTime) swStartTime = Date.now(); if(!swTimer) swTimer = setInterval(updateSwDisplay, 50); };
+    const pauseAction = () => { if(swStartTime){ swElapsed += Date.now()-swStartTime; swStartTime = 0; } if(swTimer){ clearInterval(swTimer); swTimer = null; } updateSwDisplay(); };
+    const resetAction = () => { swStartTime = 0; swElapsed = 0; if(swTimer){ clearInterval(swTimer); swTimer = null; } lapList.innerHTML=""; updateSwDisplay(); };
+    const lapAction = () => { const val = swElapsed + (swStartTime? (Date.now()-swStartTime) : 0); const li = document.createElement("li"); li.innerText = formatTime(val); lapList.prepend(li); };
+
+    // 両方のストップウォッチにイベントを割り当て
+    document.getElementById("swStart").addEventListener("click", startAction);
+    document.getElementById("floatingSwStart").addEventListener("click", startAction);
+    document.getElementById("swPause").addEventListener("click", pauseAction);
+    document.getElementById("floatingSwPause").addEventListener("click", pauseAction);
+    document.getElementById("swReset").addEventListener("click", resetAction);
+    document.getElementById("floatingSwReset").addEventListener("click", resetAction);
+    document.getElementById("swLap").addEventListener("click", lapAction);
+    document.getElementById("floatingSwLap").addEventListener("click", lapAction);
+
+    // フローティングストップウォッチの表示制御とドラッグ機能
+    const floatingStopwatch = document.getElementById('floatingStopwatch');
+    const sidebar = document.getElementById('sidebar-aside');
+
+    // 表示制御
+    if ('IntersectionObserver' in window && sidebar) {
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (!entry.isIntersecting) {
+                    floatingStopwatch.classList.remove('hidden');
+                } else {
+                    floatingStopwatch.classList.add('hidden');
+                }
+            });
+        }, { threshold: 0.1 });
+        observer.observe(sidebar);
+    }
+
+    // ドラッグ機能
+    let isDragging = false, currentX, currentY, initialX, initialY, xOffset = 0, yOffset = 0;
+    const dragHandle = floatingStopwatch.querySelector('.drag-handle');
+    
+    // 位置の保存と復元
+    const savedPos = JSON.parse(localStorage.getItem('floatingStopwatchPos'));
+    if (savedPos) {
+        floatingStopwatch.style.left = savedPos.x;
+        floatingStopwatch.style.top = savedPos.y;
+        floatingStopwatch.style.bottom = 'auto';
+        floatingStopwatch.style.right = 'auto';
+    }
+
+    dragHandle.addEventListener("mousedown", dragStart);
+    dragHandle.addEventListener("touchstart", dragStart, { passive: false });
+    document.addEventListener("mouseup", dragEnd);
+    document.addEventListener("touchend", dragEnd);
+    document.addEventListener("mousemove", drag);
+    document.addEventListener("touchmove", drag, { passive: false });
+
+    function dragStart(e) {
+        initialX = (e.type === "touchstart") ? e.touches[0].clientX - xOffset : e.clientX - xOffset;
+        initialY = (e.type === "touchstart") ? e.touches[0].clientY - yOffset : e.clientY - yOffset;
+        if (e.target === dragHandle || dragHandle.contains(e.target)) {
+            isDragging = true;
+            if (e.type === "touchmove" || e.type === "touchstart") e.preventDefault();
+        }
+    }
+    function dragEnd() {
+        if (!isDragging) return;
+        initialX = currentX;
+        initialY = currentY;
+        isDragging = false;
+        localStorage.setItem('floatingStopwatchPos', JSON.stringify({x: floatingStopwatch.style.left, y: floatingStopwatch.style.top}));
+    }
+    function drag(e) {
+        if (isDragging) {
+            e.preventDefault();
+            currentX = (e.type === "touchmove") ? e.touches[0].clientX - initialX : e.clientX - initialX;
+            currentY = (e.type === "touchmove") ? e.touches[0].clientY - initialY : e.clientY - initialY;
+            xOffset = currentX;
+            yOffset = currentY;
+            setTranslate(currentX, currentY, floatingStopwatch);
+        }
+    }
+    function setTranslate(xPos, yPos, el) {
+        el.style.transform = `translate3d(${xPos}px, ${yPos}px, 0)`;
+    }
+
+    // 初期化
+    showPersonal();
+    if (document.getElementById("roomHistory")) window.renderRoomHistory();
+    updateCenterTabButton();
+});
+  </script>
+  <script>
+// ==========================================================
+// ★★★ チュートリアル機能 (変更なし) ★★★
+// ==========================================================
+    function startPersonalTour() {
+        document.getElementById("personalTabBtn").click(); 
+    }
+    document.addEventListener("DOMContentLoaded", () => {
+        const teamTour = new Shepherd.Tour({ defaultStepOptions: { cancelIcon: { enabled: true }, classes: 'shadow-2xl bg-white p-4 rounded-xl dark:bg-slate-800 dark:text-white', scrollTo: true, exitOnEsc: true }});
+        teamTour.addSteps([
+            { id: 'team-intro', text: '団体戦やグループでの記録管理に使うタブです。', title: '団体用タブ', attachTo: { element: '#teamTabBtn', on: 'bottom' }, buttons: [ { text: '次へ', action: teamTour.next } ]},
+            { id: 'team-create-join', text: '「ルーム作成」で部屋を作り、「ルームに参加」からメンバーが入室します。', title: 'ルーム作成と参加', attachTo: { element: '#roomEntryButtons', on: 'bottom' }, buttons: [ { text: '戻る', action: teamTour.back }, { text: '次へ', action: teamTour.next } ]},
+            { id: 'team-register-member', text: 'ルーム参加後、「メンバー登録」をします。登録後は「メンバー管理」に変わります。', title: 'メンバー登録', attachTo: { element: '#openRegisterModalBtn', on: 'bottom' }, buttons: [ { text: '戻る', action: teamTour.back }, { text: '次へ', action: teamTour.next } ], canClickTarget: false },
+            { id: 'team-score-input', text: 'メンバーのスコアはここに一覧表示されます。ドロップダウンから点数を選択してください。', title: 'スコア入力', attachTo: { element: '#teamsContainer', on: 'top' }, buttons: [ { text: '戻る', action: teamTour.back }, { text: '次へ', action: teamTour.next } ]},
+            { id: 'team-share', text: 'ルーム作成後、この共有ボタンから招待リンクやQRコードを渡せます。', title: 'ルーム共有', attachTo: { element: '#roomShareIcons', on: 'bottom' }, buttons: [ { text: '戻る', action: teamTour.back }, { text: '完了', action: teamTour.complete } ]}
+        ]);
+        function startTeamTour() {
+            document.getElementById("teamTabBtn").click(); 
+            document.getElementById("roomForm").style.display="none"; 
+            document.getElementById("joinForm").style.display="none"; 
+            document.getElementById("roomControls").style.display = "block";
+            document.getElementById("roomShareIcons").style.display = "flex"; 
+            document.getElementById("openRegisterModalBtn").style.display = 'block';
+            document.getElementById("leaveRoomBtn").innerText = "退室";
+            teamTour.start();
+            const cleanup = () => {
+                document.getElementById("openRegisterModalBtn").style.display = 'none';
+                if (!currentRoom) {
+                    document.getElementById("roomControls").style.display = "none";
+                    document.getElementById("roomShareIcons").style.display = "none";
+                }
+            };
+            teamTour.on('complete', cleanup);
+            teamTour.on('cancel', cleanup);
+        }
+        document.getElementById("tutorialBtn")?.addEventListener("click", startPersonalTour);
+        document.getElementById("tutorialBtnMobile")?.addEventListener("click", startPersonalTour);
+        document.getElementById("tutorialBtnTeam")?.addEventListener("click", startTeamTour);
+        document.getElementById("tutorialBtnMobileTeam")?.addEventListener("click", startTeamTour);
+    });
+  </script>
+  <script>
+    // Service Workerのエラー（404）を回避するため、登録処理自体をコメントアウト/削除することを推奨します。
+  </script>
+  </body>
 </html>

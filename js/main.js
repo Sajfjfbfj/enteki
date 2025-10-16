@@ -77,7 +77,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const setsData = storedData[date] || []
     setsContainer.innerHTML = ""
     setCount = 0
-    setsData.forEach((set) => addNewSet(set))
+    setsData.forEach((set) => window.addSet(set)) // 変更点: グローバルに公開した window.addSet を使用
     loadSummary()
   }
 
@@ -116,16 +116,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
   matchDate.addEventListener("change", () => setCurrentDate(matchDate.value))
 
-  // 追加ボタン
-  if (addSetBtn) {
-    addSetBtn.addEventListener("click", () => {
-      addNewSet()
-      saveSetsForDate(currentDate, getAllSetsData())
-    })
-  }
+  // 【削除】中央ボタンへのイベントリスナーは index.html 側で一元管理するため、この無条件な登録を削除します。
+  // if (addSetBtn) {
+  //   addSetBtn.addEventListener("click", () => {
+  //     addNewSet()
+  //     saveSetsForDate(currentDate, getAllSetsData())
+  //   })
+  // }
 
   /* ---------- add set UI ---------- */
-  function addNewSet(existingSet = null) {
+  // 変更点: addNewSet を window.addSet としてグローバルに公開し、index.html のスクリプトブロックから呼び出せるようにします。
+  window.addSet = function(existingSet = null) {
     const setIndex = setCount++
     const setWrapper = document.createElement("div")
     setWrapper.className = "set-wrapper p-4 bg-white dark:bg-slate-900 rounded-xl shadow-lg space-y-2"
@@ -518,7 +519,7 @@ function updateScoreBoard(canvas, scoreListSelector, totalScoreSelector, markers
     let minDist = Number.POSITIVE_INFINITY,
       bestScore = 0
     targets.forEach((t) => {
-      const d = colorDistance([r, g, b], t.color)
+        const d = colorDistance([r, g, b], t.color)
       if (d < minDist) {
         minDist = d
         bestScore = t.score
