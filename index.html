@@ -416,133 +416,185 @@
 <script src="https://cdn.jsdelivr.net/npm/shepherd.js/dist/js/shepherd.min.js"></script>
 
 <script type="module">
-  // ===============================
-  // Firebase SDK 読み込み
-  // ===============================
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
-  import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-analytics.js";
-  import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
-  import { getFirestore, doc, setDoc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
+// =============================
+// ✅ Firestore 400エラー防止付き Firebase 初期化 & 認証修正版（matoma2-b9292用フルバージョン）
+// =============================
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
+import { 
+  getFirestore, doc, setDoc, getDoc, updateDoc, onSnapshot, serverTimestamp 
+} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
+import { 
+  getAuth, signInAnonymously, onAuthStateChanged 
+} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
 
-  // ===============================
-  // Firebase 設定（修正版）
-  // ===============================
-  const firebaseConfig = {
-    apiKey: "AIzaSyDqFm2sgV0uEWvx8XQy2kzc2PxoWuf8lFw",
-    authDomain: "matoma-1bac1.firebaseapp.com",
-    projectId: "matoma-1bac1",
-    storageBucket: "matoma-1bac1.appspot.com", // ← ここ修正済み！
-    messagingSenderId: "581046138191",
-    appId: "1:581046138191:web:6b3423ddb7eeb957de413a",
-    measurementId: "G-SK4R15CJF1"
+// ===== Firebase設定（matoma2-b9292） =====
+const firebaseConfig = {
+  apiKey: "AIzaSyBvDnppOLkPeBi8QLmzNclOWu-m9ODwZ1Q",
+  authDomain: "matoma2-b9292.firebaseapp.com",
+  projectId: "matoma2-b9292",
+  storageBucket: "matoma2-b9292.firebasestorage.app",
+  messagingSenderId: "202661993563",
+  appId: "1:202661993563:web:0b22ab2f0c5211aaef337e",
+  measurementId: "G-FN8BHPK3GS"
+};
+
+// ===== Firebase初期化 =====
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
+
+// =============================
+// ✅ Firebase認証（匿名ログイン）
+// =============================
+onAuthStateChanged(auth, (user) => {
+  if (!user) {
+    signInAnonymously(auth)
+      .then(() => console.log("✅ 匿名ログイン完了"))
+      .catch((e) => console.error("❌ 匿名ログイン失敗:", e));
+  } else {
+    console.log("👤 認証中ユーザー:", user.uid);
+  }
+});
+
+// =============================
+// ✅ ルーム作成関数（安全版）
+// =============================
+window.doCreateRoom = async function(roomName) {
+  const user = auth.currentUser;
+  if (!user) {
+    alert("ユーザー認証が完了していません。ページを再読み込みしてください。");
+    return null;
+  }
+
+  if (!roomName || !roomName.trim()) {
+    alert("ルーム名を入力してください。");
+    return null;
+  }
+
+  const roomId = ("RM" + Math.random().toString(36).slice(2, 8)).toUpperCase();
+
+  const roomData = {
+    id: roomId,
+    name: roomName.trim(),
+    createdAt: serverTimestamp(),
+    owner: user.uid,
+    players: {},
+    teams: [{ id: "T1", name: "チーム 1" }],
+    settings: { teamSize: 3, arrowCount: 4 },
   };
 
-  // ===============================
-  // Firebase 初期化
-  // ===============================
-  const app = initializeApp(firebaseConfig);
-  const analytics = getAnalytics(app);
-  const db = getFirestore(app);
-  const auth = getAuth(app);
+  try {
+    await setDoc(doc(db, "rooms", roomId), roomData);
+    console.log("✅ Firestoreにルーム作成:", roomId);
+    return { roomId, inviteCode: `MATOMA_JOIN:${roomId}` };
+  } catch (e) {
+    console.error("❌ Firestore書き込みエラー:", e);
+    alert("ルーム作成に失敗しました。");
+    return null;
+  }
+};
 
-  // ===============================
-  // 匿名認証の実行と完了監視
-  // ===============================
-  const createRoomBtn = document.getElementById("createRoomBtn");
-  const submitRoomBtn = document.getElementById("submitRoomBtn");
-  if (createRoomBtn) createRoomBtn.disabled = true;
-  if (submitRoomBtn) submitRoomBtn.disabled = true;
+// =============================
+// ✅ ルーム参加関数
+// =============================
+window.joinTeamMatch = async function(roomId) {
+  try {
+    const snap = await getDoc(doc(db, "rooms", roomId));
+    if (!snap.exists()) {
+      alert("指定されたルームが存在しません。");
+      return null;
+    }
+    const data = snap.data();
+    window.renderRoom(data);
+    return roomId;
+  } catch (e) {
+    console.error("❌ joinTeamMatchエラー:", e);
+    alert("ルーム参加に失敗しました。");
+    return null;
+  }
+};
 
-  signInAnonymously(auth)
-    .then(() => {
-      console.log("✅ 匿名認証を開始しました。");
-    })
-    .catch((error) => {
-      console.error("❌ 匿名認証エラー:", error);
-      alert("Firebase 認証に失敗しました。ネットワーク設定を確認してください。");
-    });
-
-  onAuthStateChanged(auth, (user) => {
-    if (user) {
-      console.log("✅ 認証完了:", user.uid);
-      if (createRoomBtn) createRoomBtn.disabled = false;
-      if (submitRoomBtn) submitRoomBtn.disabled = false;
+// =============================
+// ✅ Firestoreリアルタイム同期関数
+// =============================
+window.startScoreSynchronization = function(roomId) {
+  const unsub = onSnapshot(doc(db, "rooms", roomId), (docSnap) => {
+    if (docSnap.exists()) {
+      const data = docSnap.data();
+      window.renderRoom(data);
     } else {
-      console.warn("⚠️ ユーザー認証が未完了です");
+      alert("ルームが削除されました。");
     }
   });
+  window.currentRoomListener = unsub;
+  console.log("🔄 Firestoreリアルタイムリスナー登録:", roomId);
+};
 
-  // ===============================
-  // Firestore ヘルパー関数
-  // ===============================
-  function makeShortId() {
-    return ("RM" + Math.random().toString(36).slice(2, 8)).toUpperCase();
-  }
+// =============================
+// ✅ チーム・プレイヤー管理関数群
+// =============================
+window.addNewTeam = async function(roomId) {
+  const ref = doc(db, "rooms", roomId);
+  const snap = await getDoc(ref);
+  if (!snap.exists()) return;
+  const room = snap.data();
+  const newId = `T${(room.teams?.length || 0) + 1}`;
+  room.teams.push({ id: newId, name: `チーム ${(room.teams?.length || 0) + 1}` });
+  await updateDoc(ref, { teams: room.teams });
+  console.log(`✅ 新しいチーム ${newId} を追加`);
+};
 
-  async function doCreateRoom() {
-    const user = auth.currentUser;
-    if (!user) {
-      alert("ユーザー認証が完了していません。数秒待って再試行してください。");
-      return;
-    }
+window.updatePlayerTurnScore = async function(roomId, playerId, arrowIndex, value) {
+  const ref = doc(db, "rooms", roomId);
+  const snap = await getDoc(ref);
+  if (!snap.exists()) return;
+  const room = snap.data();
+  if (!room.players[playerId]) return;
+  room.players[playerId].scores[arrowIndex] = value;
+  await updateDoc(ref, { players: room.players });
+  console.log(`🎯 ${playerId} の ${arrowIndex + 1}射目を更新: ${value}`);
+};
 
-    const roomName = document.getElementById("roomName").value.trim() || "無題の団体戦";
-    const newRoom = {
-      id: makeShortId(),
-      name: roomName,
-      createdAt: Date.now(),
-      owner: user.uid,
-      players: [],
-      teams: [{ id: "T1", name: "チーム 1" }],
-      settings: { teamSize: 3, selections: [0, 3, 5, 7, 9, 10] }
-    };
+window.addPlayerToRoom = async function(roomId, name, role) {
+  const ref = doc(db, "rooms", roomId);
+  const snap = await getDoc(ref);
+  if (!snap.exists()) return;
+  const room = snap.data();
+  const newId = "P" + Date.now().toString(36);
+  room.players[newId] = { id: newId, name, role, scores: [null, null, null, null], teamId: room.teams[0].id };
+  await updateDoc(ref, { players: room.players });
+  console.log(`👤 新規プレイヤー追加: ${name}`);
+};
 
-    try {
-      await setDoc(doc(db, "rooms", newRoom.id), newRoom);
-      alert(`ルームを作成しました！招待コード: ${newRoom.id}`);
-      navigator.clipboard.writeText(newRoom.id);
-      document.getElementById("roomForm").style.display = "none";
-    } catch (e) {
-      console.error("❌ ルーム作成エラー:", e);
-      alert("ルームの作成に失敗しました。ネットワークを確認してください。");
-    }
-  }
+// =============================
+// ✅ ルーム作成ボタン（修正版）
+// =============================
+document.addEventListener("DOMContentLoaded", () => {
+  const submitBtn = document.getElementById("submitRoomBtn");
+  const roomForm = document.getElementById("roomForm");
 
-  // ===============================
-  // リアルタイム同期リスナー
-  // ===============================
-  function setupRealtimeListener(roomId) {
-    const roomRef = doc(db, "rooms", roomId);
-    onSnapshot(roomRef, (docSnap) => {
-      if (docSnap.exists()) {
-        console.log("📡 ルームデータ更新:", docSnap.data());
+  if (submitBtn) {
+    submitBtn.addEventListener("click", async () => {
+      const n = document.getElementById("roomName").value.trim();
+      if (!n) {
+        alert("ルーム名を入力してください");
+        return;
+      }
+
+      const result = await window.doCreateRoom(n);
+
+      if (result && result.roomId) {
+        window.startScoreSynchronization(result.roomId);
+        roomForm.style.display = "none";
+        alert(`ルーム「${n}」を作成しました。\n招待コード: ${result.inviteCode}\n参加者に共有してください。`);
+      } else {
+        alert("ルーム作成に失敗しました。");
       }
     });
   }
-
-  // ===============================
-  // イベント登録
-  // ===============================
-  document.addEventListener("DOMContentLoaded", () => {
-    const createRoomBtn = document.getElementById("createRoomBtn");
-    const submitRoomBtn = document.getElementById("submitRoomBtn");
-    const cancelRoomBtn = document.getElementById("cancelRoomBtn");
-    const roomForm = document.getElementById("roomForm");
-
-    if (createRoomBtn)
-      createRoomBtn.addEventListener("click", () => {
-        roomForm.style.display = "block";
-      });
-
-    if (cancelRoomBtn)
-      cancelRoomBtn.addEventListener("click", () => {
-        roomForm.style.display = "none";
-      });
-
-    if (submitRoomBtn)
-      submitRoomBtn.addEventListener("click", doCreateRoom);
-  });
+});
 </script>
+
 
 
 
@@ -1155,7 +1207,7 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("submitRoomBtn").addEventListener("click", async () => {
         const n = document.getElementById("roomName").value.trim(); if(!n){ alert("ルーム名を入力してください"); return; }
         
-        const result = await window.createNewTeamMatch(n);
+        const roomId = await doCreateRoom(n);
         
         if (result && result.roomId) {
             window.startScoreSynchronization(result.roomId);

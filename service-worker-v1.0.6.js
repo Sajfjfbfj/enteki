@@ -1,5 +1,5 @@
-// service-worker.js（改良版：自動更新＆くるくる防止）
-const CACHE_NAME = "kyudo-cache-v1.0.6"; // 新バージョン
+// service-worker-v1.0.6.js（Firebase通信除外＋くるくる防止）
+const CACHE_NAME = "kyudo-cache-v1.0.6";
 const urlsToCache = [
   "/", "/index.html", "/yadokoro.html", "/help.html", "/tools.html",
   "/css/style.css",
@@ -47,18 +47,26 @@ self.addEventListener("activate", event => {
   self.clients.claim();
 });
 
-// --- fetch: キャッシュ最優先 + ネットワーク更新 ---
+// --- fetch: Firestore除外 + キャッシュ優先 + ネット更新 ---
 self.addEventListener("fetch", event => {
+  const url = event.request.url;
+
+  // ✅ Firestore・Firebase通信はキャッシュ処理をスキップ
+  if (url.includes("firestore.googleapis.com") || url.includes("firebase")) {
+    return;
+  }
+
   event.respondWith(
     caches.match(event.request).then(cacheRes => {
       const fetchPromise = fetch(event.request)
         .then(fetchRes => {
           if (fetchRes && fetchRes.status === 200) {
-            caches.open(CACHE_NAME).then(cache => cache.put(event.request, fetchRes.clone()));
+            const cloned = fetchRes.clone();
+            caches.open(CACHE_NAME).then(cache => cache.put(event.request, cloned));
           }
           return fetchRes;
         })
-        .catch(() => null); // ネットワーク失敗は無視
+        .catch(() => null);
 
       // キャッシュがあれば即返す、なければネットワーク結果を待つ
       return cacheRes || fetchPromise || new Response("Offline", { status: 503 });

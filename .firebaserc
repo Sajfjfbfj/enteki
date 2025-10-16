@@ -1,5 +1,7 @@
 {
   "projects": {
-    "default": "device-streaming-5220328a"
-  }
+    "default": "matoma2-b9292"
+  },
+  "targets": {},
+  "etags": {}
 }
