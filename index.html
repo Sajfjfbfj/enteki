@@ -416,392 +416,134 @@
 <script src="https://cdn.jsdelivr.net/npm/shepherd.js/dist/js/shepherd.min.js"></script>
 
 <script type="module">
-  // Import the functions you need from the SDKs you need
+  // ===============================
+  // Firebase SDK 読み込み
+  // ===============================
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
   import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-analytics.js";
-  
-  // ★★★ Realtime Database と Authentication のインポートを追加 ★★★
-  import { getDatabase, ref, set, onValue, get, child, update, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-database.js";
-  import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
-  // ----------------------------------------------------------------------
+  import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
+  import { getFirestore, doc, setDoc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
 
-  // Your web app's Firebase configuration
-  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+  // ===============================
+  // Firebase 設定（修正版）
+  // ===============================
   const firebaseConfig = {
     apiKey: "AIzaSyDqFm2sgV0uEWvx8XQy2kzc2PxoWuf8lFw",
     authDomain: "matoma-1bac1.firebaseapp.com",
     projectId: "matoma-1bac1",
-    storageBucket: "matoma-1bac1.firebasestorage.app",
+    storageBucket: "matoma-1bac1.appspot.com", // ← ここ修正済み！
     messagingSenderId: "581046138191",
     appId: "1:581046138191:web:6b3423ddb7eeb957de413a",
     measurementId: "G-SK4R15CJF1"
   };
 
-  // Initialize Firebase
+  // ===============================
+  // Firebase 初期化
+  // ===============================
   const app = initializeApp(firebaseConfig);
   const analytics = getAnalytics(app);
-
-  // サービス初期化
-  const db = getDatabase(app); 
+  const db = getFirestore(app);
   const auth = getAuth(app);
 
-  // グローバル変数/関数へのアクセス
-  const ARROW_COUNT = window.ARROW_COUNT || 4; 
-  const TEAM_SIZE = window.TEAM_SIZE || 3;
-  
-  // 匿名認証を自動で実行
-  signInAnonymously(auth).catch((error) => {
-      console.error("匿名認証に失敗しました:", error);
+  // ===============================
+  // 匿名認証の実行と完了監視
+  // ===============================
+  const createRoomBtn = document.getElementById("createRoomBtn");
+  const submitRoomBtn = document.getElementById("submitRoomBtn");
+  if (createRoomBtn) createRoomBtn.disabled = true;
+  if (submitRoomBtn) submitRoomBtn.disabled = true;
+
+  signInAnonymously(auth)
+    .then(() => {
+      console.log("✅ 匿名認証を開始しました。");
+    })
+    .catch((error) => {
+      console.error("❌ 匿名認証エラー:", error);
+      alert("Firebase 認証に失敗しました。ネットワーク設定を確認してください。");
+    });
+
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      console.log("✅ 認証完了:", user.uid);
+      if (createRoomBtn) createRoomBtn.disabled = false;
+      if (submitRoomBtn) submitRoomBtn.disabled = false;
+    } else {
+      console.warn("⚠️ ユーザー認証が未完了です");
+    }
   });
 
-  function generateInviteCode() {
-    return Math.random().toString(36).substring(2, 8).toUpperCase();
+  // ===============================
+  // Firestore ヘルパー関数
+  // ===============================
+  function makeShortId() {
+    return ("RM" + Math.random().toString(36).slice(2, 8)).toUpperCase();
   }
 
-  // ==========================================================
-  // ★★★ Firebase Core Functions exposed to window ★★★
-  // ==========================================================
+  async function doCreateRoom() {
+    const user = auth.currentUser;
+    if (!user) {
+      alert("ユーザー認証が完了していません。数秒待って再試行してください。");
+      return;
+    }
 
-  /**
-   * 新しい団体戦ルームを作成し、招待コードを発行する (Firebase使用)
-   * @param {string} matchName 団体戦名
-   */
-  window.createNewTeamMatch = async function(matchName) {
-      const user = auth.currentUser;
-      if (!user) {
-          alert("ユーザー認証が完了していません。再読み込みしてください。");
-          return null;
+    const roomName = document.getElementById("roomName").value.trim() || "無題の団体戦";
+    const newRoom = {
+      id: makeShortId(),
+      name: roomName,
+      createdAt: Date.now(),
+      owner: user.uid,
+      players: [],
+      teams: [{ id: "T1", name: "チーム 1" }],
+      settings: { teamSize: 3, selections: [0, 3, 5, 7, 9, 10] }
+    };
+
+    try {
+      await setDoc(doc(db, "rooms", newRoom.id), newRoom);
+      alert(`ルームを作成しました！招待コード: ${newRoom.id}`);
+      navigator.clipboard.writeText(newRoom.id);
+      document.getElementById("roomForm").style.display = "none";
+    } catch (e) {
+      console.error("❌ ルーム作成エラー:", e);
+      alert("ルームの作成に失敗しました。ネットワークを確認してください。");
+    }
+  }
+
+  // ===============================
+  // リアルタイム同期リスナー
+  // ===============================
+  function setupRealtimeListener(roomId) {
+    const roomRef = doc(db, "rooms", roomId);
+    onSnapshot(roomRef, (docSnap) => {
+      if (docSnap.exists()) {
+        console.log("📡 ルームデータ更新:", docSnap.data());
       }
-      
-      const newRoomId = ("RM"+Math.random().toString(36).slice(2,8)).toUpperCase();
-      const inviteCode = generateInviteCode();
-      
-      const newRoomData = { 
-          id: newRoomId,
-          name: matchName, 
-          creatorId: user.uid, 
-          createdAt: serverTimestamp(),
-          settings: { teamSize: TEAM_SIZE, selections: window.SELECTIONS || [0,3,5,7,9,10] },
-          members: {
-              [user.uid]: { name: "ホスト", role: "host", registeredAt: serverTimestamp() }
-          },
-          teams: [{id:"T1", name:"チーム 1"}], // 初期チーム
-          players: {} // プレイヤーリストはオブジェクトとして初期化
-      };
-
-      const updates = {};
-      updates[`/rooms/${newRoomId}`] = newRoomData;
-      updates[`/inviteCodes/${inviteCode}`] = newRoomId;
-
-      try {
-          await update(ref(db), updates);
-          window.setUserRegisteredForRoom(newRoomId, user.uid);
-          return { roomId: newRoomId, inviteCode };
-      } catch (error) {
-          console.error("ルーム作成エラー:", error);
-          alert("ルーム作成に失敗しました。");
-          return null;
-      }
+    });
   }
 
-  /**
-   * 招待コードまたはroomIdを使用して団体戦ルームに参加する (Firebase使用)
-   * @param {string} identifier 招待コードまたはroomId
-   * @param {string} playerName 参加者名 (メンバー登録時のみ使用)
-   * @param {string} playerRole 参加者役割 (メンバー登録時のみ使用)
-   */
-  window.joinTeamMatch = async function(identifier, playerName = null, playerRole = null) {
-      const user = auth.currentUser;
-      if (!user) {
-          alert("ユーザー認証が完了していません。再読み込みしてください。");
-          return null;
-      }
-      
-      let roomId = identifier.toUpperCase();
+  // ===============================
+  // イベント登録
+  // ===============================
+  document.addEventListener("DOMContentLoaded", () => {
+    const createRoomBtn = document.getElementById("createRoomBtn");
+    const submitRoomBtn = document.getElementById("submitRoomBtn");
+    const cancelRoomBtn = document.getElementById("cancelRoomBtn");
+    const roomForm = document.getElementById("roomForm");
 
-      // 1. 招待コードならroomIdに変換
-      if (!roomId.startsWith("RM")) {
-          const codeRef = ref(db, `inviteCodes/${roomId}`);
-          const codeSnapshot = await get(codeRef); 
-          if (!codeSnapshot.exists()) {
-              alert("無効な招待コードです。");
-              return null;
-          }
-          roomId = codeSnapshot.val();
-      }
-
-      // 2. ルームデータ取得
-      const roomRef = ref(db, `rooms/${roomId}`);
-      const roomSnapshot = await get(roomRef);
-      if (!roomSnapshot.exists()) {
-           alert("指定されたルームが見つかりません。");
-           return null;
-      }
-      const roomData = roomSnapshot.val();
-
-      // 3. メンバー登録（playerNameが指定されている＝登録モーダルからの実行）
-      if (playerName && playerRole) {
-          const updates = {};
-          const memberPath = `/rooms/${roomId}/members/${user.uid}`;
-          const newMemberData = {
-              name: playerName,
-              role: playerRole,
-              registeredAt: serverTimestamp()
-          };
-          updates[memberPath] = newMemberData;
-          
-          // プレイヤーリストに追加 (プレイヤーロールの場合)
-          if (playerRole === 'player' || playerRole === 'manager') {
-              const teamId = roomData.teams[0]?.id || "T1";
-              const newPlayer = {
-                  id: user.uid,
-                  name: playerName,
-                  role: playerRole,
-                  teamId: teamId, 
-                  scores: Array(ARROW_COUNT).fill(null)
-              };
-              updates[`/rooms/${roomId}/players/${user.uid}`] = newPlayer;
-          }
-          
-          await update(ref(db), updates);
-          window.setUserRegisteredForRoom(roomId, user.uid);
-
-      } else {
-          // 閲覧者としてメンバーリストに自動追加
-          if (!roomData.members || !roomData.members[user.uid]) {
-              await set(ref(db, `/rooms/${roomId}/members/${user.uid}`), {
-                  name: `ゲスト (${user.uid.slice(0,4)})`,
-                  role: "viewer",
-                  registeredAt: serverTimestamp()
-              });
-          }
-      }
-
-      localStorage.setItem('MATOMA_last_room_id', roomId);
-      return roomId;
-  }
-
-  // リアルタイムリスナーの保持用
-  let currentRoomListener = null;
-
-  /**
-   * 団体戦スコアのリアルタイム同期を開始 (Firebase使用)
-   * @param {string} roomId 
-   */
-  window.startScoreSynchronization = function(roomId) {
-      if (currentRoomListener) {
-          currentRoomListener(); 
-      }
-      
-      const roomRef = ref(db, `rooms/${roomId}`);
-      
-      // データが変更されるたびに発火するリスナーを設定
-      currentRoomListener = onValue(roomRef, (snapshot) => {
-          if (snapshot.exists()) {
-              const roomData = snapshot.val();
-              // UIレンダリング関数を呼び出す
-              window.renderRoom(roomData, false); // isHistoryView=false
-          } else {
-              console.log("ルームがDBから削除されました。");
-              window.leaveRoom(true); // 強制退室
-          }
+    if (createRoomBtn)
+      createRoomBtn.addEventListener("click", () => {
+        roomForm.style.display = "block";
       });
-  }
-  
-  /**
-   * プレイヤーの特定の立ちの得点を更新 (Firebase使用)
-   */
-  window.updatePlayerTurnScore = function(roomId, playerId, arrowIndex, newScore) {
-      const path = `rooms/${roomId}/players/${playerId}/scores/${arrowIndex}`;
-      set(ref(db, path), newScore)
-      .catch((error) => {
-          console.error("スコア更新エラー:", error);
-          alert("スコア更新に失敗しました。認証状態を確認してください。");
+
+    if (cancelRoomBtn)
+      cancelRoomBtn.addEventListener("click", () => {
+        roomForm.style.display = "none";
       });
-  }
 
-  /**
-   * チーム間の移動 (Firebase使用)
-   */
-  window.movePlayerTeam = function(roomId, playerId, newTeamId) {
-      const path = `rooms/${roomId}/players/${playerId}/teamId`;
-      set(ref(db, path), newTeamId)
-      .catch((error) => {
-          console.error("チーム移動エラー:", error);
-          alert("チーム移動に失敗しました。");
-      });
-  }
-
-  /**
-   * プレイヤー情報の更新 (名前) (Firebase使用)
-   */
-  window.updatePlayerInfo = function(roomId, playerId, newName) {
-      const updates = {};
-      updates[`rooms/${roomId}/players/${playerId}/name`] = newName;
-      updates[`rooms/${roomId}/members/${playerId}/name`] = newName; // メンバー名も更新
-      update(ref(db), updates)
-      .catch((error) => {
-          console.error("プレイヤー名更新エラー:", error);
-          alert("プレイヤー名更新に失敗しました。");
-      });
-  }
-
-  /**
-   * プレイヤーの削除 (Firebase使用)
-   */
-  window.deletePlayer = function(roomId, playerId) {
-      if (!confirm("プレイヤーを削除しますか？")) return;
-      const playerPath = `rooms/${roomId}/players/${playerId}`;
-      const memberPath = `rooms/${roomId}/members/${playerId}`;
-
-      const updates = {};
-      updates[playerPath] = null;
-      updates[memberPath] = null;
-
-      update(ref(db), updates)
-      .catch((error) => {
-          console.error("プレイヤー/メンバー削除エラー:", error);
-          alert("プレイヤー削除に失敗しました。");
-      });
-  }
-
-  /**
-   * 新しいチームの追加 (Firebase使用)
-   */
-  window.addNewTeam = async function(roomId) {
-      const roomRef = ref(db, `rooms/${roomId}`);
-      const snapshot = await get(child(roomRef, 'teams'));
-      const teams = snapshot.val() || [];
-      const teamList = Array.isArray(teams) ? teams : Object.values(teams);
-      
-      const newId = "T" + (teamList.length + 1);
-      const newTeam = { id: newId, name: `チーム ${teamList.length + 1}` };
-      
-      teamList.push(newTeam);
-      
-      set(child(roomRef, 'teams'), teamList)
-      .then(() => {
-          alert("【団体用】新しいチームを追加しました！"); 
-      })
-      .catch((error) => {
-          console.error("チーム追加エラー:", error);
-          alert("チーム追加に失敗しました。");
-      });
-  }
-  
-  /**
-   * チーム名の変更 (Firebase使用)
-   */
-  window.renameTeam = function(roomId, teamId, newName) {
-      const teamsRef = ref(db, `rooms/${roomId}/teams`);
-      get(teamsRef).then(snapshot => {
-          const teams = snapshot.val();
-          if (teams) {
-              const index = Array.isArray(teams) ? teams.findIndex(t => t.id === teamId) : Object.keys(teams).find(key => teams[key].id === teamId);
-              if (index !== -1) {
-                  set(child(teamsRef, index + '/name'), newName);
-              }
-          }
-      });
-  }
-
-  /**
-   * チームの自動割当 (Firebase使用)
-   */
-  window.handleAutoAssignFirebase = async function(roomId) {
-      const roomRef = ref(db, `rooms/${roomId}`);
-      const snapshot = await get(roomRef);
-      if (!snapshot.exists()) return alert("ルーム情報が取得できません。");
-      const room = snapshot.val();
-      const players = room.players ? Object.values(room.players) : [];
-      const teamSize = room.settings.teamSize || 3;
-      
-      if (players.length === 0) return alert("プレイヤーがいません。");
-      
-      const newTeams = []; 
-      let curTeam = null; 
-      let count = teamSize;
-      const playerUpdates = {};
-
-      players.sort((a, b) => a.name.localeCompare(b.name)).forEach((p, index) => { // 名前順にソートして割当
-          if(count >= teamSize){ 
-              const newId = "T"+(newTeams.length+1); 
-              curTeam = {id:newId, name:`チーム ${newTeams.length+1}`}; 
-              newTeams.push(curTeam); 
-              count = 0; 
-          } 
-          const playerId = p.id;
-          playerUpdates[`rooms/${roomId}/players/${playerId}/teamId`] = curTeam.id;
-          count++;
-      });
-      
-      const updates = playerUpdates;
-      updates[`rooms/${roomId}/teams`] = newTeams;
-
-      update(ref(db), updates)
-      .then(() => {
-          alert("チームを自動で割り当てました。");
-      })
-      .catch(error => {
-          console.error("自動割当エラー:", error);
-          alert("自動割当に失敗しました。");
-      });
-  }
-
-  /**
-   * プレイヤーの追加 (Firebase使用)
-   */
-  window.addPlayerToRoom = async function(roomId, name, role) {
-      const roomRef = ref(db, `rooms/${roomId}`);
-      const snapshot = await get(roomRef);
-      if (!snapshot.exists()) return alert("ルーム情報が取得できません。");
-      const room = snapshot.val();
-      
-      const newAuthId = 'LOCAL_'+Date.now().toString(36); // ローカルで作成したプレイヤーに一意のIDを付与
-      const teamId = room.teams[0]?.id || "T1";
-
-      const newPlayer = {
-          id: newAuthId,
-          name: name,
-          role: role,
-          teamId: teamId,
-          scores: Array(ARROW_COUNT).fill(null),
-          local: true // ローカル作成フラグ
-      };
-      
-      // メンバーとプレイヤーの両方を登録
-      const updates = {};
-      updates[`rooms/${roomId}/members/${newAuthId}`] = { name: name, role: role, registeredAt: serverTimestamp(), local: true };
-      updates[`rooms/${roomId}/players/${newAuthId}`] = newPlayer;
-
-      update(ref(db), updates)
-      .then(() => {
-          console.log("プレイヤーを追加しました。");
-      })
-      .catch(error => {
-          console.error("プレイヤー追加エラー:", error);
-          alert("プレイヤー追加に失敗しました。");
-      });
-  }
-
-  /**
-   * ルーム履歴からルームデータを取得する (ローカルストレージ)
-   */
-  window.loadRoomFromHistory = function(roomId) {
-      const rooms = JSON.parse(localStorage.getItem("MATOMA_rooms_history")||"{}");
-      return rooms[roomId] || null;
-  }
-
-  /**
-   * ルームデータを履歴に保存する (ローカルストレージ)
-   */
-  window.saveRoomToHistory = function(room) {
-      if (!room || !room.id) return;
-      const rooms = JSON.parse(localStorage.getItem("MATOMA_rooms_history")||"{}");
-      rooms[room.id] = room; // Firebaseからのデータで上書き
-      localStorage.setItem("MATOMA_rooms_history", JSON.stringify(rooms));
-  }
+    if (submitRoomBtn)
+      submitRoomBtn.addEventListener("click", doCreateRoom);
+  });
 </script>
+
 
 
 <script>
