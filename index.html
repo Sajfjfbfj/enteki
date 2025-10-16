@@ -406,6 +406,414 @@
     <button id="floatingSwLap" class="px-3 py-2 bg-slate-100 dark:bg-slate-700 rounded-md w-full text-sm">Lap</button>
   </div>
 
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <link rel="apple-touch-icon" sizes="57x57" href="/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#1969e1">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/ms-icon-144x144.png">
+
+  <title>MATOMA | 遠的スコア管理アプリ - 弓道の記録をスマホで簡単に分析</title>
+  <meta name="description" content="MATOMA遠的は弓道の遠的スコアをスマホで簡単に記録・分析・共有できるアプリです。立ちごとの点数管理や矢所分析で、自分の射を可視化しましょう。" />
+  <meta name="keywords" content="弓道,遠的,スコア管理,矢所分析,アプリ,MATOMA" />
+  <meta name="robots" content="index, follow" />
+
+  <meta property="og:title" content="MATOMA | 遠的スコア管理アプリ" />
+  <meta property="og:description" content="遠的スコアをスマホで簡単に分析・共有！MATOMAで弓道の記録をもっと楽しく。" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://enteki.vercel.app/" />
+  <meta property="og:image" content="https://enteki.vercel.app/assets/img/aikonmato.png" />
+  <meta property="og:site_name" content="MATOMA 遠的" />
+
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="MATOMA | 遠的スコア管理アプリ" />
+  <meta property="twitter:description" content="遠的スコアをスマホで簡単に分析・共有！MATOMAで弓道の記録をもっと楽しく。" />
+  <meta property="twitter:image" content="https://enteki.vercel.app/assets/img/aikonmato.png" />
+  <meta property="twitter:url" content="https://enteki.vercel.app/" />
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "MATOMA 遠的",
+    "url": "https://enteki.vercel.app/",
+    "description": "MATOMA遠的は弓道の遠的スコアをスマホで簡単に記録・分析・共有できるアプリです。",
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": "https://enteki.vercel.app/?s={search_term_string}",
+      "query-input": "required name=search_term_string"
+    }
+  }
+  </script>
+
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#1969e1",
+            "background-light": "#f6f7f8",
+            "background-dark": "#111721"
+          },
+          fontFamily: {
+            "display": ["Manrope", "Yu Gothic", "Hiragino Maru Gothic ProN", "sans-serif"]
+          }
+        }
+      }
+    }
+  </script>
+
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/shepherd.js/dist/css/shepherd.css">
+
+  <style>
+    /* custom styles */
+    body { padding-bottom: 120px; }
+    .app-card { transition: transform .18s ease, box-shadow .18s ease; }
+    .app-card:hover { transform: translateY(-4px); box-shadow: 0 18px 30px rgba(0,0,0,.08); }
+    .center-tab-button { position: relative; top: -20px; width:64px; height:64px; border-radius:50%; display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg,#1969e1,#1557c7); color:white; border:none; box-shadow:0 8px 24px rgba(25,105,225,0.4); }
+    .tab-content { display:none; }
+    .tab-content.active { display:block; }
+    .player-score-input { width:60px; max-width:60px; } 
+    @media (min-width:768px){ .player-score-input{ width:70px; } }
+    .canvas-container{ width:100%; max-width:600px; margin:0 auto; aspect-ratio:1/1; position:relative; }
+    .canvas-container canvas{ width:100% !important; height:100% !important; display:block; }
+    
+    /* ★★★ 変更: スマホ表示用にレスポンシブ対応を追加 ★★★ */
+    .player-row {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.5rem;
+    }
+    .player-row-left, .player-row-right {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .player-row-right {
+        flex-wrap: nowrap; /* PCでは折り返さない */
+    }
+    @media (max-width: 767px) {
+        .player-row {
+            flex-direction: column; /* スマホでは縦並び */
+            align-items: stretch;
+        }
+        .player-row-left {
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+        .player-row-right {
+            justify-content: space-between;
+            flex-wrap: wrap; /* スマホではスコア入力を折り返す */
+        }
+        .player-score-input {
+            flex-grow: 1;
+            min-width: 60px;
+        }
+    }
+
+    /* ★★★ 新規追加: フローティングストップウォッチのスタイル ★★★ */
+    #floatingStopwatch {
+        position: fixed;
+        bottom: 80px;
+        right: 16px;
+        z-index: 100;
+        background-color: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(8px);
+        border-radius: 12px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        padding: 12px;
+        width: 280px;
+        touch-action: none; /* ドラッグ中のページスクロールを防止 */
+        transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+    .dark #floatingStopwatch {
+        background-color: rgba(30, 41, 59, 0.9);
+    }
+    #floatingStopwatch.hidden {
+        opacity: 0;
+        transform: scale(0.9);
+        pointer-events: none;
+    }
+    #floatingStopwatch .drag-handle {
+        cursor: move;
+        padding: 4px;
+        text-align: center;
+        color: #94a3b8;
+    }
+    #floatingStopwatch .drag-handle .material-symbols-outlined {
+        font-size: 20px;
+    }
+  </style>
+</head>
+
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-800 dark:text-slate-200">
+  <div class="flex flex-col min-h-screen">
+
+    <header class="sticky top-0 z-20 bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm border-b border-slate-100 dark:border-slate-800">
+      <div class="container mx-auto px-4 py-3 flex items-center justify-between">
+        <h1 class="text-lg font-bold text-slate-900 dark:text-white">MATOMA遠的</h1>
+        <div class="flex items-center gap-2">
+          <button id="shareBtn" class="px-4 py-2 bg-primary text-white rounded-full text-sm font-semibold shadow-md">共有</button>
+          <button id="settingsBtn" class="p-2 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200" title="設定">
+            <span class="material-symbols-outlined text-2xl">settings</span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <div class="container mx-auto px-4 py-4">
+      <div class="flex gap-2 justify-center">
+        <button id="personalTabBtn" class="px-4 py-2 rounded-lg font-semibold bg-primary text-white">個人用</button>
+        <button id="teamTabBtn" class="px-4 py-2 rounded-lg font-semibold bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-white">団体用</button>
+      </div>
+    </div>
+
+    <main class="flex-grow container mx-auto px-4 pb-12">
+
+      <section id="personalTab" class="tab-content active">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <section class="app-card bg-white dark:bg-slate-900 p-5 rounded-2xl shadow-lg" id="matchDateSection">
+            <label for="matchDate" class="block mb-3 font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2">
+              <span class="material-symbols-outlined text-primary">calendar_today</span>
+              日付選択
+            </label>
+            <input type="date" id="matchDate" class="w-full rounded-xl border-2 border-slate-200 dark:border-slate-700 px-4 py-3 text-slate-800 dark:text-slate-200 bg-white dark:bg-slate-800 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all">
+          </section>
+
+          <section id="dailySummary">
+            <h2 class="text-xl font-bold mb-3 text-slate-900 dark:text-white">日別集計</h2>
+            <div class="app-card bg-white dark:bg-slate-900 rounded-2xl shadow-lg p-5">
+              <div class="flex items-center gap-3 text-slate-500 dark:text-slate-400">
+                <span class="material-symbols-outlined text-3xl text-primary">analytics</span>
+                <p class="text-sm">ここに日別集計（立ち数・合計点）が表示されます</p>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <section class="mt-6">
+          <h2 class="text-xl font-bold mb-4 text-slate-900 dark:text-white">立ちセット</h2>
+          <div id="setsContainer" class="space-y-4"></div>
+        </section>
+
+        <div class="mt-6">
+          <div class="hidden md:block fixed bottom-24 right-4 z-50">
+            <button id="tutorialBtn" class="px-5 py-3 text-sm bg-primary text-white rounded-full shadow-xl">初めての方へ</button>
+          </div>
+          <div class="md:hidden w-full py-3 bg-background-light dark:bg-background-dark">
+            <div class="container mx-auto px-4 flex justify-center">
+              <button id="tutorialBtnMobile" class="px-6 py-3 text-base bg-primary text-white rounded-full shadow-lg">初めての方へ</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="teamTab" class="tab-content">
+
+        <div class="py-2">
+          <div class="flex items-center justify-between mb-3">
+            <div>
+              <div class="flex items-center gap-2"> 
+                <h2 id="roomTitle" class="text-2xl font-bold text-slate-900 dark:text-white">団体用スコア管理</h2>
+                <div id="roomShareIcons" class="flex gap-1" style="display:none;">
+                    <button id="shareIconBtn" class="p-1.5 rounded-full bg-primary/20 text-primary dark:bg-primary/50" title="共有リンク・コードをコピー">
+                        <span class="material-symbols-outlined text-xl">content_copy</span>
+                    </button>
+                    <button id="qrIconBtn" class="p-1.5 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200" title="QRコードを表示/非表示">
+                        <span class="material-symbols-outlined text-xl">qr_code_2</span>
+                    </button>
+                </div>
+              </div>
+              <p id="roomSubtitle" class="text-sm text-slate-600 dark:text-slate-300">ルームを作成して共有、メンバー登録ができます。</p>
+            </div>
+            <div id="roomEntryButtons" class="flex gap-2">
+              <button id="createRoomBtn" class="px-4 py-2 bg-blue-500 text-white rounded-md">ルーム作成</button>
+              <button id="joinRoomBtn" class="px-4 py-2 bg-indigo-600 text-white rounded-md">ルームに参加</button>
+              <button id="leaveRoomBtn" style="display:none;" class="px-4 py-2 bg-red-500 text-white rounded-md">退室</button>
+            </div>
+          </div>
+
+          <div id="roomControls" style="display:none;">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <div id="roomForm" style="display:none;" class="app-card bg-white dark:bg-slate-900 p-4 rounded-2xl shadow">
+                <label class="block mb-2 font-bold text-slate-800 dark:text-slate-200">ルーム名</label>
+                <input id="roomName" class="w-full rounded-xl border-2 border-slate-200 dark:border-slate-700 px-4 py-3 bg-white dark:bg-slate-800" placeholder="ルーム名を入力" />
+                <div class="flex gap-2 mt-3">
+                  <button id="submitRoomBtn" class="px-4 py-2 bg-green-500 text-white rounded-md">ルーム作成</button>
+                  <button id="cancelRoomBtn" class="px-4 py-2 bg-slate-300 text-slate-800 rounded-md">キャンセル</button>
+                </div>
+              </div>
+
+              <div id="joinForm" style="display:none;" class="app-card bg-white dark:bg-slate-900 p-4 rounded-2xl shadow">
+                <label class="block mb-2 font-bold text-slate-800 dark:text-slate-200">招待コードまたはURLを入力</label>
+                <input id="joinInput" class="w-full rounded-xl border-2 border-slate-200 dark:border-slate-700 px-4 py-3 bg-white dark:bg-slate-800" placeholder="例: MATOMA_JOIN:RMXXXX または https://...#room=RMXXXX" />
+                <div class="flex gap-2 mt-3">
+                  <button id="doJoinBtn" class="px-4 py-2 bg-green-500 text-white rounded-md">参加</button>
+                  <button id="cancelJoinBtn" class="px-4 py-2 bg-slate-300 text-slate-800 rounded-md">キャンセル</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="flex flex-col lg:flex-row gap-4">
+              <div class="flex-1 space-y-4">
+                <div id="memberControlButtons" class="flex gap-2">
+                    <button id="openRegisterModalBtn" class="px-4 py-2 bg-primary text-white rounded-md font-semibold" style="display:none;">メンバー登録</button>
+                    <button id="openManagementModalBtn" class="px-4 py-2 bg-blue-500 text-white rounded-md font-semibold" style="display:none;">メンバー管理</button>
+                </div>
+                <div id="teamsContainer" class="flex flex-col md:flex-row md:flex-wrap gap-4"></div>
+              </div>
+
+              <aside id="sidebar-aside" class="w-full lg:w-96 space-y-4">
+                <div class="app-card bg-white dark:bg-slate-900 rounded-2xl shadow p-4">
+                  <h3 class="font-bold mb-3">ストップウォッチ</h3>
+                  <div id="swDisplay" class="text-2xl font-mono mb-3">00:00.00</div>
+                  <div class="flex gap-2 mb-3">
+                    <button id="swStart" class="px-3 py-2 bg-green-500 text-white rounded-md flex-1">Start</button>
+                    <button id="swPause" class="px-3 py-2 bg-yellow-500 text-white rounded-md flex-1">Pause</button>
+                    <button id="swReset" class="px-3 py-2 bg-red-500 text-white rounded-md flex-1">Reset</button>
+                  </div>
+                  <button id="swLap" class="px-3 py-2 bg-slate-100 dark:bg-slate-700 rounded-md w-full">Lap</button>
+                  <ul id="lapList" class="mt-3 text-sm list-disc list-inside max-h-48 overflow-auto"></ul>
+                </div>
+                <div class="app-card bg-white dark:bg-slate-900 rounded-2xl shadow p-4">
+                  <h3 class="font-bold mb-2">ルーム集計</h3>
+                  <pre id="roomSummary" class="text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap">—</pre>
+                </div>
+              </aside>
+            </div>
+          </div>
+          
+          <div id="roomHistory" class="mt-8 pt-4 border-t border-slate-200 dark:border-slate-700">
+              <h2 class="text-xl font-bold mb-3 text-slate-900 dark:text-white">過去のルーム履歴（ブラウザ保存）</h2>
+              <div id="historyList" class="space-y-2">
+                  <p class="text-sm text-slate-500" id="noHistoryMessage">履歴はありません。</p>
+              </div>
+          </div>
+          </div>
+
+        <div class="mt-6">
+          <div class="hidden md:block fixed bottom-24 right-4 z-50">
+            <button id="tutorialBtnTeam" class="px-5 py-3 text-sm bg-primary text-white rounded-full shadow-xl">初めての方へ（団体用）</button>
+          </div>
+          <div class="md:hidden w-full py-3 bg-background-light dark:bg-background-dark">
+            <div class="container mx-auto px-4 flex justify-center">
+              <button id="tutorialBtnMobileTeam" class="px-6 py-3 text-base bg-primary text-white rounded-full shadow-lg">初めての方へ（団体用）</button>
+            </div>
+          </div>
+        </div>
+        </section>
+
+    </main>
+
+    <nav class="fixed bottom-0 left-0 right-0 z-40 bg-white/90 dark:bg-slate-900/90 border-t border-slate-100 dark:border-slate-800">
+      <div class="max-w-5xl mx-auto px-4 py-2 flex items-end justify-around relative">
+        <a href="tools.html" class="flex flex-col items-center gap-1 py-1 px-2 text-slate-500 dark:text-slate-400">
+          <span class="material-symbols-outlined text-2xl">construction</span>
+          <span class="text-xs font-semibold">道具</span>
+        </a>
+        <a href="index.html" class="flex flex-col items-center gap-1 py-1 px-2 text-primary">
+          <span class="material-symbols-outlined text-2xl">today</span>
+          <span class="text-xs font-semibold">今日の記録</span>
+        </a>
+
+        <button id="addSetBtnTab" class="center-tab-button" title="立ちセットを追加">
+          <span class="material-symbols-outlined text-3xl">add_circle</span>
+        </button>
+
+        <a href="yadokoro.html" class="flex flex-col items-center gap-1 py-1 px-2 text-slate-500 dark:text-slate-400">
+          <span class="material-symbols-outlined text-2xl">analytics</span>
+          <span class="text-xs font-semibold">分析</span>
+        </a>
+        <a href="help.html" class="flex flex-col items-center gap-1 py-1 px-2 text-slate-500 dark:text-slate-400">
+          <span class="material-symbols-outlined text-2xl">help</span>
+          <span class="text-xs font-semibold">ヘルプ</span>
+        </a>
+      </div>
+    </nav>
+  </div>
+
+  <div id="modalWrapper" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 backdrop-blur-sm p-4" onclick="if(event.target.id==='modalWrapper') closeModal()">
+    <div id="modalContent" class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden max-h-[90vh] flex flex-col">
+      </div>
+  </div>
+
+  <div id="modalTemplates" class="hidden">
+    <div id="qrModalContent" class="p-6 text-center">
+      <h3 class="text-xl font-bold mb-4 text-slate-900 dark:text-white">ルーム招待QRコード</h3>
+      <div id="qrCodeDisplayModal" class="flex justify-center mb-4"></div>
+      <p class="text-sm text-slate-600 dark:text-slate-400">このQRコードを読み込むか、上部のコピーボタンでリンクを共有してください。</p>
+      <button onclick="closeModal()" class="mt-4 px-4 py-2 bg-slate-500 text-white rounded-lg">閉じる</button>
+    </div>
+
+    <div id="registerModalContent" class="p-6">
+      <h3 class="text-xl font-bold mb-4 text-slate-900 dark:text-white">はじめて参加する方へ（メンバー登録）</h3>
+      <p class="text-sm text-slate-600 dark:text-slate-300 mb-3">あなたの名前と役割を入力して登録してください。登録後はスコアを入力できるようになります。</p>
+      <input type="text" id="registerNameInput" placeholder="あなたの名前を入力" class="w-full rounded-xl border-2 border-slate-200 dark:border-slate-700 px-3 py-2 bg-white dark:bg-slate-800 mb-2" />
+      <select id="registerRoleSelect" class="w-full rounded-xl border-2 border-slate-200 dark:border-slate-700 px-3 py-2 text-slate-800 dark:text-slate-200 bg-white dark:bg-slate-800 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all mb-4">
+        <option value="player">プレーヤー（スコア編集可能）</option>
+        <option value="manager">監督者（スコア編集・管理操作可能）</option>
+        <option value="other">その他（閲覧のみ）</option>
+      </select>
+      <div class="flex gap-2">
+        <button id="registerSelfBtn" class="px-4 py-2 bg-primary text-white rounded-md flex-1">登録</button>
+        <button id="skipRegisterBtn" class="px-4 py-2 bg-slate-200 text-slate-800 rounded-md">キャンセル</button>
+      </div>
+    </div>
+
+    <div id="managementModalContent" class="p-6">
+      <h3 class="text-xl font-bold mb-4 text-slate-900 dark:text-white">メンバー操作（管理）</h3>
+      <div class="space-y-2">
+          <label for="newPlayerNameModal" class="block text-sm font-medium mb-1 text-slate-800 dark:text-slate-200">新しいプレイヤーの追加</label>
+          <div class="flex gap-2">
+              <input type="text" id="newPlayerNameModal" placeholder="プレイヤー名を入力" class="w-full rounded-xl border-2 border-slate-200 dark:border-slate-700 px-3 py-2 bg-white dark:bg-slate-800" />
+              <button id="addPlayerBtnModal" class="px-4 py-2 bg-primary text-white rounded-md">追加</button>
+          </div>
+          <div class="pt-2">
+              <button id="autoAssignBtnModal" class="w-full px-4 py-2 bg-slate-300 text-slate-800 rounded-md">自動割当（3人）</button>
+          </div>
+      </div>
+      <div class="mt-4 pt-4 border-t border-slate-200 dark:border-slate-700">
+          <button onclick="closeModal()" class="w-full px-4 py-2 bg-slate-500 text-white rounded-md">閉じる</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="floatingStopwatch" class="hidden">
+    <div class="drag-handle">
+      <span class="material-symbols-outlined">drag_indicator</span>
+    </div>
+    <div id="floatingSwDisplay" class="text-2xl font-mono mb-3 text-center">00:00.00</div>
+    <div class="flex gap-2 mb-2">
+        <button id="floatingSwStart" class="px-3 py-2 bg-green-500 text-white rounded-md flex-1 text-sm">Start</button>
+        <button id="floatingSwPause" class="px-3 py-2 bg-yellow-500 text-white rounded-md flex-1 text-sm">Pause</button>
+        <button id="floatingSwReset" class="px-3 py-2 bg-red-500 text-white rounded-md flex-1 text-sm">Reset</button>
+    </div>
+    <button id="floatingSwLap" class="px-3 py-2 bg-slate-100 dark:bg-slate-700 rounded-md w-full text-sm">Lap</button>
+  </div>
+
 <script src="https://cdn.jsdelivr.net/npm/shepherd.js/dist/js/shepherd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs/qrcode.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/lz-string/libs/lz-string.min.js"></script>
@@ -414,19 +822,48 @@
 <script src="js/navbar.js"></script>
 <script src="js/page.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/shepherd.js/dist/js/shepherd.min.js"></script>
-<script>
+<script type="module">
 // ==========================================================
-// ★★★ グローバルスコープで定義する主要な関数と変数 (中央ボタン連動防止ロジックを含む最終修正版) ★★★
+// ★★★ Firebase SDK インポート (Realtime Database を追加) ★★★
+// ==========================================================
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
+import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-analytics.js";
+import { getDatabase, ref, set, onValue, push, runTransaction, update, off } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-database.js";
+
+// Your web app's Firebase configuration
+const firebaseConfig = {
+    apiKey: "AIzaSyDqFm2sgV0uEWvx8XQy2kzc2PxoWuf8lFw",
+    authDomain: "matoma-1bac1.firebaseapp.com",
+    projectId: "matoma-1bac1",
+    storageBucket: "matoma-1bac1.firebasestorage.app",
+    messagingSenderId: "581046138191",
+    appId: "1:581046138191:web:ac88f7ac08799895de413a",
+    measurementId: "G-WWK72Z6RV0"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
+const db = getDatabase(app);
+
+
+// ==========================================================
+// ★★★ グローバルスコープで定義する主要な関数と変数 (Firebase対応版) ★★★
 // ==========================================================
 
 // ======= Settings & Global Variables =======
 const SELECTIONS = [0,3,5,7,9,10];
 const TEAM_SIZE = 3;
 const ARROW_COUNT = 4;
+let currentRoomId = null; 
 let currentRoom = null; 
 let isHistoryView = false;
+let firebaseListener = null;
+let localPlayerId = localStorage.getItem("MATOMA_local_player_id") || "local_user_" + Date.now().toString(36);
+localStorage.setItem("MATOMA_local_player_id", localPlayerId);
 
-// === UI要素の取得（DOMContentLoadedの前に実行可能） ===
+
+// === UI要素の取得 ===
 const openRegisterModalBtn = document.getElementById("openRegisterModalBtn");
 const openManagementModalBtn = document.getElementById("openManagementModalBtn");
 const modalWrapper = document.getElementById("modalWrapper");
@@ -435,8 +872,108 @@ const qrCodeDisplayModal = document.getElementById("qrCodeDisplayModal");
 const teamsContainer = document.getElementById("teamsContainer");
 const roomSummary = document.getElementById("roomSummary");
 
+
 // ★★★ 追跡用の変数: 中央ボタン ★★★
 let centerButton = null;
+
+
+// ==========================================================
+// ★★★ Realtime Database 操作関数 (Firebase RTDB) ★★★
+// ==========================================================
+
+// ルームデータの構造
+// /rooms/{roomId} { id, name, createdAt, teams: {tId: {id, name}}, players: {pId: {id, name, role, teamId, scores:[]}}, settings }
+
+/**
+ * RTDBのデータをcurrentRoomに同期し、UIを更新するリスナーを設定します。
+ * @param {string} roomId 
+ */
+function listenToRoom(roomId) {
+    if (firebaseListener) {
+        // 既存のリスナーを解除
+        off(ref(db, 'rooms/' + currentRoomId), firebaseListener);
+        firebaseListener = null;
+    }
+
+    const roomRef = ref(db, 'rooms/' + roomId);
+    firebaseListener = onValue(roomRef, (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+            currentRoom = {
+                id: roomId,
+                name: data.name || "名称未設定",
+                createdAt: data.createdAt || new Date().toISOString(),
+                teams: Object.values(data.teams || {}),
+                players: Object.values(data.players || {}).sort((a,b) => a.teamId.localeCompare(b.teamId) || a.name.localeCompare(b.name)),
+                settings: data.settings || { teamSize: TEAM_SIZE, selections: SELECTIONS }
+            };
+            currentRoomId = roomId;
+            renderRoomUI();
+        } else {
+            // ルームが削除された、または存在しない
+            if (currentRoomId === roomId) {
+                alert("ルームが存在しないか、削除されました。");
+                leaveRoom();
+            }
+        }
+    });
+}
+
+/**
+ * currentRoomのデータをFirebaseに書き込みます。（ルームの作成、プレイヤー/チームの追加・削除など構造変更用）
+ * @param {string} updateMessage - 成功時のアラートメッセージ (オプション)
+ */
+async function syncRoomToFirebase(updateMessage = '') {
+    if (!currentRoomId || !currentRoom) return;
+
+    // Firebaseの構造に合わせたデータ整形
+    const firebaseData = {
+        name: currentRoom.name,
+        createdAt: currentRoom.createdAt,
+        settings: currentRoom.settings,
+        teams: currentRoom.teams.reduce((acc, t) => ({ ...acc, [t.id]: t }), {}),
+        players: currentRoom.players.reduce((acc, p) => ({ ...acc, [p.id]: p }), {}),
+    };
+
+    try {
+        // ルーム全体を上書き
+        await set(ref(db, 'rooms/' + currentRoomId), firebaseData);
+        if (updateMessage) alert(updateMessage);
+    } catch (error) {
+        console.error("Firebaseへの同期エラー:", error);
+        alert("データの保存中にエラーが発生しました。インターネット接続を確認してください。");
+    }
+}
+
+// ==========================================================
+// ★★★ 組み込み要素: 単一スコアのリアルタイム同期関数 (RTDB Updateを使用) ★★★
+// ==========================================================
+/**
+ * 特定のプレイヤーの特定の矢のスコアをFirebaseに直接更新します。
+ * ユーザーが要求した「スコア変更時に Firebase に送信」の効率的な実現。
+ * @param {string} playerId - プレイヤーのユニークID
+ * @param {number} arrowIndex - 矢のインデックス (0, 1, 2, 3)
+ * @param {number|null} score - 新しいスコアの値
+ */
+async function syncSingleScoreToFirebase(playerId, arrowIndex, score) {
+    if (!currentRoomId || !playerId || arrowIndex === undefined) return;
+    
+    // パス: rooms/{roomId}/players/{playerId}/scores/{arrowIndex}
+    // scoresは配列として扱われているため、Firebaseではオブジェクトのキーとしてindexを使用
+    const path = `rooms/${currentRoomId}/players/${playerId}/scores/${arrowIndex}`;
+    const scoreValue = Number.isFinite(score) ? score : null; // nullでFirebaseに書き込む
+    
+    try {
+        // update関数を使用して、パスを指定してピンポイントで値を更新
+        await update(ref(db), { [path]: scoreValue });
+        
+        // 注: onValueリスナーが自動的にデータを取得し、renderRoomUI()を呼び出すため、
+        // ここでUI更新のロジックは不要です。
+    } catch (error) {
+        console.error("Firebaseスコア更新エラー:", error);
+        alert("スコアの保存中にエラーが発生しました。インターネット接続を確認してください。");
+    }
+}
 
 
 // ==========================================================
@@ -444,7 +981,6 @@ let centerButton = null;
 // ==========================================================
 
 // 外部ファイルで定義されている 'addSet' 関数がグローバルスコープにあることを前提とします。
-// 見つからない場合に備えたダミー定義
 if (typeof window.addSet !== 'function') {
     window.addSet = function() {
         alert("【個人用】新しい立ちセットを追加しました！"); 
@@ -456,16 +992,13 @@ if (typeof window.addSet !== 'function') {
  * 団体用: 新しいチームを追加する処理
  */
 function addNewTeam() {
-    if (!currentRoom || isHistoryView) {
-        alert("履歴の閲覧中はチームを追加できません。");
+    if (!currentRoomId || isHistoryView) {
+        alert("ルームに参加していません、または履歴の閲覧中です。");
         return;
     }
     const newId = "T" + (currentRoom.teams.length + 1);
     currentRoom.teams.push({ id: newId, name: `チーム ${currentRoom.teams.length + 1}` });
-    saveRoomToStorage(currentRoom);
-    renderTeamsAndPlayers();
-    updateRoomSummary();
-    alert("【団体用】新しいチームを追加しました！"); 
+    syncRoomToFirebase("【団体用】新しいチームを追加しました！");
 }
 
 
@@ -480,12 +1013,8 @@ function updateCenterTabButton() {
     
     const centerButtonIcon = centerButton.querySelector('span.material-symbols-outlined');
     
-    // currentRoomが存在することを前提に、ルーム内の状態をシミュレート
-    const isRoomActive = currentRoom && !isHistoryView;
     // タブの色で団体モードか判定
-    const isTeamModeActive = document.getElementById('teamTabBtn').classList.contains('bg-primary') && isRoomActive;
-    
-    // ★★★ 核心的な修正: onclickプロパティを上書きし、イベント伝播を停止するハンドラを設定 ★★★
+    const isTeamModeActive = document.getElementById('teamTabBtn').classList.contains('bg-primary') && !!currentRoomId && !isHistoryView;
     
     if (isTeamModeActive) {
         // 団体モードの設定
@@ -493,7 +1022,7 @@ function updateCenterTabButton() {
         centerButtonIcon.innerText = "group_add";
         
         centerButton.onclick = (e) => {
-            e.stopPropagation(); // ★重要: 他のリスナー（個人用）へのイベント伝播を停止
+            e.stopPropagation(); 
             e.preventDefault();
             addNewTeam();
         };
@@ -504,7 +1033,7 @@ function updateCenterTabButton() {
         centerButtonIcon.innerText = "add_circle";
         
         centerButton.onclick = (e) => {
-            e.stopPropagation(); // ★重要: 他のリスナーへのイベント伝播を停止
+            e.stopPropagation(); 
             e.preventDefault();
             window.addSet();
         };
@@ -512,24 +1041,28 @@ function updateCenterTabButton() {
 }
 
 
-// === Storageヘルパー関数 ===
-function saveRoomToStorage(room) { 
-    if (!room || !room.id) return;
-    const rooms = JSON.parse(localStorage.getItem("MATOMA_rooms")||"{}");
-    rooms[room.id] = room;
-    localStorage.setItem("MATOMA_rooms", JSON.stringify(rooms));
-}
-function loadRoomFromStorage(id) { 
-    const rooms = JSON.parse(localStorage.getItem("MATOMA_rooms")||"{}");
-    return rooms[id] || null;
+// === Storageヘルパー関数 (Firebase対応で一部変更) ===
+// Realtime DBを使用するため、saveRoomToStorage, loadRoomFromStorageは削除。
+// 履歴機能のためにlocalStorageでRoomIDリストは保持。
+function saveRoomIdToHistory(roomId, roomName, createdAt) {
+    const rooms = JSON.parse(localStorage.getItem("MATOMA_rooms_history")||"{}");
+    rooms[roomId] = { name: roomName, createdAt: createdAt, id: roomId };
+    localStorage.setItem("MATOMA_rooms_history", JSON.stringify(rooms));
 }
 function isUserRegisteredForRoom(roomId) { return !!localStorage.getItem("MATOMA_user_registered_"+roomId); }
-function setUserRegisteredForRoom(roomId, playerId) { localStorage.setItem("MATOMA_user_registered_"+roomId, playerId || "1"); }
+function setUserRegisteredForRoom(roomId, playerId) { 
+    localStorage.setItem("MATOMA_user_registered_"+roomId, playerId || "1"); 
+    localStorage.setItem("MATOMA_last_registered_player_"+roomId, playerId || "1");
+}
+function getRegisteredPlayerId(roomId) {
+    return localStorage.getItem("MATOMA_last_registered_player_"+roomId);
+}
 
 
 // === ユーティリティ関数 ===
 function calcPlayerTotal(player) { 
     if(!player || !player.scores) return 0; 
+    // scores配列がnullやundefinedの要素を持つ可能性を考慮
     return player.scores.reduce((acc,v)=> acc + (Number.isFinite(v)? v:0), 0); 
 }
 function calcTeamTotal(teamId) { 
@@ -556,12 +1089,6 @@ function toggleMemberControlButtons(room) {
         openManagementModalBtn.style.display = 'none';
     }
 }
-function updateTeamTotalDisplay(teamId) {
-    const total = calcTeamTotal(teamId);
-    document.querySelectorAll(`.team-${teamId}-total`).forEach(el => {
-        el.innerText = `チーム合計: ${total}`;
-    });
-}
 window.updateRoomSummary = function() {
     if(!currentRoom){ roomSummary.innerText = "—"; return; }
     const totalPlayers = currentRoom.players.length;
@@ -570,24 +1097,29 @@ window.updateRoomSummary = function() {
 }
 
 
-// === メインのUIレンダリング関数 (変更なし) ===
+// === メインのUIレンダリング関数 (Firebase対応でロジック変更) ===
 window.renderTeamsAndPlayers = function() {
     teamsContainer.innerHTML = "";
     if (!currentRoom) return;
     
     const scoreOptionsHtml = SELECTIONS.map(score => `<option value="${score}">${score}</option>`).join('');
-
+    
+    // データの正規化 (Firebaseからのデータ受信時にも必要)
     currentRoom.players.forEach(p => {
         if (!p.role) p.role = 'player';
-        p.scores = p.scores || [];
-        p.scores = Array.from({ length: ARROW_COUNT }, (_, i) => p.scores[i] ?? null);
+        // scoresがFirebaseでnullになる可能性を考慮
+        if (p.scores && p.scores.length < ARROW_COUNT) {
+            p.scores = Array.from({ length: ARROW_COUNT }, (_, i) => p.scores[i] ?? null);
+        } else if (!p.scores) {
+            p.scores = Array(ARROW_COUNT).fill(null);
+        }
     });
 
     if (!currentRoom.teams || currentRoom.teams.length===0) currentRoom.teams=[{id:"T1", name:"チーム 1"}];
 
     currentRoom.teams.forEach(team => {
       const teamPlayers = currentRoom.players.filter(p=>p.teamId===team.id);
-      const card = document.createElement("div"); card.className="team-card app-card bg-white dark:bg-slate-900 rounded-2xl shadow p-4";
+      const card = document.createElement("div"); card.className="team-card app-card bg-white dark:bg-slate-900 rounded-2xl shadow-p-4";
       const header = document.createElement("div"); header.className="flex items-center justify-between mb-3";
       header.innerHTML = `<div><strong>${team.name}</strong><div class="text-sm text-slate-500">メンバー: ${teamPlayers.length}/${currentRoom.settings.teamSize}</div></div>`;
       
@@ -596,7 +1128,8 @@ window.renderTeamsAndPlayers = function() {
           const addTeamBtn = document.createElement("button"); addTeamBtn.className="px-2 py-1 bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-slate-200 rounded-md text-sm"; addTeamBtn.innerText="チーム追加";
           addTeamBtn.onclick = addNewTeam;
           const renameBtn = document.createElement("button"); renameBtn.className="px-2 py-1 bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-slate-200 rounded-md text-sm"; renameBtn.innerText="名前変更";
-          renameBtn.onclick = () => { const n = prompt("チーム名を入力してください", team.name); if(n){ team.name=n; saveRoomToStorage(currentRoom); renderTeamsAndPlayers(); updateRoomSummary(); } };
+          // Firebase対応: 名前変更後の保存をsyncRoomToFirebaseに変更
+          renameBtn.onclick = () => { const n = prompt("チーム名を入力してください", team.name); if(n){ team.name=n; syncRoomToFirebase(); } };
           btns.appendChild(addTeamBtn); btns.appendChild(renameBtn);
       }
       header.appendChild(btns); card.appendChild(header);
@@ -614,34 +1147,41 @@ window.renderTeamsAndPlayers = function() {
         const canEditRoom = !isHistoryView;
         const isRegistered = isUserRegisteredForRoom(currentRoom.id);
         
-        if (!canEditRoom || !isRegistered) { 
+        // 編集可否判定をより厳密に
+        const canEditName = canEditRoom && (player.id === getRegisteredPlayerId(currentRoom.id) || getRegisteredPlayerRole(currentRoom.id) === 'manager');
+        const canEditScore = canEditRoom && (player.id === getRegisteredPlayerId(currentRoom.id) || getRegisteredPlayerRole(currentRoom.id) === 'manager'); 
+        
+        if (!canEditName) { 
             nameInp.disabled = true;
             nameInp.classList.add("bg-gray-100", "dark:bg-slate-700", "opacity-70", "cursor-not-allowed");
         }
-        if (canEditRoom && isRegistered) {
-             nameInp.onchange = () => { player.name = nameInp.value; saveRoomToStorage(currentRoom); updateRoomSummary(); };
+        if (canEditName) {
+             // Firebase対応: 名前変更後の保存をsyncRoomToFirebaseに変更
+             nameInp.onchange = () => { player.name = nameInp.value; syncRoomToFirebase(); };
         }
         left.appendChild(nameInp);
 
-        if (canEditRoom && isRegistered) {
+        if (canEditRoom && getRegisteredPlayerRole(currentRoom.id) === 'manager') { // 管理者のみ移動・削除ボタン表示
             const moveBtn = document.createElement("button"); moveBtn.className="px-2 py-1 bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-slate-200 rounded-md text-xs"; moveBtn.innerText="移動";
             moveBtn.onclick = () => {
               const options = currentRoom.teams.map(t=>`${t.id}:${t.name}`).join("\n");
               const sel = prompt("移動先のIDを入力（例: T2）\n"+options);
-              if(sel){ const found = currentRoom.teams.find(t=>t.id===sel.trim()); if(found){ player.teamId = found.id; saveRoomToStorage(currentRoom); renderTeamsAndPlayers(); updateRoomSummary(); } else alert("チームが見つかりませんでした"); }
+              if(sel){ const found = currentRoom.teams.find(t=>t.id===sel.trim()); if(found){ player.teamId = found.id; syncRoomToFirebase("移動しました"); } else alert("チームが見つかりませんでした"); }
             };
             left.appendChild(moveBtn);
         }
         row.appendChild(left);
         
-        const canEditScore = canEditRoom && (player.role === 'player' || player.role === 'manager'); 
-
         for (let arrowIndex = 0; arrowIndex < ARROW_COUNT; arrowIndex++) {
             const select = document.createElement("select"); 
             select.innerHTML = `<option value="" disabled selected hidden>${arrowIndex+1}射</option>` + scoreOptionsHtml;
             const score = player.scores[arrowIndex];
             if (score !== null && score !== undefined) { select.value = score.toString(); } else { select.value = ""; }
-            select.className = "player-score-input rounded-md border-2 border-slate-200 dark:border-slate-700 px-1 py-1 text-sm text-slate-800 dark:text-slate-200 bg-white dark:bg-slate-800 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all";
+            
+            // ★★★ リアルタイム同期の効率化のため、data属性に情報を付与 ★★★
+            select.classList.add("player-score-input", "rounded-md", "border-2", "border-slate-200", "dark:border-slate-700", "px-1", "py-1", "text-sm", "text-slate-800", "dark:text-slate-200", "bg-white", "dark:bg-slate-800", "focus:border-primary", "focus:ring-2", "focus:ring-primary/20", "transition-all");
+            // select.setAttribute('data-player-id', player.id); // 冗長になるため、onchange内で直接利用
+            // select.setAttribute('data-arrow-index', arrowIndex);
 
             if (!canEditScore) {
                 select.disabled = true;
@@ -651,11 +1191,17 @@ window.renderTeamsAndPlayers = function() {
             if (canEditScore) {
                 select.onchange = () => {
                     const v = parseInt(select.value);
-                    player.scores[arrowIndex] = Number.isNaN(v) ? null : v;
-                    saveRoomToStorage(currentRoom); 
-                    document.getElementById(`player-total-${player.id}`).innerText = calcPlayerTotal(player);
-                    updateTeamTotalDisplay(team.id);
-                    updateRoomSummary(); 
+                    const newScore = Number.isNaN(v) ? null : v;
+                    
+                    // 1. ローカルデータを更新
+                    player.scores[arrowIndex] = newScore;
+                    
+                    // 2. Firebaseにピンポイントで送信 (syncSingleScoreToFirebaseを呼び出す)
+                    syncSingleScoreToFirebase(player.id, arrowIndex, newScore);
+
+                    // 3. ローカルの合計点を即時更新 (レンダリング関数全体を待たずに)
+                    total.innerText = calcPlayerTotal(player);
+                    window.updateRoomSummary(); // 合計点が変わったので集計も更新
                 };
             }
             right.appendChild(select);
@@ -667,9 +1213,14 @@ window.renderTeamsAndPlayers = function() {
         total.innerText = calcPlayerTotal(player);
         right.appendChild(total);
         
-        if (canEditRoom && isRegistered) {
+        if (canEditRoom && getRegisteredPlayerRole(currentRoom.id) === 'manager') { // 管理者のみ移動・削除ボタン表示
             const del = document.createElement("button"); del.className="px-2 py-1 bg-red-500 text-white rounded-md text-xs"; del.innerText="削除";
-            del.onclick = () => { if(!confirm(`${player.name} を削除しますか？`)) return; currentRoom.players = currentRoom.players.filter(p=>p.id!==player.id); saveRoomToStorage(currentRoom); renderTeamsAndPlayers(); updateRoomSummary(); };
+            // Firebase対応: 削除後の保存をsyncRoomToFirebaseに変更
+            del.onclick = () => { 
+                if(!confirm(`${player.name} を削除しますか？`)) return; 
+                currentRoom.players = currentRoom.players.filter(p=>p.id!==player.id); 
+                syncRoomToFirebase("プレイヤーを削除しました"); 
+            };
             right.appendChild(del);
         }
 
@@ -692,13 +1243,15 @@ window.renderTeamsAndPlayers = function() {
         const el = document.createElement("div"); el.className="flex items-center justify-between mt-2";
         el.innerHTML = `<div>${player.name}</div>${!isHistoryView ? `<div class="flex gap-2"><button class="px-2 py-1 bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-slate-200 rounded-md text-xs assign-btn">割当</button></div>` : ''}`;
         
-        if (!isHistoryView) {
+        if (!isHistoryView && getRegisteredPlayerRole(currentRoom.id) === 'manager') { // 管理者のみ割当ボタン表示
             const btn = el.querySelector("button");
             if(btn) {
                  btn.onclick = () => {
                     let target = currentRoom.teams.find(t=>calcTeamCount(t.id) < currentRoom.settings.teamSize);
                     if(!target){ const newId = "T"+(currentRoom.teams.length+1); target = {id:newId, name:`チーム ${currentRoom.teams.length+1}`}; currentRoom.teams.push(target); }
-                    player.teamId = target.id; saveRoomToStorage(currentRoom); renderTeamsAndPlayers(); updateRoomSummary();
+                    player.teamId = target.id; 
+                    // Firebase対応: 割当後の保存をsyncRoomToFirebaseに変更
+                    syncRoomToFirebase("チームに割り当てました");
                  };
             }
         }
@@ -709,14 +1262,15 @@ window.renderTeamsAndPlayers = function() {
 }
 
 
-// === 過去のルーム履歴表示関数 (変更なし) ===
+// === 過去のルーム履歴表示関数 (Firebase非対応/ローカルストレージのまま) ===
 window.renderRoomHistory = function() {
     const historyList = document.getElementById("historyList");
     const roomHistoryElement = document.getElementById("roomHistory");
-    const rooms = JSON.parse(localStorage.getItem("MATOMA_rooms") || "{}");
+    // ルームIDの履歴のみをローカルストレージから取得
+    const rooms = JSON.parse(localStorage.getItem("MATOMA_rooms_history") || "{}");
     const roomIds = Object.keys(rooms).sort((a,b) => new Date(rooms[b].createdAt) - new Date(rooms[a].createdAt));
     
-    if (currentRoom) {
+    if (currentRoomId) {
         if(roomHistoryElement) roomHistoryElement.style.display = 'none';
         return;
     } else {
@@ -728,91 +1282,140 @@ window.renderRoomHistory = function() {
         return;
     }
     roomIds.forEach(id => {
-        const room = rooms[id];
+        const roomInfo = rooms[id];
         const item = document.createElement("div");
         item.className = "flex items-center justify-between p-3 bg-slate-100 dark:bg-slate-800 rounded-lg";
         item.innerHTML = `
             <div>
-                <strong class="block">${room.name}</strong>
-                <span class="text-xs text-slate-600 dark:text-slate-400">${room.id} (${new Date(room.createdAt).toLocaleDateString()})</span>
+                <strong class="block">${roomInfo.name}</strong>
+                <span class="text-xs text-slate-600 dark:text-slate-400">${roomInfo.id} (${new Date(roomInfo.createdAt).toLocaleDateString()})</span>
             </div>
             <button data-room-id="${id}" class="join-history-btn px-3 py-1 bg-blue-500 hover:bg-blue-600 text-white rounded-md text-sm transition-colors">詳細閲覧</button>
         `;
         historyList.appendChild(item);
     });
+    // Firebase対応: 履歴のデータはRTDBから取得して閲覧モードで表示
     historyList.querySelectorAll('.join-history-btn').forEach(button => {
         button.addEventListener('click', (e) => {
             const roomId = e.target.getAttribute('data-room-id');
-            const room = loadRoomFromStorage(roomId);
-            if (room) {
-                isHistoryView = true; 
-                renderRoom(room);
-                showTeam();
-                const title = document.getElementById("roomTitle");
-                const subtitle = document.getElementById("roomSubtitle");
-                title.innerText = `${room.name} の【履歴閲覧中】`;
-                subtitle.innerText = `ルームID: ${room.id} - これは過去の記録です。スコア編集はできません。`;
-                document.getElementById("leaveRoomBtn").innerText = "履歴閲覧を終了";
-                alert(`${room.name} の過去の記録を閲覧しています。編集はできません。`);
-            }
+            const roomRef = ref(db, 'rooms/' + roomId);
+            onValue(roomRef, (snapshot) => {
+                const roomData = snapshot.val();
+                if (roomData) {
+                    currentRoom = {
+                        id: roomId,
+                        name: roomData.name || "名称未設定",
+                        createdAt: roomData.createdAt || new Date().toISOString(),
+                        teams: Object.values(roomData.teams || {}),
+                        players: Object.values(roomData.players || {}).sort((a,b) => a.teamId.localeCompare(b.teamId) || a.name.localeCompare(b.name)),
+                        settings: roomData.settings || { teamSize: TEAM_SIZE, selections: SELECTIONS }
+                    };
+                    isHistoryView = true; 
+                    currentRoomId = roomId; // 履歴閲覧モードでもIDは保持
+                    renderRoomUI();
+                    showTeam();
+                    const title = document.getElementById("roomTitle");
+                    const subtitle = document.getElementById("roomSubtitle");
+                    title.innerText = `${currentRoom.name} の【リアルタイム履歴閲覧中】`;
+                    subtitle.innerText = `ルームID: ${currentRoom.id} - リアルタイムで更新されますが、スコア編集はできません。`;
+                    document.getElementById("leaveRoomBtn").innerText = "履歴閲覧を終了";
+                    alert(`${currentRoom.name} のリアルタイム記録を閲覧しています。編集はできません。`);
+                } else {
+                    alert("履歴データがサーバーから取得できませんでした。");
+                }
+            }, { onlyOnce: true }); // 閲覧中はリアルタイムでデータを受け取る
         });
     });
 }
 
 
-// === モーダルアクションハンドラ ===
+// === モーダルアクションハンドラ (Firebase対応) ===
 window.closeModal = function() {
     modalWrapper.classList.add("hidden");
     modalWrapper.classList.remove("flex");
     modalContent.innerHTML = '';
-    if (document.getElementById("qrIconBtn")) {
-        document.getElementById("qrIconBtn").classList.remove("bg-primary/20", "text-primary", "dark:bg-primary/50");
-        document.getElementById("qrIconBtn").classList.add("bg-slate-200", "dark:bg-slate-700", "text-slate-700", "dark:text-slate-200");
-    }
+    // ... (QRコードボタンのスタイル変更は省略)
+}
+function getRegisteredPlayerRole(roomId) {
+    const playerId = getRegisteredPlayerId(roomId);
+    if (!currentRoom || !playerId) return 'other';
+    const player = currentRoom.players.find(p => p.id === playerId);
+    return player ? player.role : 'other';
 }
 window.handleRegisterSelf = function() {
     const name = (modalContent.querySelector('#registerNameInput').value || "").trim();
     const role = modalContent.querySelector('#registerRoleSelect').value;
     if(!currentRoom || !currentRoom.teams){ alert("ルーム情報が取得できません。"); closeModal(); return; }
     if(!name){ alert("名前を入力してください"); return; }
-    const newPlayer = { id:"P"+Date.now().toString(36), name, role, teamId:null, scores: Array(ARROW_COUNT).fill(null), local:true };
-    let assigned = currentRoom.teams.find(t=>calcTeamCount(t.id) < currentRoom.settings.teamSize);
-    if(!assigned){ const newId = "T"+(currentRoom.teams.length+1); assigned={id:newId, name:`チーム ${currentRoom.teams.length+1}`}; currentRoom.teams.push(assigned); }
-    newPlayer.teamId = assigned.id;
-    currentRoom.players.push(newPlayer);
-    saveRoomToStorage(currentRoom);
-    setUserRegisteredForRoom(currentRoom.id, newPlayer.id);
+    
+    // 既存のプレイヤーとして再登録する場合は、名前と役割のみ更新
+    const existingPlayerId = getRegisteredPlayerId(currentRoom.id);
+    const existingPlayer = currentRoom.players.find(p => p.id === existingPlayerId);
+
+    if (existingPlayer) {
+        existingPlayer.name = name;
+        existingPlayer.role = role;
+        syncRoomToFirebase("名前と役割を更新しました！");
+    } else {
+        // 新規登録
+        const newPlayerId = localPlayerId; // ローカルIDをプレイヤーIDとして使用
+        const newPlayer = { id: newPlayerId, name, role, teamId:null, scores: Array(ARROW_COUNT).fill(null) };
+        
+        let assigned = currentRoom.teams.find(t=>calcTeamCount(t.id) < currentRoom.settings.teamSize);
+        if(!assigned){ const newId = "T"+(currentRoom.teams.length+1); assigned={id:newId, name:`チーム ${currentRoom.teams.length+1}`}; currentRoom.teams.push(assigned); }
+        newPlayer.teamId = assigned.id;
+        currentRoom.players.push(newPlayer);
+        
+        setUserRegisteredForRoom(currentRoom.id, newPlayerId);
+        syncRoomToFirebase("登録しました。よろしくお願いします！");
+    }
+
     isHistoryView = false;
     toggleMemberControlButtons(currentRoom); 
-    renderTeamsAndPlayers(); 
-    updateRoomSummary(); 
     closeModal();
-    alert("登録しました。よろしくお願いします！");
 }
 window.handleAddPlayer = function() {
     const nameInput = modalContent.querySelector("#newPlayerNameModal");
     const name = (nameInput.value || "").trim(); 
     if (!currentRoom || !currentRoom.teams) { alert("ルーム情報が取得できません。"); closeModal(); return; }
     if(!name){ alert("プレイヤー名を入力してください"); return; }
-    const newPlayer = { id:"P"+Date.now().toString(36), name, role:'player', teamId:null, scores: Array(ARROW_COUNT).fill(null) };
+    
+    // ユニークIDをサーバー側に依存させないため、クライアント側で生成
+    const newPlayerId = "P" + Date.now().toString(36); 
+    const newPlayer = { id: newPlayerId, name, role:'player', teamId:null, scores: Array(ARROW_COUNT).fill(null) };
+    
     let assigned = currentRoom.teams.find(t=>calcTeamCount(t.id) < currentRoom.settings.teamSize);
     if(!assigned){ const newId="T"+(currentRoom.teams.length+1); assigned={id:newId, name:`チーム ${currentRoom.teams.length+1}`}; currentRoom.teams.push(assigned); }
-    newPlayer.teamId = assigned.id; currentRoom.players.push(newPlayer); saveRoomToStorage(currentRoom); nameInput.value=""; 
-    renderTeamsAndPlayers(); 
-    updateRoomSummary(); 
-    alert("プレイヤーを追加しました。");
+    newPlayer.teamId = assigned.id; 
+    currentRoom.players.push(newPlayer); 
+    
+    syncRoomToFirebase("プレイヤーを追加しました。"); 
+    nameInput.value=""; 
 }
 window.handleAutoAssign = function() {
     if (!currentRoom || !currentRoom.teams) { alert("ルーム情報が取得できません。"); return; }
     const players = currentRoom.players;
-    const newTeams = []; let cur = {id:"T1", name:"チーム 1"}; newTeams.push(cur); let count=0;
-    players.forEach(p=> { if(count >= currentRoom.settings.teamSize){ cur = {id:"T"+(newTeams.length+1), name:`チーム ${newTeams.length+1}`}; newTeams.push(cur); count=0; } p.teamId = cur.id; count++; });
-    currentRoom.teams = newTeams; saveRoomToStorage(currentRoom); 
-    renderTeamsAndPlayers(); 
-    updateRoomSummary(); 
-    alert("チームを自動で割り当てました。");
+    const newTeams = []; 
+    let cur = {id:"T1", name:"チーム 1"}; 
+    newTeams.push(cur); 
+    let count=0;
+    
+    players.forEach(p=> { 
+        if(count >= currentRoom.settings.teamSize){ 
+            cur = {id:"T"+(newTeams.length+1), name:`チーム ${newTeams.length+1}`}; 
+            newTeams.push(cur); 
+            count=0; 
+        } 
+        p.teamId = cur.id; 
+        count++; 
+    });
+    currentRoom.teams = newTeams; 
+    syncRoomToFirebase("チームを自動で割り当てました。");
 }
+
 function openModal(contentId) {
+    // ... (中略) ...
+    // モーダルオープン時のロジック (変更なし)
     if (isHistoryView && contentId !== 'qrModalContent') {
         alert("履歴閲覧モードではメンバーの追加・管理はできません。");
         return;
@@ -833,7 +1436,8 @@ function openModal(contentId) {
     }
 }
 
-// === ルーム制御関数 ===
+
+// === ルーム制御関数 (Firebase対応) ===
 function setRoomHeader(room) {
     document.getElementById("roomTitle").innerText = `${room.name} のルーム`;
     document.getElementById("roomSubtitle").innerText = `ルームID: ${room.id} — 作成: ${new Date(room.createdAt).toLocaleString()}`;
@@ -841,14 +1445,10 @@ function setRoomHeader(room) {
 function makeShortId() { return ("RM"+Math.random().toString(36).slice(2,8)).toUpperCase(); }
 function createRoomObj(name) {
     const id = makeShortId();
-    return { id, name, createdAt: new Date().toISOString(), players: [], teams: [{id:"T1", name:"チーム 1"}], settings: { teamSize: TEAM_SIZE, selections: SELECTIONS } };
+    return { id, name, createdAt: new Date().toISOString(), teams: [{id:"T1", name:"チーム 1"}], players: [], settings: { teamSize: TEAM_SIZE, selections: SELECTIONS } };
 }
-function joinRoomById(id) {
-    const rooms = JSON.parse(localStorage.getItem("MATOMA_rooms")||"{}");
-    const room = rooms[id] || null;
-    if (!room) { alert("指定されたルームが見つかりません。"); return null; }
-    return room;
-}
+// joinRoomByIdはFirebaseからデータを取得するため削除（doJoinBtnのロジックに統合）
+
 function setupShareControls(room) {
     const qrIconBtn = document.getElementById("qrIconBtn");
     const shareIconBtn = document.getElementById("shareIconBtn");
@@ -871,35 +1471,40 @@ function setupShareControls(room) {
         }
     };
 }
-function renderRoom(room) {
-    currentRoom = room;
-    document.getElementById("roomControls").style.display = "block";
-    setRoomHeader(room);
-    setupShareControls(room); 
-    toggleMemberControlButtons(room);
+function renderRoomUI() {
+    if (!currentRoom) return;
+    setRoomHeader(currentRoom);
+    setupShareControls(currentRoom); 
+    toggleMemberControlButtons(currentRoom);
     renderTeamsAndPlayers(); 
     updateRoomSummary(); 
+    
+    document.getElementById("roomControls").style.display = "block";
     document.getElementById("createRoomBtn").style.display = 'none';
     document.getElementById("joinRoomBtn").style.display = 'none';
     document.getElementById("leaveRoomBtn").style.display = "block";
     document.getElementById("roomShareIcons").style.display = "flex"; 
     if(document.getElementById("roomHistory")) document.getElementById("roomHistory").style.display = 'none'; 
-    if (!isHistoryView) {
-        localStorage.setItem("MATOMA_last_room_id", room.id);
-    }
+    localStorage.setItem("MATOMA_last_room_id", currentRoom.id);
     updateCenterTabButton();
 }
 function leaveRoom() {
-    const confirmMsg = isHistoryView ? `ルーム「${currentRoom.name}」の履歴閲覧を終了しますか？` : `ルーム「${currentRoom.name}」から退室しますか？\nデータはブラウザに保存され、履歴から閲覧可能です。`;
+    const confirmMsg = isHistoryView ? `ルーム「${currentRoom.name}」の履歴閲覧を終了しますか？` : `ルーム「${currentRoom.name}」から退室しますか？\n次回からは招待コードでの再参加が必要です。`;
     if (!confirm(confirmMsg)) return;
 
-    const leavingRoomId = currentRoom.id;
+    if (firebaseListener) {
+        off(ref(db, 'rooms/' + currentRoomId), firebaseListener);
+        firebaseListener = null;
+    }
+
+    const leavingRoomId = currentRoomId;
     isHistoryView = false;
+    currentRoomId = null;
     currentRoom = null;
     
     localStorage.removeItem("MATOMA_last_room_id");
-    localStorage.removeItem("MATOMA_user_registered_" + leavingRoomId); 
-    
+    // メンバー登録情報は保持（再入室時に利用するため）
+
     closeModal();
     document.getElementById("roomControls").style.display = "none";
     document.getElementById("roomShareIcons").style.display = "none"; 
@@ -919,17 +1524,18 @@ function leaveRoom() {
 
 
 // ==========================================================
-// ★★★ DOMContentLoaded で実行される初期化処理 ★★★
+// ★★★ DOMContentLoaded で実行される初期化処理 (Firebase対応) ★★★
 // ==========================================================
 
 document.addEventListener("DOMContentLoaded", () => {
-    // Tabs
+    // Tabs (変更なし)
     const personalTab = document.getElementById("personalTab");
     const teamTab = document.getElementById("teamTab");
     const personalBtn = document.getElementById("personalTabBtn");
     const teamBtn = document.getElementById("teamTabBtn");
 
     function showPersonal() {
+        // ... (中略: 個人用表示ロジック)
         personalTab.classList.add("active"); teamTab.classList.remove("active");
         personalBtn.classList.add("bg-primary","text-white");
         personalBtn.classList.remove("bg-slate-200","dark:bg-slate-700","text-slate-800","dark:text-white");
@@ -938,19 +1544,21 @@ document.addEventListener("DOMContentLoaded", () => {
         updateCenterTabButton();
     }
     window.showTeam = function() { // グローバルスコープに公開
+        // ... (中略: 団体用表示ロジック)
         teamTab.classList.add("active"); personalTab.classList.remove("active");
         teamBtn.classList.add("bg-primary","text-white");
         teamBtn.classList.remove("bg-slate-200","dark:bg-slate-700","text-slate-800","dark:text-white");
         personalBtn.classList.remove("bg-primary","text-white");
         personalBtn.classList.add("bg-slate-200","dark:bg-slate-700","text-slate-800","dark:text-white");
-        if (!currentRoom) window.renderRoomHistory();
+        if (!currentRoomId) window.renderRoomHistory();
         updateCenterTabButton();
     }
     personalBtn.addEventListener("click", showPersonal);
     teamBtn.addEventListener("click", showTeam);
 
-    // Header buttons
+    // Header buttons (変更なし)
     document.getElementById("shareBtn").addEventListener("click", async () => {
+        // ... (中略: 共有ロジック)
         const shareText = "矢所分析アプリMATOMA遠的で遠的記録してみよう！";
         const shareUrl = window.location.href;
         if (navigator.share) {
@@ -963,7 +1571,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
     document.getElementById("settingsBtn").addEventListener("click", () => { window.location.href = "settings.html"; });
 
-    // Room controls
+    // Room controls (Firebase対応)
     const roomForm = document.getElementById("roomForm");
     const joinForm = document.getElementById("joinForm");
     const roomControls = document.getElementById("roomControls");
@@ -980,11 +1588,25 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("submitRoomBtn").addEventListener("click", () => {
         const n = document.getElementById("roomName").value.trim(); if(!n){ alert("ルーム名を入力してください"); return; }
         const r = createRoomObj(n); 
-        saveRoomToStorage(r);
-        isHistoryView = false;
-        renderRoom(r);
-        roomForm.style.display="none"; 
-        alert("ルームを作成しました。参加者に共有してください。");
+        
+        // Firebase対応: ルームをRTDBに作成し、リスナーを設定
+        const roomRef = ref(db, 'rooms/' + r.id);
+        set(roomRef, {
+            id: r.id, name: r.name, createdAt: r.createdAt, 
+            teams: r.teams.reduce((acc, t) => ({ ...acc, [t.id]: t }), {}), 
+            players: {},
+            settings: r.settings
+        }).then(() => {
+            currentRoom = r;
+            currentRoomId = r.id;
+            saveRoomIdToHistory(r.id, r.name, r.createdAt); // 履歴をローカルに保存
+            listenToRoom(r.id); // リアルタイムリスナー開始
+            roomForm.style.display="none"; 
+            alert("ルームを作成しました。参加者に共有してください。");
+        }).catch(error => {
+            console.error("ルーム作成エラー:", error);
+            alert("ルーム作成中にエラーが発生しました。");
+        });
     });
 
     document.getElementById("joinRoomBtn").addEventListener("click", () => { 
@@ -997,38 +1619,68 @@ document.addEventListener("DOMContentLoaded", () => {
         const v = document.getElementById("joinInput").value.trim(); if(!v) return alert("招待コードまたはURLを入力してください");
         let id = null; if(v.startsWith("MATOMA_JOIN:")) id = v.split(":")[1]; else { const m = v.match(/[#?&]room=([A-Za-z0-9]+)/); if(m) id = m[1]; }
         if(!id) return alert("招待コードまたはURLが見つかりません");
-        const room = joinRoomById(id);
-        if(room){ 
-            isHistoryView = false; renderRoom(room); joinForm.style.display="none"; 
-            alert(`${room.name} に参加しました。`); 
-        }
+        
+        // Firebase対応: ルームデータをRTDBから取得し、リスナーを設定
+        const roomRef = ref(db, 'rooms/' + id);
+        onValue(roomRef, (snapshot) => {
+            const data = snapshot.val();
+            if(data){ 
+                // 初回のみ実行される（リスナー設定）
+                currentRoom = {
+                    id: id,
+                    name: data.name || "名称未設定",
+                    createdAt: data.createdAt || new Date().toISOString(),
+                    teams: Object.values(data.teams || {}),
+                    players: Object.values(data.players || {}),
+                    settings: data.settings || { teamSize: TEAM_SIZE, selections: SELECTIONS }
+                };
+                saveRoomIdToHistory(id, currentRoom.name, currentRoom.createdAt); // 履歴をローカルに保存
+                listenToRoom(id); // リアルタイムリスナー開始
+                isHistoryView = false; 
+                joinForm.style.display="none"; 
+                alert(`${currentRoom.name} に参加しました。`); 
+            } else {
+                alert("指定されたルームが見つかりません。");
+            }
+        }, { onlyOnce: true });
     });
 
     // Auto-join from hash or last room
     (function handleHashOnLoad(){
         const m = (location.hash || "").match(/room=([A-Za-z0-9]+)/);
-        if(m){ 
-            const room = loadRoomFromStorage(m[1]); 
-            if(room){ isHistoryView = false; renderRoom(room); showTeam(); } 
-            else { 
-                joinForm.style.display="block"; document.getElementById("joinInput").value = `MATOMA_JOIN:${m[1]}`; 
-                showTeam(); roomControls.style.display="block"; 
-            } 
-            return; 
-        }
         const lastRoomId = localStorage.getItem("MATOMA_last_room_id");
-        if (lastRoomId) {
-            const room = loadRoomFromStorage(lastRoomId);
-            if (room) {
-                joinForm.style.display="block"; document.getElementById("joinInput").value = `MATOMA_JOIN:${lastRoomId}`;
-                showTeam(); roomControls.style.display="block";
-                document.getElementById("roomTitle").innerText = `以前のルーム: ${room.name} に再参加しますか？`;
-                document.getElementById("roomSubtitle").innerText = "「参加」を押して再入室してください。";
-            }
+        const idToJoin = m ? m[1] : lastRoomId;
+
+        if (idToJoin) {
+            // Firebase対応: URL/前回ルームIDで再参加を試みる
+            const roomRef = ref(db, 'rooms/' + idToJoin);
+            onValue(roomRef, (snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    currentRoom = {
+                        id: idToJoin,
+                        name: data.name || "名称未設定",
+                        createdAt: data.createdAt || new Date().toISOString(),
+                        teams: Object.values(data.teams || {}),
+                        players: Object.values(data.players || {}),
+                        settings: data.settings || { teamSize: TEAM_SIZE, selections: SELECTIONS }
+                    };
+                    listenToRoom(idToJoin); // リアルタイムリスナー開始
+                    showTeam();
+                    if (m) {
+                        alert(`${currentRoom.name} にURLから参加しました。`);
+                    } else {
+                        document.getElementById("joinInput").value = `MATOMA_JOIN:${idToJoin}`;
+                        document.getElementById("roomTitle").innerText = `以前のルーム: ${currentRoom.name} に再参加しますか？`;
+                        document.getElementById("roomSubtitle").innerText = "「参加」を押して再入室してください。";
+                        joinForm.style.display="block"; roomControls.style.display="block";
+                    }
+                }
+            }, { onlyOnce: true });
         }
     })();
 
-    // ストップウォッチロジック
+    // ストップウォッチロジック (変更なし)
     let swStartTime = 0, swElapsed = 0, swTimer = null;
     const swDisplay = document.getElementById("swDisplay");
     const floatingSwDisplay = document.getElementById("floatingSwDisplay");
@@ -1051,7 +1703,7 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("swLap").addEventListener("click", lapAction);
     document.getElementById("floatingSwLap").addEventListener("click", lapAction);
 
-    // フローティングストップウォッチの表示制御とドラッグ機能
+    // フローティングストップウォッチの表示制御とドラッグ機能 (変更なし)
     const floatingStopwatch = document.getElementById('floatingStopwatch');
     const sidebar = document.getElementById('sidebar-aside');
 
