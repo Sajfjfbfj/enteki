@@ -8,3 +8,5 @@ git commit -m "説明メッセージ"
 
 git push origin main
 
+firebase logout
+firebase login
