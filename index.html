@@ -451,30 +451,10 @@
   };
 
   // ルーム参加・同期
-  window.joinTeamMatch = async function(rawId) {
-  // 認証が終わるまで待つ
-  if (!auth.currentUser) {
-    await new Promise(resolve => {
-      const unsub = onAuthStateChanged(auth, user => {
-        if (user) { unsub(); resolve(); }
-      });
-    });
-  }
-
-  // MATOMA_JOIN: 形式を除去
-  const roomId = rawId.replace(/^MATOMA_JOIN:/, "").trim();
-  console.log("🔍 接続ルームID:", roomId);
-
-  const ref = doc(db, "rooms", roomId);
-  const snap = await getDoc(ref);
-
-  if (!snap.exists()) {
-    alert("⚠️ 指定されたルームが見つかりませんでした。");
-    return;
-  }
-
+  window.joinTeamMatch = async function(roomId) {
+  const snap = await getDoc(doc(db, "rooms", roomId));
+  if (!snap.exists()) return alert("ルームが存在しません");
   const data = snap.data();
-  console.log("✅ ルーム取得成功:", data.name);
   window.renderRoom(data);
   window.startScoreSynchronization(roomId);
 };
