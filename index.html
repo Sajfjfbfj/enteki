@@ -642,6 +642,40 @@
       otherList.appendChild(card);
     });
   };
+  // =============================
+// 🔁 URLハッシュ自動参加（匿名認証完了後に実行）
+// =============================
+onAuthStateChanged(auth, async (user) => {
+  // 匿名認証が確定してから実行
+  if (user) {
+    const hash = location.hash;
+    if (hash && hash.startsWith("#room=")) {
+      const roomId = hash.replace("#room=", "").trim();
+      console.log("📡 URLハッシュ検出:", roomId);
+      try {
+        const ref = doc(db, "rooms", roomId);
+        const snap = await getDoc(ref);
+        if (!snap.exists()) {
+          alert(`❌ ルームが存在しません (${roomId})`);
+          console.warn("Firestore上に該当ルームなし");
+          return;
+        }
+        const data = snap.data();
+        console.log("✅ Firestore取得成功:", data);
+        window.renderRoom(data);
+        window.startScoreSynchronization(roomId);
+      } catch (err) {
+        console.error("joinTeamMatchエラー:", err);
+        alert("ルームへの参加に失敗しました: " + err.message);
+      }
+    } else {
+      console.log("ℹ️ ハッシュにルームIDなし:", location.hash);
+    }
+  } else {
+    console.log("⏳ 匿名認証待機中...");
+  }
+});
+
 </script>
 
 
