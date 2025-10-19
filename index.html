@@ -431,6 +431,35 @@ onAuthStateChanged(auth, (user) => {
     console.log("👤 ログイン中ユーザー:", user.uid);
   }
 });
+// ===== ルーム作成処理 =====
+window.doCreateRoom = async function() {
+  try {
+    const roomId = Math.random().toString(36).substring(2, 10).toUpperCase();
+    const ref = doc(db, "rooms", roomId);
+
+    const newRoom = {
+      id: roomId,
+      createdAt: serverTimestamp(),
+      players: {},
+      teams: {},
+      manager: null,
+      others: [],
+    };
+
+    await setDoc(ref, newRoom);
+
+    alert(`✅ ルームを作成しました！ID: ${roomId}`);
+    console.log("🎯 新規ルーム作成:", newRoom);
+
+    // 作成したルームを即レンダリング＋同期開始
+    window.currentRoom = newRoom;
+    window.renderRoom(newRoom);
+    window.startScoreSynchronization(roomId);
+  } catch (err) {
+    console.error("❌ ルーム作成エラー:", err);
+    alert("ルーム作成に失敗しました");
+  }
+};
 
   // ===== ルーム作成 =====
   window.doCreateRoom = async function(roomName) {
