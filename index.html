@@ -392,7 +392,10 @@
 
 
   <!-- ===================== Firebase + 機能スクリプト ===================== -->
-  <script type="module">
+<script type="module">
+  // ================================
+  // 🔥 Firebase 初期化
+  // ================================
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
   import { 
     getFirestore, doc, setDoc, getDoc, updateDoc, onSnapshot, serverTimestamp 
@@ -401,250 +404,225 @@
     getAuth, signInAnonymously, onAuthStateChanged 
   } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
 
-  // ===== Firebase設定 =====
   const firebaseConfig = {
-    apiKey: "AIzaSyBvDnppOLkPeBi8QLmzNclOWu-m9ODwZ1Q",
-    authDomain: "matoma2-b9292.firebaseapp.com",
-    projectId: "matoma2-b9292",
-    storageBucket: "matoma2-b9292.firebasestorage.app",
-    messagingSenderId: "202661993563",
-    appId: "1:202661993563:web:0b22ab2f0c5211aaef337e",
-    measurementId: "G-FN8BHPK3GS"
+    // 🌟 あなたのFirebase設定をここに
+    apiKey: "",
+    authDomain: "",
+    projectId: "",
+    storageBucket: "",
+    messagingSenderId: "",
+    appId: ""
   };
 
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
-  const auth = getAuth(app);
+  const auth = getAuth();
 
-// ===== 匿名ログイン =====
+  // ================================
+  // 👤 匿名ログイン
+  // ================================
+  onAuthStateChanged(auth, (user) => {
+    if (!user) {
+      signInAnonymously(auth)
+        .then(() => console.log("✅ 匿名ログイン完了"))
+        .catch((e) => console.error("❌ 匿名ログイン失敗:", e));
+    } else {
+      console.log("👤 ログイン中ユーザー:", user.uid);
+    }
+  });
 
-// Firebase Authの初期化（最初に！）
-const auth = getAuth();
+  // ================================
+  // 🏠 ルーム作成
+  // ================================
+  window.doCreateRoom = async function() {
+    try {
+      const roomId = Math.random().toString(36).substring(2, 10).toUpperCase();
+      const ref = doc(db, "rooms", roomId);
 
-// 認証状態を監視して、未ログインなら匿名ログイン
-onAuthStateChanged(auth, (user) => {
-  if (!user) {
-    signInAnonymously(auth)
-      .then(() => console.log("✅ 匿名ログイン完了"))
-      .catch((e) => console.error("❌ 匿名ログイン失敗:", e));
-  } else {
-    console.log("👤 ログイン中ユーザー:", user.uid);
-  }
-});
-// ===== ルーム作成処理 =====
-window.doCreateRoom = async function() {
-  try {
-    const roomId = Math.random().toString(36).substring(2, 10).toUpperCase();
-    const ref = doc(db, "rooms", roomId);
+      const newRoom = {
+        id: roomId,
+        createdAt: serverTimestamp(),
+        players: {},
+        teams: {},
+        manager: null,
+        others: [],
+      };
 
-    const newRoom = {
-      id: roomId,
-      createdAt: serverTimestamp(),
-      players: {},
-      teams: {},
-      manager: null,
-      others: [],
-    };
+      await setDoc(ref, newRoom);
 
-    await setDoc(ref, newRoom);
+      alert(`✅ ルームを作成しました！ID: ${roomId}`);
+      console.log("🎯 新規ルーム作成:", newRoom);
 
-    alert(`✅ ルームを作成しました！ID: ${roomId}`);
-    console.log("🎯 新規ルーム作成:", newRoom);
-
-    // 作成したルームを即レンダリング＋同期開始
-    window.currentRoom = newRoom;
-    window.renderRoom(newRoom);
-    window.startScoreSynchronization(roomId);
-  } catch (err) {
-    console.error("❌ ルーム作成エラー:", err);
-    alert("ルーム作成に失敗しました");
-  }
-};
-
-  // ===== ルーム作成 =====
-  window.doCreateRoom = async function(roomName) {
-    const user = auth.currentUser;
-    if (!user) { alert("認証が完了していません"); return; }
-    if (!roomName.trim()) { alert("ルーム名を入力してください"); return; }
-
-    const roomId = ("RM" + Math.random().toString(36).slice(2, 8)).toUpperCase();
-    const roomData = {
-      id: roomId,
-      name: roomName.trim(),
-      createdAt: serverTimestamp(),
-      owner: user.uid,
-      players: {},
-      members: {},
-      teams: [{ id: "T1", name: "チーム 1" }],
-      settings: { teamSize: 3, arrowCount: 4 },
-    };
-
-    await setDoc(doc(db, "rooms", roomId), roomData);
-    console.log("✅ ルーム作成:", roomId);
-    return { roomId, inviteCode: `MATOMA_JOIN:${roomId}` };
+      window.currentRoom = newRoom;
+      window.renderRoom(newRoom);
+      window.startScoreSynchronization(roomId);
+    } catch (err) {
+      console.error("❌ ルーム作成エラー:", err);
+      alert("ルーム作成に失敗しました");
+    }
   };
 
-  // ===== ルーム参加・同期 =====
+  // ================================
+  // 🚪 ルーム入室
+  // ================================
   window.joinTeamMatch = async function(roomId) {
-  const snap = await getDoc(doc(db, "rooms", roomId));
-  if (!snap.exists()) {
-    alert("ルームが存在しません");
-    return;
-  }
-  const data = snap.data();
-  window.currentRoom = data; // ✅ これ重要！
-  window.renderRoom(data);
-  window.startScoreSynchronization(roomId);
-};
-
-
-  
-// ===== Firestoreリアルタイム同期 =====
-window.startScoreSynchronization = function(roomId) {
-  // 既存リスナーがあれば停止
-  if (window.currentRoomListener) window.currentRoomListener();
-
-  const ref = doc(db, "rooms", roomId);
-
-  // Firestore上のルームをリアルタイムで監視
-  const unsub = onSnapshot(ref, (snap) => {
-    if (!snap.exists()) return;
+    const ref = doc(db, "rooms", roomId);
+    const snap = await getDoc(ref);
+    if (!snap.exists()) {
+      alert("❌ ルームが存在しません");
+      return;
+    }
 
     const data = snap.data();
     window.currentRoom = data;
-
-    // 🔄 再描画して合計再計算
+    console.log("🏹 ルーム入室:", data);
     window.renderRoom(data);
-    console.log("🔁 Firestoreリアルタイム更新:", roomId);
-  });
+    window.startScoreSynchronization(roomId);
+  };
 
-  window.currentRoomListener = unsub;
-};
-
-
-  // ===== ルーム参加フォーム処理（URL対応修正版） =====
-  document.getElementById("doJoinBtn").addEventListener("click", async () => {
-    const v = document.getElementById("joinInput").value.trim();
-    if (!v) return alert("招待コードまたはURLを入力してください");
-
-    let id = null;
-
-    // ✅ 招待コード形式「MATOMA_JOIN:XXXXXX」
-    if (v.startsWith("MATOMA_JOIN:")) {
-      id = v.split(":")[1].trim();
-    } 
-    // ✅ URL形式 「#room=RMXXXX」, 「?room=RMXXXX」 など全対応
-    else {
-      const m = v.match(/room=([A-Za-z0-9]+)/);
-      if (m && m[1]) id = m[1].trim();
-    }
-
-    if (!id) return alert("招待コードまたはURLが見つかりません");
-
-    console.log("📡 参加試行中 roomId:", id);
-
-    try {
-      const snap = await getDoc(doc(db, "rooms", id));
-      if (!snap.exists()) {
-        alert("ルームが存在しません。");
-        return;
-      }
-
+  // ================================
+  // 🔄 Firestoreリアルタイム同期
+  // ================================
+  window.startScoreSynchronization = function(roomId) {
+    if (window.currentRoomListener) window.currentRoomListener();
+    const ref = doc(db, "rooms", roomId);
+    const unsub = onSnapshot(ref, (snap) => {
+      if (!snap.exists()) return;
       const data = snap.data();
+      window.currentRoom = data;
       window.renderRoom(data);
-      window.startScoreSynchronization(id);
-      alert(`✅ ルーム「${data.name}」に参加しました！`);
-    } catch (err) {
-      console.error("❌ ルーム参加エラー:", err);
-      alert("ルームへの参加に失敗しました: " + err.message);
-    }
-  });
+      console.log("🔁 Firestoreリアルタイム更新:", roomId);
+    });
+    window.currentRoomListener = unsub;
+  };
 
-  // ===== プレイヤー登録 =====
-  window.addPlayerToRoom = async function(roomId, name, role = "player") {
-    const ref = doc(db, "rooms", roomId);
-    const snap = await getDoc(ref);
-    if (!snap.exists()) return;
-    const room = snap.data();
+  // ================================
+  // 🎯 スコア更新処理
+  // ================================
+  window.updatePlayerTurnScore = async function(roomId, playerId, arrowIndex, newScore) {
+    try {
+      const ref = doc(db, "rooms", roomId);
+      const snap = await getDoc(ref);
+      if (!snap.exists()) return;
+      const room = snap.data();
+      if (!room.players || !room.players[playerId]) return;
 
-    room.players = room.players || {};
-    room.members = room.members || {};
-    room.teams = Array.isArray(room.teams) ? room.teams : Object.values(room.teams || {});
-
-    const newId = "P" + Date.now().toString(36);
-    let teamId = null;
-
-    if (role === "manager") {
-      teamId = "manager";
-    } else if (role === "other") {
-      teamId = "other";
-    } else {
-      if (room.teams.length > 0) {
-        teamId = room.teams[0].id;
-      } else {
-        const newTeamId = "T1";
-        room.teams.push({ id: newTeamId, name: "チーム 1" });
-        teamId = newTeamId;
+      // スコア配列初期化
+      if (!Array.isArray(room.players[playerId].scores)) {
+        room.players[playerId].scores = [null, null, null, null];
       }
+
+      room.players[playerId].scores[arrowIndex] = newScore;
+
+      await updateDoc(ref, {
+        [`players.${playerId}.scores`]: room.players[playerId].scores
+      });
+
+      console.log(`🎯 スコア更新: ${playerId} → ${room.players[playerId].scores}`);
+    } catch (e) {
+      console.error("❌ スコア更新エラー:", e);
     }
-
-    room.players[newId] = {
-      id: newId,
-      name,
-      role,
-      scores: [null, null, null, null],
-      teamId
-    };
-    room.members[newId] = { role };
-
-    await updateDoc(ref, { players: room.players, members: room.members, teams: room.teams });
-    console.log(`✅ 登録完了: ${name} (${role})`);
-    return newId;
   };
 
-  // ===== renderRoom =====
-  window.renderRoom = async function(room) {
-    if (!room) return;
-    console.log("🎨 ルーム描画中:", room.id);
-    // ...（ここは既存の表示処理のままでOK）
-  };
-  // ===== スコア更新処理 =====
-// ===== スコア更新処理（リアルタイム同期対応）=====
-// ===== スコア更新処理 =====
-window.updatePlayerTurnScore = async function(roomId, playerId, arrowIndex, newScore) {
-  try {
-    const ref = doc(db, "rooms", roomId);
-    const snap = await getDoc(ref);
-    if (!snap.exists()) return;
-    const room = snap.data();
-    if (!room.players || !room.players[playerId]) return;
+  // ================================
+  // 🖼️ ルーム描画
+  // ================================
+  window.renderRoom = function(roomData) {
+    if (!roomData) return;
 
-    // スコア配列初期化
-    if (!Array.isArray(room.players[playerId].scores)) {
-      room.players[playerId].scores = [null, null, null, null];
+    const roomInfo = document.getElementById("roomInfo");
+    if (roomInfo) {
+      roomInfo.innerHTML = `
+        <h3>ルームID: ${roomData.id}</h3>
+        <p>プレイヤー数: ${Object.keys(roomData.players || {}).length}</p>
+      `;
     }
 
-    // 新しいスコアを更新
-    room.players[playerId].scores[arrowIndex] = newScore;
+    window.renderTeamsAndPlayers(roomData);
+  };
 
-    // Firestoreへ反映
-   await updateDoc(ref, {
-  [`players.${playerId}.scores`]: room.players[playerId].scores
-}).then(() => {
-  console.log("✅ Firestore書き込み成功");
-}).catch(err => {
-  console.error("❌ Firestore書き込み失敗:", err);
-});
+  // ================================
+  // 🧩 チーム・プレイヤー描画
+  // ================================
+  window.renderTeamsAndPlayers = function(currentRoom) {
+    const container = document.getElementById("teamsContainer");
+    if (!container) return;
+    container.innerHTML = "";
 
+    // 各チームを描画
+    Object.values(currentRoom.teams || {}).forEach(team => {
+      const teamDiv = document.createElement("div");
+      teamDiv.className = "team";
+      teamDiv.innerHTML = `<h4>${team.name || "チーム名未設定"}</h4>`;
+      container.appendChild(teamDiv);
+    });
 
-    console.log(`🎯 スコア更新: ${playerId} → ${room.players[playerId].scores}`);
-  } catch (e) {
-    console.error("❌ スコア更新エラー:", e);
-  }
-};
+    // プレイヤー欄
+    Object.values(currentRoom.players || {}).forEach(p => {
+      const playerDiv = document.createElement("div");
+      playerDiv.className = "player-card";
 
+      playerDiv.innerHTML = `
+        <strong>${p.name || "名無し"}</strong><br>
+        <span>チーム: ${p.teamId || "未所属"}</span><br>
+        ${[0,1,2,3].map(i => `
+          <select id="score-${p.id}-${i}">
+            <option value="">-</option>
+            ${[0,1,2,3,4,5,6,7,8,9,10].map(v => `<option value="${v}">${v}</option>`).join("")}
+          </select>
+        `).join("")}
+        <div id="player-total-${p.id}" class="player-total"></div>
+      `;
 
+      container.appendChild(playerDiv);
+
+      // 入力イベント設定
+      [0,1,2,3].forEach(i => {
+        const select = playerDiv.querySelector(`#score-${p.id}-${i}`);
+        if (select) {
+          select.value = p.scores && p.scores[i] != null ? p.scores[i] : "";
+          select.onchange = () => {
+            const val = parseInt(select.value);
+            const newScore = Number.isNaN(val) ? null : val;
+            window.updatePlayerTurnScore(currentRoom.id, p.id, i, newScore);
+          };
+        }
+      });
+    });
+
+    // 🧮 合計再描画
+    try {
+      if (currentRoom && currentRoom.players) {
+        Object.values(currentRoom.players).forEach(p => {
+          const el = document.getElementById(`player-total-${p.id}`);
+          if (el) el.innerText = `合計: ${calcPlayerTotal(p)}`;
+        });
+      }
+
+      if (currentRoom && currentRoom.teams) {
+        Object.values(currentRoom.teams).forEach(t => {
+          const totalEl = document.querySelector(`.team-${t.id}-total`);
+          if (totalEl) totalEl.innerText = `チーム合計: ${calcTeamTotal(t.id)}`;
+        });
+      }
+    } catch (e) {
+      console.error("合計再描画エラー:", e);
+    }
+  };
+
+  // ================================
+  // 🧮 合計計算関数
+  // ================================
+  window.calcPlayerTotal = (player) =>
+    (player.scores || []).filter(v => v != null).reduce((a, b) => a + b, 0);
+
+  window.calcTeamTotal = (teamId) => {
+    if (!window.currentRoom || !window.currentRoom.players) return 0;
+    const players = Object.values(window.currentRoom.players).filter(p => p.teamId === teamId);
+    return players.reduce((sum, p) => sum + window.calcPlayerTotal(p), 0);
+  };
 </script>
+
 
 
 
