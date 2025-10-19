@@ -961,6 +961,29 @@ document.addEventListener("DOMContentLoaded", () => {
   specialContainer.appendChild(otherSection);
   teamsContainer.parentNode.insertBefore(specialContainer, teamsContainer.nextSibling);
 };
+  // ===============================
+  // 🧮 スコア合計再描画（個人・チーム）
+  // ===============================
+  try {
+    if (currentRoom && currentRoom.players) {
+      Object.values(currentRoom.players).forEach(p => {
+        const el = document.getElementById(`player-total-${p.id}`);
+        if (el) el.innerText = calcPlayerTotal(p);
+      });
+    }
+
+    if (currentRoom && currentRoom.teams) {
+      const teamsArray = Array.isArray(currentRoom.teams)
+        ? currentRoom.teams
+        : Object.values(currentRoom.teams);
+      teamsArray.forEach(t => {
+        const totalEl = document.querySelector(`.team-${t.id}-total`);
+        if (totalEl) totalEl.innerText = `チーム合計: ${calcTeamTotal(t.id)}`;
+      });
+    }
+  } catch (e) {
+    console.error("合計再描画エラー:", e);
+  }
 
   // 履歴表示
   window.renderRoomHistory = function() {
