@@ -558,32 +558,87 @@
   });
 
   // ===== プレイヤー登録 =====
-  window.addPlayerToRoom = async function(roomId, name, role = "player") {
-    const ref = doc(db, "rooms", roomId);
-    const snap = await getDoc(ref);
-    if (!snap.exists()) return;
-    const room = snap.data();
+// ===== 完全修正版：チーム満員時に正しく次のチームへ割り当て =====
+window.addPlayerToRoom = async function(roomId, name, role = "player") {
+  const ref = doc(db, "rooms", roomId);
+  const snap = await getDoc(ref);
+  if (!snap.exists()) return;
+  const room = snap.data();
 
-    room.players = room.players || {};
-    room.members = room.members || {};
-    room.teams = Array.isArray(room.teams) ? room.teams : Object.values(room.teams || {});
+  // ---- normalize ----
+  room.players = room.players || {};
+  room.members = room.members || {};
+  let teams = [];
+  if (Array.isArray(room.teams)) {
+    teams = room.teams;
+  } else if (typeof room.teams === "object") {
+    teams = Object.values(room.teams);
+  }
 
-    const newId = "P" + Date.now().toString(36);
-    let teamId = role === "manager" ? "manager" : (room.teams[0]?.id || "T1");
+  const teamSize = room.settings?.teamSize || 3;
+  const newId = "P" + Date.now().toString(36);
 
+  // === 監督は固定登録 ===
+  if (role === "manager") {
     room.players[newId] = {
       id: newId,
       name,
       role,
+      teamId: "manager",
       scores: [null, null, null, null],
-      teamId
     };
     room.members[newId] = { role };
-
-    await updateDoc(ref, { players: room.players, members: room.members, teams: room.teams });
-    console.log(`✅ 登録完了: ${name} (${role})`);
+    await updateDoc(ref, { players: room.players, members: room.members });
     return newId;
+  }
+
+  // === チーム人数を正確にカウント ===
+  const teamCounts = {};
+  Object.values(room.players).forEach(p => {
+    if (!p.teamId) return;
+    teamCounts[p.teamId] = (teamCounts[p.teamId] || 0) + 1;
+  });
+
+  // === 空きのあるチームを優先的に探す（ID一致で判定）===
+  let targetTeam = null;
+  for (const t of teams) {
+    if (!t.id) continue;
+    const count = teamCounts[t.id] || 0;
+    if (count < teamSize) {
+      targetTeam = t;
+      break;
+    }
+  }
+
+  // === 全チーム満員なら新規作成 ===
+  if (!targetTeam) {
+    const newTeamName = `チーム ${teams.length + 1}`;
+    const newTeamId = await window.addTeamToRoom(roomId, newTeamName);
+    const newTeam = { id: newTeamId, name: newTeamName };
+    teams.push(newTeam);
+    targetTeam = newTeam;
+    await updateDoc(ref, { teams });
+  }
+
+  // === プレイヤー追加 ===
+  room.players[newId] = {
+    id: newId,
+    name,
+    role,
+    scores: [null, null, null, null],
+    teamId: targetTeam.id,
   };
+  room.members[newId] = { role };
+
+  await updateDoc(ref, {
+    players: room.players,
+    members: room.members,
+    teams,
+  });
+
+  console.log(`✅ ${name} を ${targetTeam.name} に登録 (${targetTeam.id})`);
+  return newId;
+};
 
   // ===== スコア更新処理 =====
   window.updatePlayerTurnScore = async function(roomId, playerId, arrowIndex, newScore) {
@@ -656,6 +711,47 @@
       if (totalEl) totalEl.innerText = `合計: ${total}`;
     });
   };
+  // ------------- Firestore: チーム追加 -------------
+// 場所: <script type="module"> 内（既に db, getDoc, updateDoc, doc が定義されている箇所）
+window.addTeamToRoom = async function(roomId, teamName) {
+  if (!roomId) throw new Error("roomId が必要です");
+  if (!teamName || !teamName.trim()) throw new Error("チーム名を入力してください");
+
+  try {
+    const ref = doc(db, "rooms", roomId);
+    const snap = await getDoc(ref);
+    if (!snap.exists()) {
+      console.warn("addTeamToRoom: room not found", roomId);
+      return null;
+    }
+
+    const room = snap.data() || {};
+    // rooms.teams が配列またはオブジェクトどちらでも扱えるように正規化
+    let teamsArray = Array.isArray(room.teams) ? room.teams.slice() : (Array.isArray(Object.values(room.teams || {})) ? Object.values(room.teams) : []);
+
+    // 一意な teamId を生成（既存IDを考慮）
+    const existingIds = new Set(teamsArray.map(t => t.id));
+    let base = 1;
+    let newId;
+    do {
+      newId = "T" + (base++);
+    } while (existingIds.has(newId));
+
+    const newTeam = { id: newId, name: teamName.trim(), createdAt: Date.now() };
+
+    teamsArray.push(newTeam);
+
+    // Firestore に書き戻す（配列で保存する案）
+    await updateDoc(ref, { teams: teamsArray });
+
+    console.log("addTeamToRoom: added", newTeam);
+    return newId;
+  } catch (err) {
+    console.error("addTeamToRoom error:", err);
+    throw err;
+  }
+};
+
 </script>
 
 <script>
@@ -1468,6 +1564,35 @@ window.addEventListener("DOMContentLoaded", () => {
     }
   }
 });
+</script>
+<script>
+window.addNewTeam = async function(roomId) {
+  if (!roomId) {
+    alert("ルームが選択されていません。");
+    return;
+  }
+  if (!window.addTeamToRoom) {
+    alert("addTeamToRoom 関数が読み込まれていません。");
+    return;
+  }
+
+  try {
+    const teamName = prompt("新しいチーム名を入力してください", "新チーム");
+    if (!teamName) return;
+
+    const teamId = await window.addTeamToRoom(roomId, teamName);
+    if (!teamId) {
+      alert("チーム追加に失敗しました。");
+      return;
+    }
+
+    alert(`チーム「${teamName}」を追加しました。`);
+    window.renderTeamsAndPlayers(); // チーム一覧を再描画
+  } catch (err) {
+    console.error("addNewTeam error:", err);
+    alert("チーム追加中にエラーが発生しました。");
+  }
+};
 </script>
 
   <script>
