@@ -683,15 +683,23 @@ window.addPlayerToRoom = async function(roomId, name, role = "player") {
       const div = document.createElement("div");
       div.className = "player-card";
       div.innerHTML = `
-        <strong>${p.name || "名無し"}</strong> (${p.role})<br>
-        ${[0,1,2,3].map(i => `
-          <select id="score-${p.id}-${i}">
-            <option value="">-</option>
-            ${[0,1,2,3,4,5,6,7,8,9,10].map(v => `<option value="${v}">${v}</option>`).join("")}
-          </select>
-        `).join("")}
-        <div id="player-total-${p.id}" class="player-total">合計: 0</div>
-      `;
+  <input 
+    type="text" 
+    id="player-name-${p.id}" 
+    class="player-name-input" 
+    value="${p.name || "名無し"}" 
+    style="font-weight:bold; width:80%; margin-bottom:4px;"
+  />
+  (${p.role})<br>
+  ${[0,1,2,3].map(i => `
+    <select id="score-${p.id}-${i}">
+      <option value="">-</option>
+      ${[0,1,2,3,4,5,6,7,8,9,10].map(v => `<option value="${v}">${v}</option>`).join("")}
+    </select>
+  `).join("")}
+  <div id="player-total-${p.id}" class="player-total">合計: 0</div>
+`;
+
       container.appendChild(div);
 
       [0,1,2,3].forEach(i => {
