@@ -452,12 +452,17 @@
 
   // ===== ルーム参加・同期 =====
   window.joinTeamMatch = async function(roomId) {
-    const snap = await getDoc(doc(db, "rooms", roomId));
-    if (!snap.exists()) return alert("ルームが存在しません");
-    const data = snap.data();
-    window.renderRoom(data);
-    window.startScoreSynchronization(roomId);
-  };
+  const snap = await getDoc(doc(db, "rooms", roomId));
+  if (!snap.exists()) {
+    alert("ルームが存在しません");
+    return null;
+  }
+  const data = snap.data();
+  window.renderRoom(data);
+  window.startScoreSynchronization(roomId);
+  return roomId; // ← これを追加！
+};
+
 
   window.startScoreSynchronization = function(roomId) {
     if (window.currentRoomListener) window.currentRoomListener();
