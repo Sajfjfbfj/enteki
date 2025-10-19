@@ -465,16 +465,23 @@
 
 
   
+// ===== Firestoreリアルタイム同期 =====
 window.startScoreSynchronization = function(roomId) {
-  if (window.currentRoomListener) window.currentRoomListener(); // 既存リスナー停止
+  // 既存リスナーがあれば停止
+  if (window.currentRoomListener) window.currentRoomListener();
 
   const ref = doc(db, "rooms", roomId);
+
+  // Firestore上のルームをリアルタイムで監視
   const unsub = onSnapshot(ref, (snap) => {
     if (!snap.exists()) return;
+
     const data = snap.data();
     window.currentRoom = data;
+
+    // 🔄 再描画して合計再計算
     window.renderRoom(data);
-    console.log("🔁 Firestoreリアルタイム更新:", data);
+    console.log("🔁 Firestoreリアルタイム更新:", roomId);
   });
 
   window.currentRoomListener = unsub;
@@ -569,13 +576,13 @@ window.startScoreSynchronization = function(roomId) {
   };
   // ===== スコア更新処理 =====
 // ===== スコア更新処理（リアルタイム同期対応）=====
+// ===== スコア更新処理 =====
 window.updatePlayerTurnScore = async function(roomId, playerId, arrowIndex, newScore) {
   try {
     const ref = doc(db, "rooms", roomId);
     const snap = await getDoc(ref);
     if (!snap.exists()) return;
     const room = snap.data();
-
     if (!room.players || !room.players[playerId]) return;
 
     // スコア配列初期化
@@ -583,24 +590,20 @@ window.updatePlayerTurnScore = async function(roomId, playerId, arrowIndex, newS
       room.players[playerId].scores = [null, null, null, null];
     }
 
-    // スコア更新
+    // 新しいスコアを更新
     room.players[playerId].scores[arrowIndex] = newScore;
 
-    // Firestoreに反映
+    // Firestoreへ反映
     await updateDoc(ref, {
       [`players.${playerId}.scores`]: room.players[playerId].scores
     });
 
-    // 🔄 ローカル側でも即反映（リアルタイム体感UP）
-    if (window.currentRoom && window.currentRoom.players[playerId]) {
-      window.currentRoom.players[playerId].scores = room.players[playerId].scores;
-      window.renderRoom(window.currentRoom);
-    }
-
+    console.log(`🎯 スコア更新: ${playerId} → ${room.players[playerId].scores}`);
   } catch (e) {
     console.error("❌ スコア更新エラー:", e);
   }
 };
+
 
 </script>
 
@@ -1081,6 +1084,7 @@ document.addEventListener("DOMContentLoaded", () => {
     alert("登録しました。よろしくお願いします！");
 
       // ===== 合計再描画 =====
+  // ===== 合計再描画（個人・チーム） =====
   try {
     if (currentRoom && currentRoom.players) {
       Object.values(currentRoom.players).forEach(p => {
