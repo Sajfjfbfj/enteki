@@ -1262,28 +1262,40 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("cancelJoinBtn").addEventListener("click", () => { joinForm.style.display="none"; });
   
   // ルーム参加（修正版）
-  document.getElementById("doJoinBtn").addEventListener("click", async () => {
-    const v = document.getElementById("joinInput").value.trim(); if(!v) return alert("招待コードまたはURLを入力してください");
-    let id = null; 
-    if(v.startsWith("MATOMA_JOIN:")) {
-        id = v.split(":")[1]; 
-    } else { 
-        const m = v.match(/[#?&]room=([A-Za-z0-9]+)/); 
-        if(m) id = m[1]; 
-    }
-    if(!id) return alert("招待コードまたはURLが見つかりません");
-    
+// ルーム参加（最終修正版：成功時にエラーを出さない）
+document.getElementById("doJoinBtn").addEventListener("click", async () => {
+  const v = document.getElementById("joinInput").value.trim();
+  if(!v) return alert("招待コードまたはURLを入力してください");
+  
+  let id = null; 
+  if(v.startsWith("MATOMA_JOIN:")) {
+    id = v.split(":")[1]; 
+  } else { 
+    const m = v.match(/[#?&]room=([A-Za-z0-9]+)/); 
+    if(m) id = m[1]; 
+  }
+  if(!id) return alert("招待コードまたはURLが見つかりません");
+
+  try {
     const roomId = await window.joinTeamMatch(id);
-    
+
+    // ✅ 正常入室時のみメッセージを出す（Firestore同期付き）
     if(roomId){ 
-        window.startScoreSynchronization(roomId);
-        isHistoryView = false; 
-        joinForm.style.display="none"; 
-        alert(`ルームに参加しました。`); 
-    } else {
-        alert("ルームへの参加に失敗しました。コードが正しいか確認してください。");
+      window.startScoreSynchronization(roomId);
+      isHistoryView = false; 
+      joinForm.style.display="none"; 
+      alert(`✅ ルームに参加しました。`);
+    } 
+    // ❌ 失敗した場合だけアラート（joinTeamMatchがnullを返すとき）
+    else {
+      console.warn("ルーム参加失敗: joinTeamMatch returned null");
     }
-  });
+  } catch(err) {
+    console.error("❌ joinボタン内エラー:", err);
+    alert("ルーム参加に失敗しました: " + (err.message || "不明なエラー"));
+  }
+});
+
 
   // ハッシュ処理・最後のルーム
   (function handleHashOnLoad(){
