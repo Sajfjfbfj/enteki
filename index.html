@@ -464,13 +464,19 @@
 };
 
 
-  window.startScoreSynchronization = function(roomId) {
-    if (window.currentRoomListener) window.currentRoomListener();
-    const unsub = onSnapshot(doc(db, "rooms", roomId), (docSnap) => {
-      if (docSnap.exists()) window.renderRoom(docSnap.data());
-    });
-    window.currentRoomListener = unsub;
-  };
+  
+window.startScoreSynchronization = function(roomId) {
+  if (window.currentRoomListener) window.currentRoomListener();
+  const unsub = onSnapshot(doc(db, "rooms", roomId), (docSnap) => {
+    if (docSnap.exists()) {
+      const data = docSnap.data();
+      window.renderRoom(data); // ✅ 再描画
+      console.log("🔁 Firestore同期更新:", roomId);
+    }
+  });
+  window.currentRoomListener = unsub;
+};
+
 
   // ===== ルーム参加フォーム処理（URL対応修正版） =====
   document.getElementById("doJoinBtn").addEventListener("click", async () => {
@@ -559,6 +565,7 @@
     // ...（ここは既存の表示処理のままでOK）
   };
   // ===== スコア更新処理 =====
+// ===== スコア更新処理（リアルタイム同期対応）=====
 window.updatePlayerTurnScore = async function(roomId, playerId, arrowIndex, newScore) {
   try {
     const ref = doc(db, "rooms", roomId);
@@ -568,15 +575,21 @@ window.updatePlayerTurnScore = async function(roomId, playerId, arrowIndex, newS
     const room = snap.data();
     if (!room.players || !room.players[playerId]) return;
 
+    // スコア配列を初期化（安全対策）
+    if (!Array.isArray(room.players[playerId].scores)) {
+      room.players[playerId].scores = [null, null, null, null];
+    }
+
     // スコアを更新
-    const player = room.players[playerId];
-    if (!Array.isArray(player.scores)) player.scores = [];
-    player.scores[arrowIndex] = newScore;
+    room.players[playerId].scores[arrowIndex] = newScore;
 
-    // Firestoreに保存
-    await updateDoc(ref, { [`players.${playerId}.scores`]: player.scores });
+    // Firestoreへ反映
+    await updateDoc(ref, {
+      [`players.${playerId}.scores`]: room.players[playerId].scores
+    });
 
-    console.log(`🎯 スコア更新: ${player.name} → ${player.scores}`);
+    console.log(`🎯 スコア更新: ${playerId} → ${room.players[playerId].scores}`);
+
   } catch (err) {
     console.error("❌ スコア更新エラー:", err);
   }
