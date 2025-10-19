@@ -700,6 +700,7 @@ window.addPlayerToRoom = async function(roomId, name, role = "player") {
   <div id="player-total-${p.id}" class="player-total">合計: 0</div>
 `;
 
+
       container.appendChild(div);
 
       [0,1,2,3].forEach(i => {
@@ -707,11 +708,21 @@ window.addPlayerToRoom = async function(roomId, name, role = "player") {
         if (sel) {
           sel.value = p.scores && p.scores[i] != null ? p.scores[i] : "";
           sel.onchange = () => {
-            const val = parseInt(sel.value);
-            const newScore = Number.isNaN(val) ? null : val;
-            window.updatePlayerTurnScore(room.id, p.id, i, newScore);
-          };
+  const val = parseInt(sel.value);
+  const newScore = Number.isNaN(val) ? null : val;
+  window.updatePlayerTurnScore(room.id, p.id, i, newScore);
+};
+
         }
+        // 名前変更を即Firestoreへ反映
+const nameInput = div.querySelector(`#player-name-${p.id}`);
+if (nameInput) {
+  nameInput.addEventListener("change", async () => {
+    const newName = nameInput.value.trim() || "名無し";
+    await window.updatePlayerName(room.id, p.id, newName);
+  });
+}
+
       });
 
       const totalEl = div.querySelector(`#player-total-${p.id}`);
