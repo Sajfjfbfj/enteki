@@ -751,6 +751,19 @@ window.addTeamToRoom = async function(roomId, teamName) {
     throw err;
   }
 };
+// ===== プレイヤー名変更（リアルタイム同期対応） =====
+window.updatePlayerName = async function(roomId, playerId, newName) {
+  try {
+    if (!roomId || !playerId) return;
+    const ref = doc(db, "rooms", roomId);
+    await updateDoc(ref, {
+      [`players.${playerId}.name`]: newName
+    });
+    console.log(`✏️ 名前変更: ${playerId} → ${newName}`);
+  } catch (e) {
+    console.error("❌ 名前変更エラー:", e);
+  }
+};
 
 </script>
 
