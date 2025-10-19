@@ -558,6 +558,30 @@
     console.log("🎨 ルーム描画中:", room.id);
     // ...（ここは既存の表示処理のままでOK）
   };
+  // ===== スコア更新処理 =====
+window.updatePlayerTurnScore = async function(roomId, playerId, arrowIndex, newScore) {
+  try {
+    const ref = doc(db, "rooms", roomId);
+    const snap = await getDoc(ref);
+    if (!snap.exists()) return;
+
+    const room = snap.data();
+    if (!room.players || !room.players[playerId]) return;
+
+    // スコアを更新
+    const player = room.players[playerId];
+    if (!Array.isArray(player.scores)) player.scores = [];
+    player.scores[arrowIndex] = newScore;
+
+    // Firestoreに保存
+    await updateDoc(ref, { [`players.${playerId}.scores`]: player.scores });
+
+    console.log(`🎯 スコア更新: ${player.name} → ${player.scores}`);
+  } catch (err) {
+    console.error("❌ スコア更新エラー:", err);
+  }
+};
+
 </script>
 
 
