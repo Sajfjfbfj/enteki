@@ -466,14 +466,17 @@
 
   
 window.startScoreSynchronization = function(roomId) {
-  if (window.currentRoomListener) window.currentRoomListener();
-  const unsub = onSnapshot(doc(db, "rooms", roomId), (docSnap) => {
-    if (docSnap.exists()) {
-      const data = docSnap.data();
-      window.renderRoom(data); // ✅ 再描画
-      console.log("🔁 Firestore同期更新:", roomId);
-    }
+  if (window.currentRoomListener) window.currentRoomListener(); // 既存リスナー停止
+
+  const ref = doc(db, "rooms", roomId);
+  const unsub = onSnapshot(ref, (snap) => {
+    if (!snap.exists()) return;
+    const data = snap.data();
+    window.currentRoom = data;
+    window.renderRoom(data);
+    console.log("🔁 Firestoreリアルタイム更新:", data);
   });
+
   window.currentRoomListener = unsub;
 };
 
@@ -571,27 +574,31 @@ window.updatePlayerTurnScore = async function(roomId, playerId, arrowIndex, newS
     const ref = doc(db, "rooms", roomId);
     const snap = await getDoc(ref);
     if (!snap.exists()) return;
-
     const room = snap.data();
+
     if (!room.players || !room.players[playerId]) return;
 
-    // スコア配列を初期化（安全対策）
+    // スコア配列初期化
     if (!Array.isArray(room.players[playerId].scores)) {
       room.players[playerId].scores = [null, null, null, null];
     }
 
-    // スコアを更新
+    // スコア更新
     room.players[playerId].scores[arrowIndex] = newScore;
 
-    // Firestoreへ反映
+    // Firestoreに反映
     await updateDoc(ref, {
       [`players.${playerId}.scores`]: room.players[playerId].scores
     });
 
-    console.log(`🎯 スコア更新: ${playerId} → ${room.players[playerId].scores}`);
+    // 🔄 ローカル側でも即反映（リアルタイム体感UP）
+    if (window.currentRoom && window.currentRoom.players[playerId]) {
+      window.currentRoom.players[playerId].scores = room.players[playerId].scores;
+      window.renderRoom(window.currentRoom);
+    }
 
-  } catch (err) {
-    console.error("❌ スコア更新エラー:", err);
+  } catch (e) {
+    console.error("❌ スコア更新エラー:", e);
   }
 };
 
@@ -1072,6 +1079,26 @@ document.addEventListener("DOMContentLoaded", () => {
     toggleMemberControlButtons(currentRoom); 
     closeModal();
     alert("登録しました。よろしくお願いします！");
+
+      // ===== 合計再描画 =====
+  try {
+    if (currentRoom && currentRoom.players) {
+      Object.values(currentRoom.players).forEach(p => {
+        const el = document.getElementById(`player-total-${p.id}`);
+        if (el) el.innerText = calcPlayerTotal(p);
+      });
+    }
+
+    if (currentRoom && currentRoom.teams) {
+      Object.values(currentRoom.teams).forEach(t => {
+        const totalEl = document.querySelector(`.team-${t.id}-total`);
+        if (totalEl) totalEl.innerText = `チーム合計: ${calcTeamTotal(t.id)}`;
+      });
+    }
+  } catch (e) {
+    console.error("合計再描画エラー:", e);
+  }
+
   };
 
   window.handleAddPlayer = function() {
