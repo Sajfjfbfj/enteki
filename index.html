@@ -49,7 +49,9 @@
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&display=swap" rel="stylesheet" />
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/shepherd.js/dist/css/shepherd.css">
-
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@100..900&display=swap" rel="stylesheet">
   <style>
     /* custom styles */
     body { padding-bottom: 120px; }
@@ -128,6 +130,13 @@
     #floatingStopwatch .drag-handle .material-symbols-outlined {
         font-size: 20px;
     }
+    
+.noto-sans-jp-<uniquifier> {
+  font-family: "Noto Sans JP", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: <weight>;
+  font-style: normal;
+}
   </style>
 </head>
 
@@ -207,6 +216,20 @@
                     <button id="qrIconBtn" class="p-1.5 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200" title="QRコードを表示/非表示">
                         <span class="material-symbols-outlined text-xl">qr_code_2</span>
                     </button>
+                    <button 
+  id="exportTeamResultsBtn" 
+  style="
+    margin-top: 20px; 
+    padding: 10px 15px; 
+    font-size: 20px; /* アイコンを大きく表示 */
+    cursor: pointer;
+  "
+  title="スコア詳細をCSVダウンロード"
+>
+  💾⬇️
+</button>
+<button onclick="exportPlayerScoresToPDF()">PDF出力</button>
+
                 </div>
               </div>
               <p id="roomSubtitle" class="text-sm text-slate-600 dark:text-slate-300">ルームを作成して共有、メンバー登録ができます。</p>
@@ -382,9 +405,23 @@
     <button id="floatingSwLap" class="px-3 py-2 bg-slate-100 dark:bg-slate-700 rounded-md w-full text-sm">Lap</button>
   </div>
 
-<script src="https://cdn.jsdelivr.net/npm/shepherd.js/dist/js/shepherd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/qrcodejs/qrcode.min.js"></script>
+<!-- ========================= -->
+<!-- ✅ 1. ユーティリティ系 -->
+<!-- ========================= -->
 <script src="https://cdn.jsdelivr.net/npm/lz-string/libs/lz-string.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/shepherd.js/dist/js/shepherd.min.js"></script>
+
+<!-- ========================= -->
+<!-- ✅ 2. Excel出力 -->
+<!-- ========================= -->
+<script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+
+<!-- PDF出力用 -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+
+
 <script src="js/main.js"></script>
 <script src="js/matchSet.js"></script>
 <script src="js/navbar.js"></script>
@@ -392,7 +429,7 @@
 
 
   <!-- ===================== Firebase + 機能スクリプト ===================== -->
- <script type="module">
+<script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
   import { 
     getFirestore, doc, setDoc, getDoc, updateDoc, onSnapshot, serverTimestamp 
@@ -406,7 +443,7 @@
     apiKey: "AIzaSyBvDnppOLkPeBi8QLmzNclOWu-m9ODwZ1Q",
     authDomain: "matoma2-b9292.firebaseapp.com",
     projectId: "matoma2-b9292",
-    storageBucket: "matoma2-b9292.firebasestorage.app",
+    storageBucket: "matoma2-b9292.appspot.com",
     messagingSenderId: "202661993563",
     appId: "1:202661993563:web:0b22ab2f0c5211aaef337e",
     measurementId: "G-FN8BHPK3GS"
@@ -441,6 +478,7 @@
       createdAt: serverTimestamp(),
       owner: user.uid,
       players: {},
+      playersOrder: [], // 登録順保持用
       members: {},
       teams: [{ id: "T1", name: "チーム 1" }],
       settings: { teamSize: 3, arrowCount: 4 },
@@ -451,7 +489,7 @@
       console.log("✅ ルーム作成:", roomId);
       alert(`ルームを作成しました！ID: ${roomId}`);
       window.currentRoom = roomData;
-      window.renderRoom(roomData);
+      if (window.renderRoom) window.renderRoom(roomData);
       window.startScoreSynchronization(roomId);
       return { roomId, inviteCode: `MATOMA_JOIN:${roomId}` };
     } catch (err) {
@@ -460,22 +498,19 @@
     }
   };
 
-  // ===== 改良版：ルーム参加 =====
-  // 成功時は roomId を返す。失敗時は null を返す（あるいは catchでエラー表示）
+  // ===== ルーム参加 =====
   window.joinTeamMatch = async function(roomId) {
     try {
       const ref = doc(db, "rooms", roomId);
       const snap = await getDoc(ref);
 
       if (!snap.exists()) {
-        // ルームが見つからないのは「明示的なユーザー向けメッセージ」で処理（呼び出し元でもチェック可能）
         console.warn("joinTeamMatch: room not found:", roomId);
         return null;
       }
 
       const data = snap.data();
       window.currentRoom = data;
-      // render と同期は呼び出し元で行う場合もあるが、ここでも安全に実行
       if (window.renderRoom) window.renderRoom(data);
       window.startScoreSynchronization(roomId);
 
@@ -483,7 +518,6 @@
       return roomId;
     } catch (err) {
       console.error("❌ ルーム入室エラー (joinTeamMatch):", err);
-      // ネットワークなど本当に失敗した場合のみ呼び出し元に null を返す
       return null;
     }
   };
@@ -496,151 +530,40 @@
       if (!snap.exists()) return;
       const data = snap.data();
       window.currentRoom = data;
-      if (window.renderRoom) window.renderRoom(data);
+
+      if (window.renderRoom) {
+        setTimeout(() => {
+          window.renderRoom(data);
+          console.log("🔁 Firestoreリアルタイム更新後の遅延再描画");
+        }, 0);
+      }
       console.log("🔁 Firestoreリアルタイム更新:", roomId);
+
     }, (err) => {
       console.error("❌ Firestore同期エラー:", err);
     });
     window.currentRoomListener = unsub;
   };
 
-  // ===== 改良版：ルーム参加フォーム =====
-  // 既存のフローと互換を保ちつつ、成功時のみ成功アラートを出す
-  document.addEventListener("DOMContentLoaded", () => {
-    const joinBtn = document.getElementById("doJoinBtn");
-    if (!joinBtn) return;
-
-    joinBtn.addEventListener("click", async () => {
-      const v = document.getElementById("joinInput").value.trim();
-      if (!v) return alert("招待コードまたはURLを入力してください");
-
-      let id = null;
-      if (v.startsWith("MATOMA_JOIN:")) {
-        id = v.split(":")[1].trim();
-      } else {
-        const m = v.match(/room=([A-Za-z0-9]+)/);
-        if (m && m[1]) id = m[1].trim();
-      }
-      if (!id) return alert("招待コードまたはURLが無効です");
-
-      try {
-        // まず既存の簡易チェック（直接 getDoc して存在確認）
-        const ref = doc(db, "rooms", id);
-        const snap = await getDoc(ref);
-
-        if (!snap.exists()) {
-          // 「存在しない」なら明示的に通知（成功時にこの通知は出ない）
-          alert("ルームが存在しません");
-          return;
-        }
-
-        // 中央化した joinTeamMatch を利用して入室処理（返り値で成功判定）
-        const joined = await window.joinTeamMatch(id);
-        if (joined) {
-          // 成功時だけ、ここで一度だけ成功アラートを出す（旧スクリプトの重複アラートを阻止）
-          // render/startSync は joinTeamMatch の中でも実行しているが念のため呼んで安全にする
-          window.currentRoom = snap.data();
-          if (window.renderRoom) window.renderRoom(window.currentRoom);
-          window.startScoreSynchronization(id);
-
-          console.log("🏹 入室成功（UI表示）:", id);
-          alert(`✅ ルーム「${window.currentRoom.name}」に参加しました！`);
-        } else {
-          // joinTeamMatch が null を返した場合は通信等の問題が考えられる
-          alert("ルーム参加に失敗しました。ネットワークや権限を確認してください。");
-        }
-      } catch (err) {
-        console.error("❌ 参加エラー (join button handler):", err);
-        // 本当に失敗した場合だけ表示（詳細はコンソールで確認）
-        alert("ルーム参加に失敗しました: " + (err.message || "不明なエラー"));
-      }
-    });
-  });
-
-  // ===== プレイヤー登録 =====
-// ===== 完全修正版：チーム満員時に正しく次のチームへ割り当て =====
-window.addPlayerToRoom = async function(roomId, name, role = "player") {
-  const ref = doc(db, "rooms", roomId);
-  const snap = await getDoc(ref);
-  if (!snap.exists()) return;
-  const room = snap.data();
-
-  // ---- normalize ----
-  room.players = room.players || {};
-  room.members = room.members || {};
-  let teams = [];
-  if (Array.isArray(room.teams)) {
-    teams = room.teams;
-  } else if (typeof room.teams === "object") {
-    teams = Object.values(room.teams);
-  }
-
-  const teamSize = room.settings?.teamSize || 3;
-  const newId = "P" + Date.now().toString(36);
-
-  // === 監督は固定登録 ===
-  if (role === "manager") {
-    room.players[newId] = {
-      id: newId,
-      name,
-      role,
-      teamId: "manager",
-      scores: [null, null, null, null],
-    };
-    room.members[newId] = { role };
-    await updateDoc(ref, { players: room.players, members: room.members });
-    return newId;
-  }
-
-  // === チーム人数を正確にカウント ===
-  const teamCounts = {};
-  Object.values(room.players).forEach(p => {
-    if (!p.teamId) return;
-    teamCounts[p.teamId] = (teamCounts[p.teamId] || 0) + 1;
-  });
-
-  // === 空きのあるチームを優先的に探す（ID一致で判定）===
-  let targetTeam = null;
-  for (const t of teams) {
-    if (!t.id) continue;
-    const count = teamCounts[t.id] || 0;
-    if (count < teamSize) {
-      targetTeam = t;
-      break;
+  // ===== プレイヤー名更新 =====
+  window.updatePlayerName = async function(roomId, playerId, newName) {
+    if (!newName || newName.trim() === "") {
+        console.warn("プレイヤー名が無効です");
+        return;
     }
-  }
-
-  // === 全チーム満員なら新規作成 ===
-  if (!targetTeam) {
-    const newTeamName = `チーム ${teams.length + 1}`;
-    const newTeamId = await window.addTeamToRoom(roomId, newTeamName);
-    const newTeam = { id: newTeamId, name: newTeamName };
-    teams.push(newTeam);
-    targetTeam = newTeam;
-    await updateDoc(ref, { teams });
-  }
-
-  // === プレイヤー追加 ===
-  room.players[newId] = {
-    id: newId,
-    name,
-    role,
-    scores: [null, null, null, null],
-    teamId: targetTeam.id,
+    const nameToUpdate = newName.trim();
+    try {
+        const ref = doc(db, "rooms", roomId);
+        await updateDoc(ref, {
+            [`players.${playerId}.name`]: nameToUpdate
+        });
+        console.log(`✅ プレイヤー名更新: ${playerId} → ${nameToUpdate}`);
+    } catch (e) {
+        console.error("❌ プレイヤー名更新エラー:", e);
+    }
   };
-  room.members[newId] = { role };
 
-  await updateDoc(ref, {
-    players: room.players,
-    members: room.members,
-    teams,
-  });
-
-  console.log(`✅ ${name} を ${targetTeam.name} に登録 (${targetTeam.id})`);
-  return newId;
-};
-
-  // ===== スコア更新処理 =====
+  // ===== スコア更新 =====
   window.updatePlayerTurnScore = async function(roomId, playerId, arrowIndex, newScore) {
     try {
       const ref = doc(db, "rooms", roomId);
@@ -648,24 +571,35 @@ window.addPlayerToRoom = async function(roomId, name, role = "player") {
       if (!snap.exists()) return;
       const room = snap.data();
       if (!room.players || !room.players[playerId]) return;
-
+      
       if (!Array.isArray(room.players[playerId].scores)) {
-        room.players[playerId].scores = [null, null, null, null];
+        const arrowCount = room.settings?.arrowCount || 4;
+        room.players[playerId].scores = Array(arrowCount).fill(null); 
       }
-
+      
       room.players[playerId].scores[arrowIndex] = newScore;
+      
       await updateDoc(ref, {
         [`players.${playerId}.scores`]: room.players[playerId].scores
       });
-      console.log(`🎯 スコア更新: ${playerId} → ${room.players[playerId].scores}`);
+      console.log(`🎯 スコア更新: ${playerId} の ${arrowIndex} 番目 → ${newScore}`);
+      
+      window.currentRoom = room;
+      if (window.renderRoom) {
+          setTimeout(() => {
+              window.renderRoom(window.currentRoom);
+              console.log("🔄 スコア入力後の遅延再描画");
+          }, 0); 
+      }
+
     } catch (e) {
       console.error("❌ スコア更新エラー:", e);
     }
   };
 
-  // ===== ルーム描画 =====
-  window.renderRoom = function(room) {
-    if (!room) return;
+  // ===== ルーム描画 (renderRoom 修正版) =====
+  window.renderRoom = function(room) { 
+    if (!room) return; 
     const info = document.getElementById("roomInfo");
     if (info) {
       info.innerHTML = `
@@ -679,27 +613,46 @@ window.addPlayerToRoom = async function(roomId, name, role = "player") {
     if (!container) return;
     container.innerHTML = "";
 
-    Object.values(room.players || {}).forEach(p => {
+    const playersArray = (currentRoom.playersOrder || Object.keys(currentRoom.players || {}))
+      .map(id => currentRoom.players[id])
+      .filter(p => p);
+// 'playersOrder'（チーム登録時に保存されるIDの配列）を使ってソートし直す
+    const playersOrder = room.playersOrder || [];
+    if (playersOrder.length > 0) {
+        playersArray.sort((a, b) => {
+            // プレイヤーID (a.id, b.id) が playersOrder 内のどこにあるかを検索
+            const indexA = playersOrder.indexOf(a.id);
+            const indexB = playersOrder.indexOf(b.id);
+            
+            // 登録順リストに含まれていない場合は順序を変えない
+            if (indexA === -1 || indexB === -1) return 0; 
+            
+            // 登録順のインデックスで昇順ソートを実行（横山→小川→大森の順）
+            return indexA - indexB; 
+        });
+    }
+    playersArray.forEach(p => {
       const div = document.createElement("div");
       div.className = "player-card";
+      
       div.innerHTML = `
-  <input 
-    type="text" 
-    id="player-name-${p.id}" 
-    class="player-name-input" 
-    value="${p.name || "名無し"}" 
-    style="font-weight:bold; width:80%; margin-bottom:4px;"
-  />
-  (${p.role})<br>
-  ${[0,1,2,3].map(i => `
-    <select id="score-${p.id}-${i}">
-      <option value="">-</option>
-      ${[0,1,2,3,4,5,6,7,8,9,10].map(v => `<option value="${v}">${v}</option>`).join("")}
-    </select>
-  `).join("")}
-  <div id="player-total-${p.id}" class="player-total">合計: 0</div>
-`;
-
+        <input 
+          type="text" 
+          id="player-name-${p.id}" 
+          class="player-name-input" 
+          value="${p.name || "名無し"}" 
+          data-player-id="${p.id}" 
+          style="font-weight:bold; width:80%; margin-bottom:4px;"
+        />
+        (${p.role})<br>
+        ${[0,1,2,3].map(i => `
+          <select id="score-${p.id}-${i}">
+            <option value="">-</option>
+            ${[0,1,2,3,4,5,6,7,8,9,10].map(v => `<option value="${v}">${v}</option>`).join("")}
+          </select>
+        `).join("")}
+        <div id="player-total-${p.id}" class="player-total">合計: 0</div>
+      `;
 
       container.appendChild(div);
 
@@ -708,84 +661,396 @@ window.addPlayerToRoom = async function(roomId, name, role = "player") {
         if (sel) {
           sel.value = p.scores && p.scores[i] != null ? p.scores[i] : "";
           sel.onchange = () => {
-  const val = parseInt(sel.value);
-  const newScore = Number.isNaN(val) ? null : val;
-  window.updatePlayerTurnScore(room.id, p.id, i, newScore);
-};
-
+            const val = parseInt(sel.value);
+            const newScore = Number.isNaN(val) ? null : val;
+            window.updatePlayerTurnScore(room.id, p.id, i, newScore);
+          };
         }
-        // 名前変更を即Firestoreへ反映
-const nameInput = div.querySelector(`#player-name-${p.id}`);
-if (nameInput) {
-  nameInput.addEventListener("change", async () => {
-    const newName = nameInput.value.trim() || "名無し";
-    await window.updatePlayerName(room.id, p.id, newName);
-  });
-}
-
       });
+      
+      const nameInput = div.querySelector(`#player-name-${p.id}`);
+      if (nameInput) {
+        nameInput.addEventListener("change", async () => {
+          const newName = nameInput.value.trim() || "名無し";
+          await window.updatePlayerName(room.id, p.id, newName);
+        });
+      }
 
       const totalEl = div.querySelector(`#player-total-${p.id}`);
       const total = (p.scores || []).filter(v => v != null).reduce((a, b) => a + b, 0);
       if (totalEl) totalEl.innerText = `合計: ${total}`;
     });
-  };
-  // ------------- Firestore: チーム追加 -------------
-// 場所: <script type="module"> 内（既に db, getDoc, updateDoc, doc が定義されている箇所）
-window.addTeamToRoom = async function(roomId, teamName) {
-  if (!roomId) throw new Error("roomId が必要です");
-  if (!teamName || !teamName.trim()) throw new Error("チーム名を入力してください");
+  }; 
 
-  try {
+  // ===== チーム追加 =====
+  window.addTeamToRoom = async function(roomId, teamName) {
+    if (!roomId) throw new Error("roomId が必要です");
+    if (!teamName || !teamName.trim()) throw new Error("チーム名を入力してください");
+
+    try {
+      const ref = doc(db, "rooms", roomId);
+      const snap = await getDoc(ref);
+      if (!snap.exists()) {
+        console.warn("addTeamToRoom: room not found", roomId);
+        return null;
+      }
+
+      const room = snap.data() || {};
+      let teamsArray = Array.isArray(room.teams) ? room.teams.slice() : (Array.isArray(Object.values(room.teams || {})) ? Object.values(room.teams) : []);
+
+      const existingIds = new Set(teamsArray.map(t => t.id));
+      let base = 1;
+      let newId;
+      do {
+        newId = "T" + (base++);
+      } while (existingIds.has(newId));
+
+      const newTeam = { id: newId, name: teamName.trim(), createdAt: Date.now() };
+
+      teamsArray.push(newTeam);
+
+      await updateDoc(ref, { teams: teamsArray });
+
+      console.log("addTeamToRoom: added", newTeam);
+      return newId;
+    } catch (err) {
+      console.error("addTeamToRoom error:", err);
+      throw err;
+    }
+  };
+
+  // ===== DOMContentLoaded イベント =====
+  document.addEventListener("DOMContentLoaded", () => {
+    
+    const joinBtn = document.getElementById("doJoinBtn");
+    if (joinBtn) {
+        joinBtn.addEventListener("click", async () => {
+          const v = document.getElementById("joinInput").value.trim();
+          if (!v) return alert("招待コードまたはURLを入力してください");
+
+          let id = null;
+          if (v.startsWith("MATOMA_JOIN:")) {
+            id = v.split(":")[1].trim();
+          } else {
+            const m = v.match(/room=([A-Za-z0-9]+)/);
+            if (m && m[1]) id = m[1].trim();
+          }
+          if (!id) return alert("招待コードまたはURLが無効です");
+
+          try {
+            const ref = doc(db, "rooms", id);
+            const snap = await getDoc(ref);
+
+            if (!snap.exists()) {
+              alert("ルームが存在しません");
+              return;
+            }
+
+            const joined = await window.joinTeamMatch(id);
+            if (joined) {
+              window.currentRoom = snap.data();
+              if (window.renderRoom) window.renderRoom(window.currentRoom);
+              window.startScoreSynchronization(id);
+
+              console.log("🏹 入室成功（UI表示）:", id);
+              alert(`✅ ルーム「${window.currentRoom.name}」に参加しました！`);
+            } else {
+              alert("ルーム参加に失敗しました。ネットワークや権限を確認してください。");
+            }
+          } catch (err) {
+            console.error("❌ 参加エラー (join button handler):", err);
+            alert("ルーム参加に失敗しました: " + (err.message || "不明なエラー"));
+          }
+        });
+    }
+    
+    const exportBtn = document.getElementById("exportTeamResultsBtn");
+if (exportBtn) {
+  exportBtn.addEventListener("click", async () => {
+    if (window.exportPlayerScoresToXLSX) {
+      await window.exportPlayerScoresToXLSX(); // ← XLSX版に変更
+      alert("✅ アプリ内データをエクスポートしました。");
+    } else {
+      alert("❌ エクスポート機能が見つかりません。");
+    }
+  });
+}
+
+
+  });
+
+  // ===== プレイヤー登録 =====
+  window.addPlayerToRoom = async function(roomId, name, role = "player") { 
     const ref = doc(db, "rooms", roomId);
     const snap = await getDoc(ref);
-    if (!snap.exists()) {
-      console.warn("addTeamToRoom: room not found", roomId);
-      return null;
+    if (!snap.exists()) return;
+    const room = snap.data();
+    
+    room.players = room.players || {};
+    room.members = room.members || {};
+    room.playersOrder = room.playersOrder || []; // 登録順配列を初期化
+    let teams = [];
+    if (Array.isArray(room.teams)) {
+      teams = room.teams;
+    } else if (typeof room.teams === "object") {
+      teams = Object.values(room.teams);
     }
-
-    const room = snap.data() || {};
-    // rooms.teams が配列またはオブジェクトどちらでも扱えるように正規化
-    let teamsArray = Array.isArray(room.teams) ? room.teams.slice() : (Array.isArray(Object.values(room.teams || {})) ? Object.values(room.teams) : []);
-
-    // 一意な teamId を生成（既存IDを考慮）
-    const existingIds = new Set(teamsArray.map(t => t.id));
-    let base = 1;
-    let newId;
-    do {
-      newId = "T" + (base++);
-    } while (existingIds.has(newId));
-
-    const newTeam = { id: newId, name: teamName.trim(), createdAt: Date.now() };
-
-    teamsArray.push(newTeam);
-
-    // Firestore に書き戻す（配列で保存する案）
-    await updateDoc(ref, { teams: teamsArray });
-
-    console.log("addTeamToRoom: added", newTeam);
-    return newId;
-  } catch (err) {
-    console.error("addTeamToRoom error:", err);
-    throw err;
-  }
-};
-// ===== プレイヤー名変更（リアルタイム同期対応） =====
-window.updatePlayerName = async function(roomId, playerId, newName) {
-  try {
-    if (!roomId || !playerId) return;
-    const ref = doc(db, "rooms", roomId);
-    await updateDoc(ref, {
-      [`players.${playerId}.name`]: newName
+    const teamSize = room.settings?.teamSize || 3;
+    const newId = "P" + Date.now().toString(36);
+    
+    if (role === "manager") {
+      room.players[newId] = {
+        id: newId,
+        name,
+        role,
+        teamId: "manager",
+        scores: [null, null, null, null],
+      };
+      room.members[newId] = { role };
+      room.playersOrder.push(newId); // 登録順保持
+      await updateDoc(ref, { players: room.players, members: room.members, playersOrder: room.playersOrder });
+      return newId;
+    }
+    
+    const teamCounts = {};
+    Object.values(room.players).forEach(p => {
+      if (!p.teamId) return;
+      teamCounts[p.teamId] = (teamCounts[p.teamId] || 0) + 1;
     });
-    console.log(`✏️ 名前変更: ${playerId} → ${newName}`);
-  } catch (e) {
-    console.error("❌ 名前変更エラー:", e);
+    
+    let targetTeam = null;
+    for (const t of teams) {
+      if (!t.id) continue;
+      const count = teamCounts[t.id] || 0;
+      if (count < teamSize) {
+        targetTeam = t;
+        break;
+      }
+    }
+    
+    if (!targetTeam) {
+      const newTeamName = `チーム ${teams.length + 1}`;
+      const newTeamId = window.addTeamToRoom ? await window.addTeamToRoom(roomId, newTeamName) : `T${teams.length + 1}`; 
+      const newTeam = { id: newTeamId, name: newTeamName };
+      teams.push(newTeam);
+      await updateDoc(ref, { teams });
+      targetTeam = newTeam;
+    }
+    
+    room.players[newId] = {
+      id: newId,
+      name,
+      role,
+      scores: [null, null, null, null],
+      teamId: targetTeam.id,
+    };
+    room.members[newId] = { role };
+    room.playersOrder.push(newId); // 登録順保持
+    await updateDoc(ref, { 
+      players: room.players,
+      members: room.members,
+      teams,
+      playersOrder: room.playersOrder
+    });
+    console.log(`✅ ${name} を ${targetTeam.name} に登録 (${targetTeam.id})`);
+    return newId;
+  };
+
+  // ===== CSV出力 =====
+// ===== XLSX 出力（同構成横並び・最後作成チーム下） =====
+window.exportPlayerScoresToXLSX = async function() {
+  const room = window.currentRoom;
+  if (!room || !room.players) {
+    alert("スコアデータがありません。");
+    return;
   }
+
+  const teams = Array.isArray(room.teams) ? room.teams : Object.values(room.teams || {});
+  const wsData = [];
+  const baseHeader = ["チーム名", "選手名", "一射目", "二射目", "三射目", "四射目", "合計"];
+  const borderThin = { style: "thin", color: { rgb: "000000" } };
+  const borderThick = { style: "medium", color: { rgb: "000000" } };
+  const playersOrder = room.playersOrder || Object.keys(room.players);
+
+  // チーム構成を特定するキー
+  const getTeamKey = (teamPlayers) =>
+    teamPlayers
+      .filter(p => p.role !== "manager")
+      .map(p => p.name)
+      .sort()
+      .join(",");
+
+  // 同構成チームをグループ化（追加順を維持）
+  const teamGroups = {};
+  for (const team of teams) {
+    const teamPlayers = playersOrder
+      .map(id => room.players[id])
+      .filter(p => p && p.teamId === team.id && p.role !== "manager");
+    if (!teamPlayers.length) continue;
+
+    const key = getTeamKey(teamPlayers);
+    if (!teamGroups[key]) teamGroups[key] = [];
+    teamGroups[key].push({ team, teamPlayers });
+  }
+
+  // グループごとに出力（最後作成チーム下）
+  for (const key of Object.keys(teamGroups)) {
+    const group = teamGroups[key];
+
+    // ヘッダ（横並び）
+    const headerRow = [];
+    group.forEach(() => headerRow.push(...baseHeader));
+    wsData.push(headerRow);
+
+    // 選手名の集合（グループ内で共通）
+    const memberNames = Array.from(new Set(group.flatMap(g => g.teamPlayers.map(p => p.name))));
+
+    // 各選手の行
+    memberNames.forEach(member => {
+      const row = [];
+      group.forEach(({ team, teamPlayers }) => {
+        const player = teamPlayers.find(p => p.name === member);
+        const scores = player?.scores || [];
+        const total = scores.reduce((a,b) => a+(b||0),0);
+        row.push(team.name, member, ...scores.map(s=>s??""), total);
+      });
+      wsData.push(row);
+    });
+
+    // チーム合計行
+    const totalRow = [];
+    group.forEach(({ team, teamPlayers }) => {
+      const teamTotal = teamPlayers.reduce((sum,p)=>sum+(p.scores||[]).reduce((a,b)=>a+(b||0),0),0);
+      totalRow.push("", `${team.name} 合計`, "", "", "", "", teamTotal);
+    });
+    wsData.push(totalRow);
+
+    // チーム間に空行
+    wsData.push([]);
+  }
+
+  // シート作成
+  const ws = XLSX.utils.aoa_to_sheet(wsData);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Scores");
+
+  // 枠線設定
+  const range = XLSX.utils.decode_range(ws['!ref']);
+  for (let R = range.s.r; R <= range.e.r; R++) {
+    for (let C = range.s.c; C <= range.e.c; C++) {
+      const cell = XLSX.utils.encode_cell({ r: R, c: C });
+      if (!ws[cell]) ws[cell] = { v: "" };
+      ws[cell].s = ws[cell].s || {};
+      ws[cell].s.border = { top: borderThin, bottom: borderThin, left: borderThin, right: borderThin };
+    }
+  }
+  // 外枠を太線
+  for (let C = range.s.c; C <= range.e.c; C++) {
+    ws[XLSX.utils.encode_cell({ r: range.s.r, c: C })].s.border.top = borderThick;
+    ws[XLSX.utils.encode_cell({ r: range.e.r, c: C })].s.border.bottom = borderThick;
+  }
+  for (let R = range.s.r; R <= range.e.r; R++) {
+    ws[XLSX.utils.encode_cell({ r: R, c: range.s.c })].s.border.left = borderThick;
+    ws[XLSX.utils.encode_cell({ r: R, c: range.e.c })].s.border.right = borderThick;
+  }
+
+  XLSX.writeFile(wb, `${room.name || "team_scores"}.xlsx`);
+  alert("✅ 同構成横並びでPDFと同じ順序で出力しました（XLSX）");
+};
+
+// ===== PDF 出力（同構成横並び・最後作成チーム下） =====
+window.exportPlayerScoresToPDF = async function() {
+  const room = window.currentRoom;
+  if (!room || !room.players) {
+    alert("スコアデータがありません。");
+    return;
+  }
+
+  const teams = Array.isArray(room.teams) ? room.teams : Object.values(room.teams || {});
+  const playersOrder = (room.playersOrder || Object.keys(room.players)).filter(id => room.players[id]);
+  const { jsPDF } = jspdf;
+  const doc = new jsPDF();
+
+  try {
+    const fontUrl = "./fonts/NotoSansJP-Regular.ttf";
+    const fontData = await fetch(fontUrl).then(r => r.arrayBuffer());
+    function arrayBufferToBase64(buffer) {
+      let binary = '';
+      const bytes = new Uint8Array(buffer);
+      const chunkSize = 0x8000;
+      for (let i = 0; i < bytes.length; i += chunkSize) {
+        const chunk = bytes.subarray(i, i + chunkSize);
+        binary += String.fromCharCode.apply(null, chunk);
+      }
+      return btoa(binary);
+    }
+    const fontBase64 = arrayBufferToBase64(fontData);
+    doc.addFileToVFS("NotoSansJP-Regular.ttf", fontBase64);
+    doc.addFont("NotoSansJP-Regular.ttf", "NotoSansJP", "normal");
+    doc.setFont("NotoSansJP");
+  } catch (e) {
+    console.error("❌ フォント読み込み失敗:", e);
+    alert("フォントの読み込みに失敗しました。PDF出力できません。");
+    return;
+  }
+
+  let yOffset = 10;
+  const baseHeader = ["チーム名", "選手名", "一射目", "二射目", "三射目", "四射目", "合計"];
+  const getTeamKey = teamPlayers => teamPlayers.filter(p => p.role !== "manager").map(p=>p.name).sort().join(",");
+
+  // 同構成チームをグループ化
+  const teamGroups = {};
+  for (const team of teams) {
+    const teamPlayers = playersOrder.map(id => room.players[id]).filter(p => p && p.teamId === team.id && p.role !== "manager");
+    if (!teamPlayers.length) continue;
+    const key = getTeamKey(teamPlayers);
+    if (!teamGroups[key]) teamGroups[key] = [];
+    teamGroups[key].push({ team, teamPlayers });
+  }
+
+  for (const key of Object.keys(teamGroups)) {
+    const group = teamGroups[key];
+    const headerRow = [];
+    group.forEach(() => headerRow.push(...baseHeader));
+
+    const tableData = [];
+    const memberNames = Array.from(new Set(group.flatMap(g => g.teamPlayers.map(p => p.name))));
+
+    memberNames.forEach(member => {
+      const row = [];
+      group.forEach(({ team, teamPlayers }) => {
+        const player = teamPlayers.find(p => p.name === member);
+        const scores = player?.scores || [];
+        const total = scores.reduce((a,b)=>a+(b||0),0);
+        row.push(team.name, member, ...scores.map(s=>s??""), total);
+      });
+      tableData.push(row);
+    });
+
+    const totalRow = [];
+    group.forEach(({ team, teamPlayers }) => {
+      const teamTotal = teamPlayers.reduce((sum,p)=>sum+(p.scores||[]).reduce((a,b)=>a+(b||0),0),0);
+      totalRow.push("", `${team.name} 合計`, "", "", "", "", teamTotal);
+    });
+    tableData.push(totalRow);
+
+    doc.autoTable({
+      startY: yOffset,
+      head: [headerRow],
+      body: tableData,
+      theme: 'grid',
+      styles: { font: "NotoSansJP", fontSize: 10 },
+      headStyles: { fillColor: [220,220,220] }
+    });
+
+    yOffset = doc.lastAutoTable.finalY + 10;
+  }
+
+  doc.save(`${room.name || "team_scores"}.pdf`);
+  alert("✅ 同構成横並びでPDFと同じ順序で出力しました（PDF）");
 };
 
 </script>
-
 <script>
 /*
   以下はモジュール外の既存コードをベースに修正を入れた部分。
@@ -896,15 +1161,27 @@ document.addEventListener("DOMContentLoaded", () => {
   currentRoom.players = currentRoom.players || {};
   currentRoom.teams = currentRoom.teams || {};
   currentRoom.members = currentRoom.members || {};
+  currentRoom.playersOrder = currentRoom.playersOrder || []; // 🔧 追加
 
   const playersArray = Object.values(currentRoom.players);
   const teamsArray = Array.isArray(currentRoom.teams)
     ? currentRoom.teams
     : Object.values(currentRoom.teams);
 
+  // 🔧 登録順ソート処理を追加
+  if (currentRoom.playersOrder.length > 0) {
+    playersArray.sort((a, b) => {
+      const indexA = currentRoom.playersOrder.indexOf(a.id);
+      const indexB = currentRoom.playersOrder.indexOf(b.id);
+      if (indexA === -1 && indexB === -1) return 0;
+      if (indexA === -1) return 1;
+      if (indexB === -1) return -1;
+      return indexA - indexB;
+    });
+  }
+
   const scoreOptionsHtml = SELECTIONS.map(score => `<option value="${score}">${score}</option>`).join('');
   const ARROW_COUNT_CURRENT = currentRoom.settings?.arrowCount || ARROW_COUNT;
-
   // ===============================
   // 🧾 現在の登録者情報
   // ===============================
