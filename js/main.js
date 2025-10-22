@@ -91,6 +91,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function getAllSetsData() {
     const setsData = []
     setsContainer.querySelectorAll(".set-wrapper").forEach((setWrapper) => {
+      // マーカーデータを取得
       const canvas = setWrapper.querySelector("canvas")
       const markers = canvas && canvas.markers ? canvas.markers.map((m) => ({ ...m })) : []
 
@@ -147,8 +148,10 @@ document.addEventListener("DOMContentLoaded", () => {
     resetBtn.className = "px-3 py-1 text-sm bg-yellow-600 text-white rounded hover:bg-yellow-700"
     resetBtn.addEventListener("click", () => {
       const canvas = setWrapper.querySelector("canvas")
+      // canvas.markers は initializeCanvas で設定される
       if (canvas && canvas.markers) {
         canvas.markers.length = 0
+        // drawCanvas 関数は下で定義されている
         drawCanvas(canvas, canvas.img, canvas.markers, canvas.scale, canvas.offsetX, canvas.offsetY)
         saveSetsForDate(currentDate, getAllSetsData())
       }
@@ -160,6 +163,7 @@ document.addEventListener("DOMContentLoaded", () => {
     delSetBtn.className = "px-3 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700"
     delSetBtn.addEventListener("click", () => {
       setWrapper.remove()
+      // setCount の調整は不要（削除によって index が変わるが、保存データは影響を受けないため）
       saveSetsForDate(currentDate, getAllSetsData())
     })
     buttonGroup.appendChild(delSetBtn)
@@ -247,6 +251,7 @@ document.addEventListener("DOMContentLoaded", () => {
     img.src = "img/target1.png"
 
     canvas.img = img
+    // 既存データがあればmarkersを復元し、なければ空の配列
     canvas.markers = existingSet && existingSet.markers ? existingSet.markers.map((m) => ({ ...m })) : []
     canvas.scale = 1
     canvas.offsetX = 0
@@ -290,6 +295,7 @@ document.addEventListener("DOMContentLoaded", () => {
         clientX = e.clientX
         clientY = e.clientY
       }
+      // キャンバスの描画スケールとオフセットを考慮して、画像上の座標を返す
       const x = (clientX - rect.left - canvas.offsetX) / canvas.scale
       const y = (clientY - rect.top - canvas.offsetY) / canvas.scale
       return { x, y, pageX: clientX, pageY: clientY }
@@ -299,6 +305,7 @@ document.addEventListener("DOMContentLoaded", () => {
       startPos = getEventPosition(e)
       moved = false
       dragIndex = null
+      // マーカーの上をクリックしたかチェック
       for (let i = canvas.markers.length - 1; i >= 0; i--) {
         const dx = startPos.x - canvas.markers[i].x
         const dy = startPos.y - canvas.markers[i].y
@@ -314,8 +321,11 @@ document.addEventListener("DOMContentLoaded", () => {
       const pos = getEventPosition(e)
       const dx = pos.x - startPos.x
       const dy = pos.y - startPos.y
+      // 5px以上移動したらドラッグと判定
       if (Math.abs(dx) > 5 || Math.abs(dy) > 5) moved = true
+      
       if (dragIndex !== null) {
+        // マーカーをドラッグ中
         if (e.type && e.type.startsWith("touch")) e.preventDefault() // ドラッグ中のみスクロール停止
         canvas.markers[dragIndex].x = pos.x
         canvas.markers[dragIndex].y = pos.y
@@ -324,12 +334,16 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function endDrag(e) {
-      const pos = getEventPosition(e)
-      if (!moved && dragIndex === null && startPos) {
+      // e が null の場合（mouseleave で発生しうる）も考慮
+      const pos = e ? getEventPosition(e) : null
+      
+      // 移動しておらず、かつマーカーをドラッグしていない（＝クリック/タップ）の場合にマーカーを追加
+      if (!moved && dragIndex === null && startPos && pos) {
+        // 既存マーカーと近すぎないかチェック
         const near = canvas.markers.some((m) => {
           const dx = m.x - pos.x,
             dy = m.y - pos.y
-          return dx * dx + dy * dy < 4
+          return dx * dx + dy * dy < 4 // 4ピクセル未満の距離を近すぎると判定
         })
         if (!near) {
           const pixel = getImagePixelColorOnImage(canvas.img, pos.x, pos.y)
@@ -337,18 +351,25 @@ document.addEventListener("DOMContentLoaded", () => {
           canvas.markers.push({ x: pos.x, y: pos.y, score })
         }
       }
+      
       dragIndex = null
       startPos = null
-      // 画像範囲外のマーカーは削除
+      moved = false // 状態をリセット
+      
+      // 画像範囲外のマーカーは削除（ドラッグで外に出た場合を考慮）
       canvas.markers = canvas.markers.filter((m) => m.x >= 0 && m.x <= img.width && m.y >= 0 && m.y <= img.height)
+      
       drawCanvas(canvas, img, canvas.markers, canvas.scale, canvas.offsetX, canvas.offsetY)
       saveSetsForDate(currentDate, getAllSetsData())
     }
 
+    // ⭐⭐⭐ ここが修正箇所 ⭐⭐⭐
     // mouse
     canvas.addEventListener("mousedown", startDrag)
-    document.addEventListener("mousemove", onDrag)
-    document.addEventListener("mouseup", endDrag)
+    // document への登録を canvas への登録に変更
+    canvas.addEventListener("mousemove", onDrag)
+    canvas.addEventListener("mouseup", endDrag)
+    canvas.addEventListener("mouseleave", endDrag) // canvas からマウスが離れた時も終了
 
     // touch - passive:false on move so we can preventDefault while dragging
     canvas.addEventListener("touchstart", startDrag, { passive: true })
@@ -402,6 +423,7 @@ document.addEventListener("DOMContentLoaded", () => {
     })
 
     ctx.restore()
+    // スコアボードの更新
     updateScoreBoard(canvas, `#scoreList_${canvas.id.split("_")[1]}`, `#totalScore_${canvas.id.split("_")[1]}`, markers)
   }
 
@@ -429,6 +451,7 @@ function updateScoreBoard(canvas, scoreListSelector, totalScoreSelector, markers
     select.style.fontSize = "18px";
     select.style.minWidth = "84px";
 
+    // 0, 3, 5, 7, 9, 10 の順序で追加
     [0, 3, 5, 7, 9, 10].forEach((v) => {
       const opt = document.createElement("option");
       opt.value = v;
@@ -438,9 +461,11 @@ function updateScoreBoard(canvas, scoreListSelector, totalScoreSelector, markers
 
     select.addEventListener("change", () => {
       const idx = Array.from(list.children).indexOf(li);
-      if (idx >= 0) {
+      if (idx >= 0 && markers[idx]) { // markers[idx]の存在チェックを追加
         markers[idx].score = Number.parseInt(select.value);
+        // スコアが変わったら再描画して、スコアボードも再更新（合計点更新のため）
         drawCanvas(canvas, canvas.img, markers, canvas.scale, canvas.offsetX, canvas.offsetY);
+        // drawCanvas 内で updateScoreBoard が呼ばれるため、ここでは保存のみ
         saveSetsForDate(currentDate, getAllSetsData());
       }
     });
@@ -456,9 +481,11 @@ function updateScoreBoard(canvas, scoreListSelector, totalScoreSelector, markers
     const label = li.querySelector(".arrow-label");
     label.textContent = `矢${i + 1}: `;
     label.style.color = "#1e293b"; // ← ダークでも黒固定
-    li.querySelector("select.score-select").value = m.score ?? 0;
+    // m.score が null や undefined の場合も 0 を選択
+    li.querySelector("select.score-select").value = m.score ?? 0; 
   });
 
+  // マーカーが減った分、リストの要素を削除
   while (list.children.length > markers.length) {
     list.removeChild(list.lastChild);
   }
@@ -473,25 +500,28 @@ function updateScoreBoard(canvas, scoreListSelector, totalScoreSelector, markers
     // 「合計:」ラベル部分を検出して黒文字固定
     const parent = totalElem.parentElement;
     if (parent) {
-      const labelNode = Array.from(parent.childNodes).find(
-        (node) => node.nodeType === 3 && node.textContent.includes("合計")
-      );
-      if (labelNode) {
-        // 「合計:」というテキストノードを <span> で包んで色指定
-        const span = document.createElement("span");
-        span.textContent = "合計: ";
-        span.style.color = "#1e293b"; // ← 黒固定
-        parent.insertBefore(span, totalElem);
-        parent.removeChild(labelNode);
+      // 既に span でラップされているかチェック（複数回呼ばれた場合の重複防止）
+      const existingSpan = parent.querySelector(".total-label-span");
+      if (existingSpan) {
+        // 既存の span があれば何もしない
+      } else {
+        // テキストノード「合計:」を探す
+        const labelNode = Array.from(parent.childNodes).find(
+          (node) => node.nodeType === 3 && node.textContent.includes("合計")
+        );
+        if (labelNode) {
+          // 「合計:」というテキストノードを <span> で包んで色指定
+          const span = document.createElement("span");
+          span.textContent = "合計: ";
+          span.className = "total-label-span";
+          span.style.color = "#1e293b"; // ← 黒固定
+          parent.insertBefore(span, totalElem);
+          parent.removeChild(labelNode);
+        }
       }
     }
   }
 }
-
-
-
-
-
 
   /* ---------- helper ---------- */
   function getImagePixelColorOnImage(img, x, y) {
