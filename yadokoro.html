@@ -3,11 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-  <!-- ===========================
-       ファビコン・PWA設定（index.htmlと同一）
-  ============================ -->
-  <link rel="apple-touch-icon" sizes="57x57" href="/apple-icon-57x57.png">
+  <title>MATOMA-遠的 (矢所分析)</title>
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-icon-57x57.png">
   <link rel="apple-touch-icon" sizes="60x60" href="/apple-icon-60x60.png">
   <link rel="apple-touch-icon" sizes="72x72" href="/apple-icon-72x72.png">
   <link rel="apple-touch-icon" sizes="76x76" href="/apple-icon-76x76.png">
@@ -22,231 +19,228 @@
   <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
   <link rel="manifest" href="/manifest.json">
   <meta name="theme-color" content="#1969e1">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/ms-icon-144x144.png">
 
-  <title>MATOMA | 矢所分析</title>
+  <link rel="apple-touch-icon" sizes="57x57" href="/apple-icon-57x57.png">
+  <link rel="manifest" href="/manifest.json">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/ms-icon-144x144.png">
+  <meta name="theme-color" content="#1a73e8">
 
-  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-  <script>
-    tailwind.config = {
-      darkMode: "class",
-      theme: {
-        extend: {
-          colors: {
-            "primary": "#1969e1",
-            "background-light": "#f6f7f8",
-            "background-dark": "#111721"
-          },
-          fontFamily: {
-            "display": ["Manrope", "Yu Gothic", "Hiragino Maru Gothic ProN", "sans-serif"]
-          },
-          borderRadius: {
-            "DEFAULT": "0.5rem",
-            "lg": "1rem",
-            "xl": "1.5rem",
-            "2xl": "2rem",
-            "full": "9999px"
-          }
-        }
-      }
-    }
-  </script>
 
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&display=swap" rel="stylesheet" />
-  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/shepherd.js/dist/css/shepherd.css">
-  <link rel="stylesheet" href="css/style.css">
-  <link rel="stylesheet" href="css/styles.css">
-  <meta name="google-site-verification" content="BPIz999ax7wid03IH2bc6D9QQT1WzAw4Ej9VHfXODMo" />
-
+  <link rel="stylesheet" href="css/settings-overrides.css">
+  
   <style>
-    .app-card { transition: transform 0.2s ease, box-shadow 0.2s ease; }
-    .app-card:hover { transform: translateY(-2px); box-shadow: 0 20px 40px rgba(0,0,0,0.15); }
-    .tab-bar {
-      background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(255,255,255,0.95));
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border-top: 1px solid rgba(0,0,0,0.1);
-    }
-    .dark .tab-bar {
-      background: linear-gradient(180deg, rgba(17,23,33,0.98), rgba(17,23,33,0.95));
-      border-top: 1px solid rgba(255,255,255,0.1);
-    }
-    body { padding-bottom: 80px; }
-
-    .center-tab-button {
-      position: relative;
-      top: -20px;
-      width: 64px;
-      height: 64px;
-      background: linear-gradient(135deg, #1969e1, #1557c7);
-      border-radius: 50%;
-      box-shadow: 0 8px 24px rgba(25,105,225,0.4);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.3s ease;
-      border: none;
-      cursor: pointer;
+    /* --- Craft Style Customizations from めも --- */
+    :root {
+      --primary-color: #1a73e8; /* Google Blue / Primary (めもファイルのデザイン) */
+      --surface-light: #ffffff;
+      --surface-dark: #1f2937; /* slate-800 */
     }
 
+    /* 基本設定 */
+    body {
+      background-color: #f3f4f6; /* light mode body background: gray-100 */
+      color: #1f2937; /* light mode text: gray-800 */
+      transition: background-color 0.3s, color 0.3s;
+      padding-bottom: 80px; /* 下部ボタンを考慮 */
+    }
+    .dark body {
+      background-color: #111827; /* dark mode body background: gray-900 */
+      color: #e5e7eb; /* dark mode text: gray-200 */
+    }
+
+    /* Craft風カード (app-card) */
+    .app-card {
+      transition: box-shadow 0.2s, transform 0.2s;
+    }
+    .app-card:hover {
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+    .dark .app-card {
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+    }
+
+    /* Primary Color Utility */
+    .bg-primary { background-color: var(--primary-color); }
+    .text-primary { color: var(--primary-color); }
+
+    /* Input/Select Style */
+    input[type="date"], select {
+        padding: 8px 12px;
+        border-radius: 6px;
+        border: 1px solid #d1d5db; /* slate-300 */
+        background-color: #f9fafb; /* gray-50 */
+        transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .dark input[type="date"], .dark select {
+        border-color: #4b5563; /* slate-600 */
+        background-color: #1f2937; /* slate-800 */
+    }
+    input[type="date"]:focus, select:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 1px var(--primary-color);
+    }
+
+    /* Tab Switch Class (Active tab style from memo) */
+    .tab-btn.active {
+      background-color: var(--primary-color) !important;
+      color: white !important;
+    }
+    
+    /* 矢所Canvas (めもデザインのカード内に収まるように調整) */
     .canvas-container { width: 100%; max-width: 600px; margin: 0 auto; aspect-ratio: 1/1; position: relative; }
     .canvas-container canvas { width: 100% !important; height: 100% !important; display: block; }
+
+    /* ナビゲーションバーをスマホでも見やすく (index.htmlからの追加) */
+    nav {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    nav a {
+      flex: 1 1 auto;
+      white-space: nowrap;
+    }
+     /* --- グラフ伸び防止 --- */
+  #scoreChart {
+    height: 260px !important;
+    max-height: 260px !important;
+    min-height: 260px !important;
+    display: block !important;
+  }
+  #scoreChartWrapper {
+    height: 260px;
+    overflow: hidden;
+  }
   </style>
 </head>
 
-<body class="bg-background-light dark:bg-background-dark font-display text-slate-800 dark:text-slate-200">
-<div class="flex flex-col min-h-screen">
+<body class="min-h-screen pb-20 dark:bg-gray-900">
+  <div class="container mx-auto px-4 pt-6 pb-24 app-main-container">
+    
+    <header class="mb-6 flex items-center justify-between">
+      <h1 class="text-3xl font-extrabold text-primary flex items-center">
+        
+        MATOMA - 遠的
+      </h1>
+      <div class="flex items-center gap-2">
+        <button id="shareBtn"
+          class="px-3 py-1 bg-primary text-white rounded-lg hover:bg-primary/90 text-sm font-semibold shadow-md transition-all flex items-center gap-1">
+          <span class="material-symbols-outlined text-base">share</span>
+          <span>共有</span>
+        </button>
 
-  <!-- ヘッダー -->
-  <header class="sticky top-0 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-sm z-10 shadow-sm">
-    <div class="flex items-center justify-between h-14">
-  <h1 class="text-lg font-bold text-slate-900 dark:text-white">MATOMA遠的</h1>
-  <div class="flex items-center gap-2">
-    <!-- 共有ボタン -->
-    <button id="shareBtn"
-      class="px-4 py-2 bg-primary text-white rounded-full hover:bg-blue-600 text-sm font-semibold shadow-md transition-all">
-      共有
-    </button>
-
-    <!-- 設定ボタン（歯車） -->
-    <button id="settingsBtn"
-      class="p-2 rounded-full bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 transition-all shadow-sm"
-      title="設定ページ">
-      <span class="material-symbols-outlined text-2xl">settings</span>
-    </button>
-  </div>
-</div>
-
-  </header>
-
-  <!-- 初めての方へ -->
-  <div class="hidden md:block fixed bottom-24 right-4 z-50">
-    <button id="tutorialBtn" class="px-5 py-3 text-sm sm:text-base bg-primary text-white rounded-full shadow-xl hover:bg-primary/90 font-semibold transition-all hover:scale-105">初めての方へ</button>
-  </div>
-  <div class="md:hidden w-full py-3 bg-background-light dark:bg-background-dark">
-    <div class="container mx-auto px-4 flex justify-center">
-      <button id="tutorialBtnMobile" class="px-6 py-3 text-base bg-primary text-white rounded-full shadow-lg hover:bg-primary/90 font-semibold transition-all">初めての方へ</button>
-    </div>
-  </div>
-
-  <!-- 分析ページ本体 -->
-  <main class="flex-grow container mx-auto px-4 py-6 space-y-6">
-    <section class="bg-white dark:bg-slate-900 p-5 rounded-2xl shadow-lg">
-      <h2 class="text-xl font-bold mb-4 text-slate-900 dark:text-white">矢所分析</h2>
-
-      <div class="flex flex-wrap gap-3 mb-4 items-center">
-        <input type="date" id="matchDate" class="p-2 border rounded" />
-        <button id="dailyTab" class="px-4 py-2 bg-primary text-white rounded">日別</button>
-        <button id="monthTab" class="px-4 py-2 bg-slate-300 dark:bg-slate-700 text-slate-800 dark:text-slate-200">過去30日</button>
-        <select id="toolCategorySelect" class="p-2 border rounded">
-          <option value="">-- カテゴリ --</option>
-          <option value="弓">弓</option>
-          <option value="矢">矢</option>
-          <option value="弦">弦</option>
-          <option value="弽">弽</option>
-        </select>
-        <select id="toolNameSelect" class="p-2 border rounded">
-          <option value="">-- 道具を選択 --</option>
-        </select>
+        <button id="settingsBtn"
+          class="p-2 rounded-lg bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 transition-all shadow-sm"
+          title="設定ページ">
+          <span class="material-symbols-outlined text-2xl">settings</span>
+        </button>
+        <button id="tutorialBtn" class="p-2 rounded-lg bg-primary text-white hover:bg-primary/90 text-sm font-semibold shadow-md transition-all" title="初めての方へ">
+          <span class="material-symbols-outlined">help</span>
+        </button>
       </div>
+    </header>
 
-      <div class="bg-white dark:bg-slate-900 rounded-xl shadow-lg p-4 flex flex-col md:flex-row gap-6">
-        <canvas id="targetCanvas" class="w-full md:w-1/2 h-64 bg-slate-100 dark:bg-slate-800 rounded-xl"></canvas>
-        <div class="w-full md:w-1/2">
-          <h3 class="font-bold mb-2 text-slate-900 dark:text-white">得点分布</h3>
-          <canvas id="scoreChart" class="w-full h-64 bg-white dark:bg-slate-900 rounded-xl"></canvas>
+    <nav class="flex space-x-2 p-2 mb-6 app-card rounded-xl bg-surface-light dark:bg-surface-dark shadow-lg sticky top-0 z-30">
+      <a href="index.html" class="tab-btn flex items-center justify-center px-2 py-2 rounded-lg bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-300 text-sm font-medium transition-colors">
+        <span class="material-symbols-outlined text-xl mr-1">target</span> セット
+      </a>
+      <a href="team.html" class="tab-btn flex items-center justify-center px-2 py-2 rounded-lg bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-300 text-sm font-medium transition-colors">
+        <span class="material-symbols-outlined text-xl mr-1">groups</span> チーム
+      </a>
+      <a href="yadokoro.html" class="tab-btn active flex items-center justify-center px-2 py-2 rounded-lg text-white text-sm font-medium transition-colors bg-primary">
+        <span class="material-symbols-outlined text-xl mr-1">trending_up</span> 分析
+      </a>
+      <a href="tools.html" class="tab-btn flex items-center justify-center px-2 py-2 rounded-lg bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-300 text-sm font-medium transition-colors">
+        <span class="material-symbols-outlined text-xl mr-1">manufacturing</span> 道具
+      </a>
+      <a href="history.html" class="tab-btn flex items-center justify-center px-2 py-2 rounded-lg bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-300 text-sm font-medium transition-colors">
+        <span class="material-symbols-outlined text-xl mr-1">history</span> 履歴
+      </a>
+      <a href="help.html" class="tab-btn flex items-center justify-center px-2 py-2 rounded-lg bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-300 text-sm font-medium transition-colors">
+        <span class="material-symbols-outlined text-xl mr-1">help</span> ヘルプ
+      </a>
+    </nav>
+    
+    <div class="mb-6 flex justify-end">
+    </div>
+
+    <main class="space-y-6">
+      <section class="app-card p-5 rounded-2xl shadow-lg bg-surface-light dark:bg-surface-dark">
+        <h2 class="text-xl font-bold mb-4 text-slate-900 dark:text-white">矢所分析</h2>
+
+        <div class="flex flex-wrap gap-3 mb-4 items-center">
+          <input type="date" id="matchDate" class="p-2 border rounded" />
+          <button id="dailyTab" class="tab-btn px-4 py-2 bg-primary text-white rounded-lg">日別</button>
+          <button id="monthTab" class="tab-btn px-4 py-2 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg">過去30日</button>
+          <select id="toolCategorySelect" class="p-2 border rounded">
+            <option value="">-- カテゴリ --</option>
+            <option value="弓">弓</option>
+            <option value="矢">矢</option>
+            <option value="弦">弦</option>
+            <option value="弽">弽</option>
+          </select>
+          <select id="toolNameSelect" class="p-2 border rounded">
+            <option value="">-- 道具を選択 --</option>
+          </select>
         </div>
+
+        <div class="app-card bg-surface-light dark:bg-surface-dark rounded-xl shadow-lg p-4 flex flex-col md:flex-row gap-6">
+          <div class="canvas-container w-full md:w-1/2">
+            <canvas id="targetCanvas" class="w-full h-full bg-slate-100 dark:bg-slate-800 rounded-xl"></canvas>
+          </div>
+          <div class="w-full md:w-1/2">
+            <h3 class="font-bold mb-2 text-slate-900 dark:text-white">得点分布</h3>
+            <canvas id="scoreChart" class="w-full h-64 bg-surface-light dark:bg-surface-dark rounded-xl"></canvas>
+          </div>
+        </div>
+
+        <div class="app-card bg-surface-light dark:bg-surface-dark rounded-xl shadow-lg p-4 mt-6">
+          <h3 class="font-bold mb-2 text-slate-900 dark:text-white">得点分析</h3>
+          <div id="shotAnalysisContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="fixed bottom-0 left-0 right-0 p-4 bg-surface-light dark:bg-gray-800 shadow-2xl border-t border-slate-200 dark:border-slate-700 z-50">
+    <button id="startAnalysisBtnTab" class="w-full py-3 bg-primary hover:bg-primary/90 text-white rounded-xl text-lg font-bold transition-colors flex items-center justify-center space-x-2">
+      <span id="centerIcon" class="material-symbols-outlined text-2xl">analytics</span>
+      <span>分析を開始</span>
+    </button>
+    <button id="startAnalysisBtn" class="hidden"></button>
+  </div>
+  
+  <div id="modalWrapper" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-[9000] hidden">
+      <div id="modalContent" class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-xl w-full max-w-md mx-4">
+          <h2 class="text-xl font-bold mb-4">タイトル</h2>
+          <p>コンテンツ</p>
       </div>
-
-      <div class="bg-white dark:bg-slate-900 rounded-xl shadow-lg p-4 mt-6">
-        <h3 class="font-bold mb-2 text-slate-900 dark:text-white">立ちごとの得点分析</h3>
-        <div id="shotAnalysisContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+  </div>
+  
+  <div id="qrCodeDisplayModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-[9001] hidden">
+      <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-xl w-full max-w-sm mx-4 text-center">
+          <h2 class="text-xl font-bold mb-4">ルームURL QRコード</h2>
+          <div id="qrcode" class="flex justify-center mb-4"></div>
+          <p id="roomUrlText" class="break-all text-sm mb-4"></p>
+          <button onclick="window.copyRoomUrl()" class="px-4 py-2 bg-primary text-white rounded-lg">URLをコピー</button>
       </div>
-    </section>
-  </main>
+  </div>
 
-  <!-- タブバー -->
-  <nav class="tab-bar fixed bottom-0 left-0 right-0 z-40 px-4 py-2">
-    <div class="max-w-2xl mx-auto flex items-end justify-around relative">
-      <a href="tools.html" class="flex flex-col items-center gap-1 py-2 px-3 text-slate-500 dark:text-slate-400 hover:text-primary transition-colors">
-        <span class="material-symbols-outlined text-2xl">construction</span>
-        <span class="text-xs font-semibold">道具</span>
-      </a>
 
-      <a href="index.html" class="flex flex-col items-center gap-1 py-2 px-3 text-slate-500 dark:text-slate-400 hover:text-primary transition-colors">
-        <span class="material-symbols-outlined text-2xl">today</span>
-        <span class="text-xs font-semibold">記録</span>
-      </a>
-
-      <!-- 🔵 分析開始ボタン -->
-      <button id="startAnalysisBtn" class="center-tab-button">
-        <span class="material-symbols-outlined text-3xl text-white">analytics</span>
-      </button>
-
-      <a href="yadokoro.html" class="flex flex-col items-center gap-1 py-2 px-3 text-primary">
-        <span class="material-symbols-outlined text-2xl">bar_chart</span>
-        <span class="text-xs font-semibold">分析</span>
-      </a>
-
-      <a href="help.html" class="flex flex-col items-center gap-1 py-2 px-3 text-slate-500 dark:text-slate-400 hover:text-primary transition-colors">
-        <span class="material-symbols-outlined text-2xl">help</span>
-        <span class="text-xs font-semibold">ヘルプ</span>
-      </a>
-    </div>
-  </nav>
-</div>
-
-<!-- JS -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/shepherd.js/dist/js/shepherd.min.js"></script>
 <script src="js/analysis.js"></script>
-<script src="js/page.js"></script>
+<script src="js/font-size.js"></script>
 
 <script>
-document.getElementById("startAnalysisBtn").addEventListener("click", () => {
-  if (window.startAnalysis) window.startAnalysis();
-});
-</script>
-<!-- SNS共有 -->
-<script>
-document.addEventListener("DOMContentLoaded", () => {
-  const shareBtn = document.getElementById("shareBtn");
-  const shareText = "MATOMA遠的の矢所分析で射の傾向をチェックしよう！";
-  const shareUrl = window.location.href;
-
-  shareBtn.addEventListener("click", async () => {
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: "MATOMA遠的 | 矢所分析",
-          text: shareText,
-          url: shareUrl
-        });
-      } catch (err) {
-        console.error("Share failed:", err);
-      }
-    } else {
-      try {
-        await navigator.clipboard.writeText(`${shareText} ${shareUrl}`);
-        alert("リンクをコピーしました。SNSなどでシェアできます。");
-      } catch (err) {
-        prompt("コピーできませんでした。以下を手動でコピーしてください:", `${shareText} ${shareUrl}`);
-      }
-    }
-  });
-});
-</script>
-<script>
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/service-worker-v1.0.6.js')
-      .then(reg => console.log('✅ Service Worker registered:', reg))
-      .catch(err => console.error('❌ SW registration failed:', err));
-  });
-}
-</script>
-<script>
-  // ======== ページ読込時にテーマを反映 ========
+  // ======== ページ読込時にテーマを反映 (既存のロジック) ========
   (function() {
     const theme = localStorage.getItem("theme");
     if (theme === "dark") {
@@ -255,16 +249,114 @@ if ('serviceWorker' in navigator) {
       document.documentElement.classList.remove("dark");
     }
   })();
-</script>
-<script>
-document.addEventListener("DOMContentLoaded", () => {
-  const settingsBtn = document.getElementById("settingsBtn");
-  if (settingsBtn) {
-    settingsBtn.addEventListener("click", () => {
-      window.location.href = "settings.html"; // ← 設定ページへ遷移
+  
+  // 下部ボタンのアクション: 元の#startAnalysisBtnのクリックをトリガー
+  document.getElementById("startAnalysisBtnTab").addEventListener("click", () => {
+    document.getElementById("startAnalysisBtn").click();
+  });
+
+  // 元のstartAnalysisBtnにイベントを再設定
+  document.getElementById("startAnalysisBtn").addEventListener("click", () => {
+    if (window.startAnalysis) window.startAnalysis();
+  });
+  
+  // フローティングストップウォッチに関連するロジックは全て削除しました。
+  
+  // SNS共有 (元のロジックを維持)
+  document.addEventListener("DOMContentLoaded", () => {
+    const shareBtn = document.getElementById("shareBtn");
+    const shareText = "MATOMA遠的の矢所分析で射の傾向をチェックしよう！";
+    const shareUrl = window.location.href;
+
+    shareBtn.addEventListener("click", async () => {
+      if (navigator.share) {
+        try {
+          await navigator.share({
+            title: "MATOMA遠的 | 矢所分析",
+            text: shareText,
+            url: shareUrl
+          });
+        } catch (err) {
+          console.error("Share failed:", err);
+        }
+      } else {
+        try {
+          await navigator.clipboard.writeText(`${shareText} ${shareUrl}`);
+          alert("リンクをコピーしました。SNSなどでシェアできます。");
+        } catch (err) {
+          prompt("コピーできませんでした。以下を手動でコピーしてください:", `${shareText} ${shareUrl}`);
+        }
+      }
+    });
+  });
+
+  // PWA Service Worker (元のロジックを維持)
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/service-worker-v1.0.6.js')
+        .then(reg => console.log('✅ Service Worker registered:', reg))
+        .catch(err => console.error('❌ SW registration failed:', err));
     });
   }
-});
+
+  // 設定ボタン遷移 (元のロジックを維持)
+  document.addEventListener("DOMContentLoaded", () => {
+    const settingsBtn = document.getElementById("settingsBtn");
+    if (settingsBtn) {
+      settingsBtn.addEventListener("click", () => {
+        window.location.href = "settings.html"; // ← 設定ページへ遷移
+      });
+    }
+  });
+
+  // ===== Shepherd tour: 矢所分析用 (1回だけ自動表示 on first analysis start) =====
+  (function(){
+    function startYadokoroTour(){
+      if (!window.Shepherd) return console.warn('Shepherd not loaded');
+      const tour = new Shepherd.Tour({
+        useModalOverlay: true,
+        defaultStepOptions: { classes: 'shepherd-theme-default', scrollTo: {behavior:'smooth', block:'center'}, cancelIcon: { enabled: true } }
+      });
+
+      tour.addStep({ id:'welcome', text: 'ここでは矢所分析の見方と操作方法を簡単にご案内します。', buttons:[{ text:'次へ', action: tour.next }] });
+
+      if (document.getElementById('matchDate')) {
+        tour.addStep({ id:'date', text: 'ここで日付を選択します。', attachTo:{ element:'#matchDate', on:'bottom' }, buttons:[{ text:'次へ', action: tour.next }] });
+      }
+
+      if (document.getElementById('toolCategorySelect')) {
+        tour.addStep({ id:'tool', text: '分析したい道具を選んでください。', attachTo:{ element:'#toolCategorySelect', on:'bottom' }, buttons:[{ text:'次へ', action: tour.next }] });
+      }
+
+      if (document.getElementById('scoreChart')) {
+        tour.addStep({ id:'chart', text: '得点分布はここに表示されます。', attachTo:{ element:'#scoreChart', on:'left' }, buttons:[{ text:'次へ', action: tour.next }] });
+      }
+
+      if (document.getElementById('startAnalysisBtnTab')) {
+        tour.addStep({ id:'start', text: '分析を開始するにはこのボタンを押します。', attachTo:{ element:'#startAnalysisBtnTab', on:'top' }, buttons:[{ text:'閉じる', action: tour.complete }] });
+      }
+
+      tour.on('complete', () => localStorage.setItem('matoma_seen_tour_yadokoro_v1','1'));
+      tour.on('cancel', () => localStorage.setItem('matoma_seen_tour_yadokoro_v1','1'));
+      tour.start();
+    }
+
+    // manual start via tutorialBtn
+    document.addEventListener('DOMContentLoaded', ()=>{
+      const tBtn = document.getElementById('tutorialBtn');
+      if (tBtn) tBtn.addEventListener('click', startYadokoroTour);
+
+      // auto-start once when user first clicks the analysis button
+      const startBtn = document.getElementById('startAnalysisBtnTab');
+      if (startBtn && !localStorage.getItem('matoma_seen_tour_yadokoro_v1')){
+        startBtn.addEventListener('click', ()=>{
+          setTimeout(()=>{ if (!localStorage.getItem('matoma_seen_tour_yadokoro_v1')) startYadokoroTour(); }, 200);
+        }, { once: true });
+      }
+    });
+    window.startYadokoroTour = startYadokoroTour;
+  })();
+
 </script>
 
 </body>
