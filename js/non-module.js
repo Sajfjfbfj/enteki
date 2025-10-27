@@ -1,8 +1,8 @@
-
-/*
-  以下はモジュール外の既存コードをベースに修正を入れた部分。
-  主目的: registeredRole が "player" のときも "manager" と同等の操作権限を付与する。
-*/
+/**
+ * non-module.js (統合版)
+ * モジュール外の既存コードをベースに修正を入れた部分
+ * 主目的: registeredRole が "player" のときも "manager" と同等の操作権限を付与する
+ */
 
 const SELECTIONS = [0,3,5,7,9,10];
 const TEAM_SIZE = 3;
@@ -22,33 +22,42 @@ document.addEventListener("DOMContentLoaded", () => {
   const roomSummary = document.getElementById("roomSummary");
   const roomForm = document.getElementById("roomForm");
   const joinForm = document.getElementById("joinForm");
-
-  let centerButton = document.getElementById('addSetBtnTab');
+  const leaveBtn = document.getElementById("leaveRoomBtn");
 
   // ユーティリティ
   function calcPlayerTotal(player) { 
     if(!player || !player.scores) return 0; 
-    const scoresArray = Array.isArray(player.scores) ? player.scores : Object.values(player.scores || []);
-    return scoresArray.reduce((acc,v)=> acc + (Number.isFinite(v)? v:0), 0); 
+    const scoresArray = Array.isArray(player.scores) 
+      ? player.scores 
+      : Object.values(player.scores || []);
+    return scoresArray.reduce((acc,v) => acc + (Number.isFinite(v) ? v : 0), 0); 
   }
+
   function calcTeamTotal(teamId) { 
     if (!currentRoom || !currentRoom.players) return 0;
     const playersArray = Object.values(currentRoom.players);
-    const teamPlayers = playersArray.filter(p=>p.teamId===teamId); 
-    return teamPlayers.reduce((acc,p)=>acc+calcPlayerTotal(p),0); 
+    const teamPlayers = playersArray.filter(p => p.teamId === teamId); 
+    return teamPlayers.reduce((acc,p) => acc + calcPlayerTotal(p), 0); 
   }
+
   function calcTeamCount(teamId) { 
     if (!currentRoom || !currentRoom.players) return 0;
     const playersArray = Object.values(currentRoom.players);
-    return playersArray.filter(p=>p.teamId===teamId).length; 
+    return playersArray.filter(p => p.teamId === teamId).length; 
   }
 
   // localStorage 登録フラグ
-  function isUserRegisteredForRoom(roomId) { return !!localStorage.getItem("MATOMA_user_registered_"+roomId); }
-  function setUserRegisteredForRoom(roomId, playerId) { localStorage.setItem("MATOMA_user_registered_"+roomId, playerId || "1"); }
+  function isUserRegisteredForRoom(roomId) { 
+    return !!localStorage.getItem("MATOMA_user_registered_" + roomId); 
+  }
+  
+  function setUserRegisteredForRoom(roomId, playerId) { 
+    localStorage.setItem("MATOMA_user_registered_" + roomId, playerId || "1"); 
+  }
+  
   window.setUserRegisteredForRoom = setUserRegisteredForRoom;
 
-  // 履歴保存 / 読み込み（修正追加）
+  // 履歴保存 / 読み込み
   window.saveRoomToHistory = function (room) {
     try {
       if (!room || !room.id) return;
@@ -56,48 +65,67 @@ document.addEventListener("DOMContentLoaded", () => {
       history[room.id] = {
         id: room.id,
         name: room.name,
-        createdAt: room.createdAt ? (room.createdAt.seconds ? new Date(room.createdAt.seconds * 1000).toISOString() : new Date(room.createdAt).toISOString()) : new Date().toISOString(),
+        createdAt: room.createdAt 
+          ? (room.createdAt.seconds 
+            ? new Date(room.createdAt.seconds * 1000).toISOString() 
+            : new Date(room.createdAt).toISOString()) 
+          : new Date().toISOString(),
         snapshot: room
       };
       localStorage.setItem("MATOMA_rooms_history", JSON.stringify(history));
-    } catch (e) { console.error("saveRoomToHistory error", e); }
+    } catch (e) { 
+      console.error("saveRoomToHistory error", e); 
+    }
   };
 
   window.loadRoomFromHistory = function (roomId) {
     try {
       const history = JSON.parse(localStorage.getItem("MATOMA_rooms_history") || "{}");
       return history[roomId] ? history[roomId].snapshot || history[roomId] : null;
-    } catch (e) { return null; }
+    } catch (e) { 
+      return null; 
+    }
   };
 
-  // UI トグル（登録ボタン表示制御）
+  // UI トグル(登録ボタン表示制御)
   function toggleMemberControlButtons(room) {
     if (!room || isHistoryView) {
-        if (openRegisterModalBtn) openRegisterModalBtn.style.display = 'none';
-        if (openManagementModalBtn) openManagementModalBtn.style.display = 'none';
-        return;
+      if (openRegisterModalBtn) openRegisterModalBtn.style.display = 'none';
+      if (openManagementModalBtn) openManagementModalBtn.style.display = 'none';
+      return;
     }
     const registered = isUserRegisteredForRoom(room.id);
     if(registered) {
-        if (openRegisterModalBtn) openRegisterModalBtn.style.display = 'none';
-        if (openManagementModalBtn) openManagementModalBtn.style.display = 'block';
+      if (openRegisterModalBtn) openRegisterModalBtn.style.display = 'none';
+      if (openManagementModalBtn) openManagementModalBtn.style.display = 'block';
     } else {
-        if (openRegisterModalBtn) openRegisterModalBtn.style.display = 'block';
-        if (openManagementModalBtn) openManagementModalBtn.style.display = 'none';
+      if (openRegisterModalBtn) openRegisterModalBtn.style.display = 'block';
+      if (openManagementModalBtn) openManagementModalBtn.style.display = 'none';
     }
   }
 
   // ルーム集計更新
   window.updateRoomSummary = function() {
-    if(!currentRoom){ if (roomSummary) roomSummary.innerText = "—"; return; }
-    const playersArray = currentRoom.players ? Object.values(currentRoom.players) : [];
-    const teamsArray = currentRoom.teams ? (Array.isArray(currentRoom.teams) ? currentRoom.teams : Object.values(currentRoom.teams)) : [];
+    if(!currentRoom){ 
+      if (roomSummary) roomSummary.innerText = "—"; 
+      return; 
+    }
+    const playersArray = currentRoom.players 
+      ? Object.values(currentRoom.players) 
+      : [];
+    const teamsArray = currentRoom.teams 
+      ? (Array.isArray(currentRoom.teams) 
+        ? currentRoom.teams 
+        : Object.values(currentRoom.teams)) 
+      : [];
     const totalPlayers = playersArray.length;
     const teamTotals = teamsArray.map(t => `${t.name}=${calcTeamTotal(t.id)}`);
-    if (roomSummary) roomSummary.innerText = `プレイヤー数: ${totalPlayers}\nチーム数: ${teamsArray.length}\n各チーム合計: ${teamTotals.join(" , ")}`;
+    if (roomSummary) {
+      roomSummary.innerText = `プレイヤー数: ${totalPlayers}\nチーム数: ${teamsArray.length}\n各チーム合計: ${teamTotals.join(" , ")}`;
+    }
   };
 
-  // チーム・プレイヤー描画（修正版: player を manager と同等に扱う）
+  // チーム・プレイヤー描画(修正版: player を manager と同等に扱う)
   window.renderTeamsAndPlayers = function() {
     if (!teamsContainer) return;
     teamsContainer.innerHTML = "";
@@ -126,16 +154,18 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }
 
-    const scoreOptionsHtml = SELECTIONS.map(score => `<option value="${score}">${score}</option>`).join('');
+    const scoreOptionsHtml = SELECTIONS.map(score => 
+      `<option value="${score}">${score}</option>`
+    ).join('');
     const ARROW_COUNT_CURRENT = currentRoom.settings?.arrowCount || ARROW_COUNT;
 
     // 登録者情報
     const registeredPlayerId = localStorage.getItem("MATOMA_user_registered_" + currentRoom.id);
     const registeredRole = currentRoom.members?.[registeredPlayerId]?.role;
+    
     // ★ ここで player を manager と同等に扱うフラグを導入
     const isManagerLike = (registeredRole === "manager" || registeredRole === "player");
     const canEditRoom = !isHistoryView;
-    const isRegistered = !!registeredPlayerId;
 
     // チームがない場合
     if (teamsArray.length === 0) {
@@ -153,26 +183,42 @@ document.addEventListener("DOMContentLoaded", () => {
       header.className = "flex items-center justify-between mb-3";
       header.innerHTML = `
         <div>
-          <strong>${team.name}</strong>
+          <strong class="text-lg">${team.name}</strong>
           <div class="text-sm text-slate-500">メンバー: ${teamPlayers.length}/${currentRoom.settings.teamSize}</div>
         </div>
       `;
 
-      // チーム操作ボタン（manager と player 両方許可）
+      // チーム操作ボタン(manager と player 両方許可)
       const btns = document.createElement("div");
       btns.className = "flex gap-2";
       if (!isHistoryView && isManagerLike) {
         const addTeamBtn = document.createElement("button");
-        addTeamBtn.className = "px-2 py-1 bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-slate-200 rounded-md text-sm";
+        addTeamBtn.className = "px-2 py-1 bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-slate-200 rounded-md text-sm hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors";
         addTeamBtn.innerText = "チーム追加";
-        addTeamBtn.onclick = () => window.addNewTeam(currentRoom.id);
+        addTeamBtn.onclick = () => {
+          const name = prompt("新しいチーム名を入力してください:");
+          if (name && name.trim()) {
+            window.addTeamToRoom(currentRoom.id, name.trim())
+              .then(() => {
+                alert("チームを追加しました。");
+              })
+              .catch(err => {
+                console.error("チーム追加エラー:", err);
+                alert("チーム追加に失敗しました。");
+              });
+          }
+        };
 
         const renameBtn = document.createElement("button");
-        renameBtn.className = "px-2 py-1 bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-slate-200 rounded-md text-sm";
+        renameBtn.className = "px-2 py-1 bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-slate-200 rounded-md text-sm hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors";
         renameBtn.innerText = "名前変更";
         renameBtn.onclick = () => {
           const n = prompt("チーム名を入力してください", team.name);
-          if (n) window.renameTeam ? window.renameTeam(currentRoom.id, team.id, n) : alert("renameTeam 未定義");
+          if (n) {
+            window.renameTeam 
+              ? window.renameTeam(currentRoom.id, team.id, n) 
+              : alert("renameTeam 未定義");
+          }
         };
 
         btns.appendChild(addTeamBtn);
@@ -200,31 +246,39 @@ document.addEventListener("DOMContentLoaded", () => {
         nameInp.value = player.name || "";
         nameInp.className = "rounded-md border-2 border-slate-200 dark:border-slate-700 px-2 py-1 text-sm bg-white dark:bg-slate-800";
 
-        const isSelf = registeredPlayerId === player.id;
-        // ★ canEditName を isManagerLike に合わせて変更（player も編集できる）
+        // ★ canEditName を isManagerLike に合わせて変更(player も編集できる)
         const canEditName = canEditRoom && isManagerLike;
 
         if (!canEditName) {
           nameInp.disabled = true;
           nameInp.classList.add("bg-gray-100", "dark:bg-slate-700", "opacity-70", "cursor-not-allowed");
         } else {
-          nameInp.onchange = () => window.updatePlayerInfo ? window.updatePlayerInfo(currentRoom.id, player.id, nameInp.value) : window.updatePlayerName(currentRoom.id, player.id, nameInp.value);
+          nameInp.onchange = () => {
+            if (window.updatePlayerInfo) {
+              window.updatePlayerInfo(currentRoom.id, player.id, nameInp.value);
+            } else {
+              window.updatePlayerName(currentRoom.id, player.id, nameInp.value);
+            }
+          };
         }
         left.appendChild(nameInp);
 
-        // チーム移動ボタン（player も可能）
+        // チーム移動ボタン(player も可能)
         if (canEditRoom && isManagerLike) {
           const moveBtn = document.createElement("button");
-          moveBtn.className = "px-2 py-1 bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-slate-200 rounded-md text-xs";
+          moveBtn.className = "px-2 py-1 bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-slate-200 rounded-md text-xs hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors";
           moveBtn.innerText = "移動";
           moveBtn.onclick = () => {
             const options = teamsArray.map(t => `${t.id}:${t.name}`).join("\n");
-            const sel = prompt("移動先のIDを入力（例: T2）\n" + options);
+            const sel = prompt("移動先のIDを入力(例: T2)\n" + options);
             if (sel) {
               const found = teamsArray.find(t => t.id === sel.trim());
               if (found) {
-                if (window.movePlayerTeam) window.movePlayerTeam(currentRoom.id, player.id, found.id);
-                else alert("movePlayerTeam 未定義");
+                if (window.movePlayerTeam) {
+                  window.movePlayerTeam(currentRoom.id, player.id, found.id);
+                } else {
+                  alert("movePlayerTeam 未定義");
+                }
               } else {
                 alert("チームが見つかりませんでした");
               }
@@ -235,7 +289,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         row.appendChild(left);
 
-        // スコア入力欄（player は manager と同等に編集可能）
+        // スコア入力欄(player は manager と同等に編集可能)
         const canEditScore = canEditRoom && isManagerLike;
 
         const playerScores = Array.isArray(player.scores)
@@ -244,11 +298,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
         for (let arrowIndex = 0; arrowIndex < ARROW_COUNT_CURRENT; arrowIndex++) {
           const select = document.createElement("select");
-          // 先頭のプレースホルダーの代わりに空を許容
           select.innerHTML = `<option value="">-</option>` + scoreOptionsHtml;
 
           const score = playerScores[arrowIndex];
-          if (score !== null && score !== undefined) select.value = score.toString();
+          if (score !== null && score !== undefined) {
+            select.value = score.toString();
+          }
 
           select.className = "player-score-input rounded-md border-2 border-slate-200 dark:border-slate-700 px-1 py-1 text-sm text-slate-800 dark:text-slate-200 bg-white dark:bg-slate-800";
 
@@ -259,7 +314,9 @@ document.addEventListener("DOMContentLoaded", () => {
             select.onchange = () => {
               const v = parseInt(select.value);
               const newScore = Number.isNaN(v) ? null : v;
-              if (window.updatePlayerTurnScore) window.updatePlayerTurnScore(currentRoom.id, player.id, arrowIndex, newScore);
+              if (window.updatePlayerTurnScore) {
+                window.updatePlayerTurnScore(currentRoom.id, player.id, arrowIndex, newScore);
+              }
             };
           }
           right.appendChild(select);
@@ -272,23 +329,24 @@ document.addEventListener("DOMContentLoaded", () => {
         total.innerText = calcPlayerTotal(player);
         right.appendChild(total);
 
-        // 削除ボタン（player も可能）
+        // 削除ボタン(player も可能)
         if (canEditRoom && isManagerLike) {
           const del = document.createElement("button");
-          del.className = "px-2 py-1 bg-red-500 text-white rounded-md text-xs";
+          del.className = "px-2 py-1 bg-red-500 text-white rounded-md text-xs hover:bg-red-600 transition-colors";
           del.innerText = "削除";
           del.onclick = () => {
-            if (window.deletePlayer) window.deletePlayer(currentRoom.id, player.id);
-            else {
-              // 簡易ローカル削除（実際は Firestore update を使ってください）
-              if (confirm(`${player.name} を削除しますか？`)) {
+            if (window.deletePlayer) {
+              window.deletePlayer(currentRoom.id, player.id);
+            } else {
+              // 簡易ローカル削除(実際は Firestore update を使ってください)
+              if (confirm(`${player.name} を削除しますか?`)) {
                 delete currentRoom.players[player.id];
                 if (Array.isArray(currentRoom.playersOrder)) {
                   const idx = currentRoom.playersOrder.indexOf(player.id);
                   if (idx !== -1) currentRoom.playersOrder.splice(idx,1);
                 }
-                renderTeamsAndPlayers();
-                updateRoomSummary();
+                window.renderTeamsAndPlayers();
+                window.updateRoomSummary();
               }
             }
           };
@@ -309,7 +367,7 @@ document.addEventListener("DOMContentLoaded", () => {
       teamsContainer.appendChild(card);
     });
 
-    // 未割当プレイヤー表示（割当ボタンは player も可能）
+    // 未割当プレイヤー表示(割当ボタンは player も可能)
     const unassigned = playersArray.filter(p => !p.teamId || p.teamId === "unassigned");
     if (unassigned.length > 0) {
       const ucard = document.createElement("div");
@@ -319,28 +377,42 @@ document.addEventListener("DOMContentLoaded", () => {
       unassigned.forEach(player => {
         const el = document.createElement("div");
         el.className = "flex items-center justify-between mt-2";
-        el.innerHTML = `<div>${player.name}</div>${(!isHistoryView && isManagerLike) ? `<div class="flex gap-2"><button class="px-2 py-1 bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-slate-200 rounded-md text-xs assign-btn">割当</button></div>` : ''}`;
+        el.innerHTML = `
+          <div>${player.name}</div>
+          ${(!isHistoryView && isManagerLike) 
+            ? `<div class="flex gap-2"><button class="px-2 py-1 bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-slate-200 rounded-md text-xs assign-btn hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors">割当</button></div>` 
+            : ''}
+        `;
 
         if (!isHistoryView && isManagerLike) {
           const btn = el.querySelector("button");
           if (btn) {
             btn.onclick = () => {
-              let target = teamsArray.find(t => calcTeamCount(t.id) < currentRoom.settings.teamSize);
+              let target = teamsArray.find(t => 
+                calcTeamCount(t.id) < currentRoom.settings.teamSize
+              );
+              
               if (!target) {
                 // チーム作成後に割当する
-                window.addNewTeam(currentRoom.id).then(() => {
-                  const newId = "T" + (teamsArray.length + 1);
-                  if (window.movePlayerTeam) window.movePlayerTeam(currentRoom.id, player.id, newId);
-                  else {
-                    player.teamId = newId;
-                    renderTeamsAndPlayers();
-                  }
-                }).catch(() => alert("チーム作成に失敗しました"));
+                const newTeamName = prompt("新しいチーム名を入力してください:");
+                if (!newTeamName || !newTeamName.trim()) return;
+                
+                window.addTeamToRoom(currentRoom.id, newTeamName.trim())
+                  .then((newId) => {
+                    if (window.movePlayerTeam) {
+                      window.movePlayerTeam(currentRoom.id, player.id, newId);
+                    } else {
+                      player.teamId = newId;
+                      window.renderTeamsAndPlayers();
+                    }
+                  })
+                  .catch(() => alert("チーム作成に失敗しました"));
               } else {
-                if (window.movePlayerTeam) window.movePlayerTeam(currentRoom.id, player.id, target.id);
-                else {
+                if (window.movePlayerTeam) {
+                  window.movePlayerTeam(currentRoom.id, player.id, target.id);
+                } else {
                   player.teamId = target.id;
-                  renderTeamsAndPlayers();
+                  window.renderTeamsAndPlayers();
                 }
               }
             };
@@ -353,34 +425,43 @@ document.addEventListener("DOMContentLoaded", () => {
       teamsContainer.appendChild(ucard);
     }
 
-    // 監督者・その他欄（表示はそのまま）
-    const specialContainer = document.getElementById("specialContainer") || document.createElement("div");
-    specialContainer.id = "specialContainer";
-    specialContainer.innerHTML = "";
+    // 監督者・その他欄(2カラムレイアウト)
+    const specialContainer = document.getElementById("specialMemberContainer");
+    if (specialContainer) {
+      specialContainer.innerHTML = "";
 
-    const managers = playersArray.filter(p => p.role === "manager");
-    const others = playersArray.filter(p => p.role === "other");
+      const managers = playersArray.filter(p => p.role === "manager");
+      const others = playersArray.filter(p => p.role === "other");
 
-    const managerSection = document.createElement("section");
-    managerSection.className = "mt-6 p-4 bg-white dark:bg-slate-900 rounded-2xl shadow";
-    managerSection.innerHTML = `<h3 class="text-lg font-bold mb-2">監督者</h3>` +
-      (managers.length === 0
-        ? `<p class="text-slate-500 text-sm">登録された監督者はいません。</p>`
-        : managers.map(m => `<div class="border-b border-slate-200 dark:border-slate-700 py-1">${m.name}</div>`).join(""));
+      // 2カラムのグリッドコンテナを作成
+      const gridContainer = document.createElement("div");
+      gridContainer.className = "grid grid-cols-1 md:grid-cols-2 gap-4";
 
-    const otherSection = document.createElement("section");
-    otherSection.className = "mt-6 p-4 bg-white dark:bg-slate-900 rounded-2xl shadow";
-    otherSection.innerHTML = `<h3 class="text-lg font-bold mb-2">その他</h3>` +
-      (others.length === 0
-        ? `<p class="text-slate-500 text-sm">登録されたメンバーはいません。</p>`
-        : others.map(o => `<div class="border-b border-slate-200 dark:border-slate-700 py-1">${o.name}</div>`).join(""));
+      const managerSection = document.createElement("section");
+      managerSection.className = "p-4 bg-white dark:bg-slate-900 rounded-2xl shadow";
+      managerSection.innerHTML = `<h3 class="text-lg font-bold mb-2">監督者</h3>` +
+        (managers.length === 0
+          ? `<p class="text-slate-500 text-sm">登録された監督者はいません。</p>`
+          : managers.map(m => 
+              `<div class="border-b border-slate-200 dark:border-slate-700 py-2">${m.name}</div>`
+            ).join(""));
 
-    specialContainer.appendChild(managerSection);
-    specialContainer.appendChild(otherSection);
-    if (teamsContainer.parentNode) teamsContainer.parentNode.insertBefore(specialContainer, teamsContainer.nextSibling);
+      const otherSection = document.createElement("section");
+      otherSection.className = "p-4 bg-white dark:bg-slate-900 rounded-2xl shadow";
+      otherSection.innerHTML = `<h3 class="text-lg font-bold mb-2">その他</h3>` +
+        (others.length === 0
+          ? `<p class="text-slate-500 text-sm">登録されたメンバーはいません。</p>`
+          : others.map(o => 
+              `<div class="border-b border-slate-200 dark:border-slate-700 py-2">${o.name}</div>`
+            ).join(""));
+
+      gridContainer.appendChild(managerSection);
+      gridContainer.appendChild(otherSection);
+      specialContainer.appendChild(gridContainer);
+    }
   };
 
-  // 合計再描画（個人・チーム）
+  // 合計再描画(個人・チーム)
   try {
     if (currentRoom && currentRoom.players) {
       Object.values(currentRoom.players).forEach(p => {
@@ -406,52 +487,67 @@ document.addEventListener("DOMContentLoaded", () => {
   window.renderRoomHistory = function() {
     const historyList = document.getElementById("historyList");
     const roomHistoryElement = document.getElementById("roomHistory");
+    
+    // 履歴セクション全体を非表示にする
+    if (roomHistoryElement) {
+      roomHistoryElement.style.display = 'none';
+    }
+    
+    // 以下のコードは実行されないが、将来的な実装のために残しておく
+    /*
     const rooms = JSON.parse(localStorage.getItem("MATOMA_rooms_history") || "{}");
-    const roomIds = Object.keys(rooms).sort((a,b) => new Date(rooms[b].createdAt) - new Date(rooms[a].createdAt));
+    const roomIds = Object.keys(rooms).sort((a,b) => 
+      new Date(rooms[b].createdAt) - new Date(rooms[a].createdAt)
+    );
     
     if (currentRoom) {
-        if(roomHistoryElement) roomHistoryElement.style.display = 'none';
-        return;
+      if(roomHistoryElement) roomHistoryElement.style.display = 'none';
+      return;
     } else {
-        if(roomHistoryElement) roomHistoryElement.style.display = 'block';
+      if(roomHistoryElement) roomHistoryElement.style.display = 'block';
     }
+    
     if (!historyList) return;
     historyList.innerHTML = "";
+    
     if (roomIds.length === 0) {
-        historyList.innerHTML = '<p class="text-sm text-slate-500" id="noHistoryMessage">履歴はありません。</p>';
-        return;
+      historyList.innerHTML = '<p class="text-sm text-slate-500" id="noHistoryMessage">履歴はありません。</p>';
+      return;
     }
+    
     roomIds.forEach(id => {
-        const room = rooms[id];
-        const item = document.createElement("div");
-        item.className = "flex items-center justify-between p-3 bg-slate-100 dark:bg-slate-800 rounded-lg";
-        item.innerHTML = `
-            <div>
-                <strong class="block">${room.name}</strong>
-                <span class="text-xs text-slate-600 dark:text-slate-400">${room.id} (${new Date(room.createdAt).toLocaleDateString()})</span>
-            </div>
-            <button data-room-id="${id}" class="join-history-btn px-3 py-1 bg-blue-500 hover:bg-blue-600 text-white rounded-md text-sm transition-colors">詳細閲覧</button>
-        `;
-        historyList.appendChild(item);
+      const room = rooms[id];
+      const item = document.createElement("div");
+      item.className = "flex items-center justify-between p-3 bg-slate-100 dark:bg-slate-800 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors";
+      item.innerHTML = `
+        <div>
+          <strong class="block">${room.name}</strong>
+          <span class="text-xs text-slate-600 dark:text-slate-400">${room.id} (${new Date(room.createdAt).toLocaleDateString()})</span>
+        </div>
+        <button data-room-id="${id}" class="join-history-btn px-3 py-1 bg-blue-500 hover:bg-blue-600 text-white rounded-md text-sm transition-colors">詳細閲覧</button>
+      `;
+      historyList.appendChild(item);
     });
+    
     historyList.querySelectorAll('.join-history-btn').forEach(button => {
-        button.addEventListener('click', (e) => {
-            const roomId = e.target.getAttribute('data-room-id');
-            const room = window.loadRoomFromHistory(roomId);
-            if (room) {
-                isHistoryView = true; 
-                renderRoom(room, true);
-                showTeam();
-                const title = document.getElementById("roomTitle");
-                const subtitle = document.getElementById("roomSubtitle");
-                if (title) title.innerText = `${room.name} の【履歴閲覧中】`;
-                if (subtitle) subtitle.innerText = `ルームID: ${room.id} - これは過去の記録です。スコア編集はできません。`;
-                const leaveBtn = document.getElementById("leaveRoomBtn");
-                if (leaveBtn) leaveBtn.innerText = "履歴閲覧を終了";
-                alert(`${room.name} の過去の記録を閲覧しています。編集はできません。`);
-            }
-        });
+      button.addEventListener('click', (e) => {
+        const roomId = e.target.getAttribute('data-room-id');
+        const room = window.loadRoomFromHistory(roomId);
+        if (room) {
+          isHistoryView = true; 
+          window.renderRoom(room, true);
+          
+          const title = document.getElementById("roomTitle");
+          const subtitle = document.getElementById("roomSubtitle");
+          if (title) title.innerText = `${room.name} の【履歴閲覧中】`;
+          if (subtitle) subtitle.innerText = `ルームID: ${room.id} - これは過去の記録です。スコア編集はできません。`;
+          
+          if (leaveBtn) leaveBtn.innerText = "履歴閲覧を終了";
+          alert(`${room.name} の過去の記録を閲覧しています。編集はできません。`);
+        }
+      });
     });
+    */
   };
 
   // モーダル制御
@@ -460,21 +556,31 @@ document.addEventListener("DOMContentLoaded", () => {
     modalWrapper.classList.add("hidden");
     modalWrapper.classList.remove("flex");
     modalContent.innerHTML = '';
-    if (document.getElementById("qrIconBtn")) {
-        document.getElementById("qrIconBtn").classList.remove("bg-primary/20", "text-primary", "dark:bg-primary/50");
-        document.getElementById("qrIconBtn").classList.add("bg-slate-200", "dark:bg-slate-700", "text-slate-700", "dark:text-slate-200");
+    
+    const qrBtn = document.getElementById("qrIconBtn");
+    if (qrBtn) {
+      qrBtn.classList.remove("bg-primary/20", "text-primary", "dark:bg-primary/50");
+      qrBtn.classList.add("bg-slate-200", "dark:bg-slate-700", "text-slate-700", "dark:text-slate-200");
     }
   };
 
-  // addPlayer 登録ハンドラ（修正版）
+  // addPlayer 登録ハンドラ(修正版)
   window.handleRegisterSelf = async function() {
     if (!modalContent) return;
     const nameInput = modalContent.querySelector('#registerNameInput');
     const roleSelect = modalContent.querySelector('#registerRoleSelect');
     const name = (nameInput?.value || "").trim();
     const role = roleSelect?.value || 'player';
-    if(!currentRoom){ alert("ルームに参加していません。"); closeModal(); return; }
-    if(!name){ alert("名前を入力してください"); return; }
+    
+    if(!currentRoom){ 
+      alert("ルームに参加していません。"); 
+      window.closeModal(); 
+      return; 
+    }
+    if(!name){ 
+      alert("名前を入力してください"); 
+      return; 
+    }
     
     const playerId = await window.addPlayerToRoom(currentRoom.id, name, role);
     
@@ -491,8 +597,8 @@ document.addEventListener("DOMContentLoaded", () => {
     
     isHistoryView = false;
     toggleMemberControlButtons(currentRoom); 
-    closeModal();
-    alert("登録しました。よろしくお願いします！");
+    window.closeModal();
+    alert("登録しました。よろしくお願いします!");
 
     // 合計再描画
     try {
@@ -518,132 +624,151 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!modalContent) return;
     const nameInput = modalContent.querySelector("#newPlayerNameModal");
     const name = (nameInput?.value || "").trim(); 
-    if (!currentRoom) { alert("ルーム情報が取得できません。"); closeModal(); return; }
-    if(!name){ alert("プレイヤー名を入力してください"); return; }
+    if (!currentRoom) { 
+      alert("ルーム情報が取得できません。"); 
+      window.closeModal(); 
+      return; 
+    }
+    if(!name){ 
+      alert("プレイヤー名を入力してください"); 
+      return; 
+    }
     window.addPlayerToRoom(currentRoom.id, name, 'player'); 
     if (nameInput) nameInput.value = ""; 
     alert("プレイヤーを追加しました。");
   };
 
   window.handleAutoAssign = function() {
-    if (!currentRoom) { alert("ルーム情報が取得できません。"); return; }
-    if (window.handleAutoAssignFirebase) window.handleAutoAssignFirebase(currentRoom.id);
-    else alert("自動割当処理が未定義です。");
+    if (!currentRoom) { 
+      alert("ルーム情報が取得できません。"); 
+      return; 
+    }
+    if (window.handleAutoAssignFirebase) {
+      window.handleAutoAssignFirebase(currentRoom.id);
+    } else {
+      alert("自動割当処理が未定義です。");
+    }
   };
 
   function openModal(contentId) {
     if (isHistoryView && contentId !== 'qrModalContent') {
-        alert("履歴閲覧モードではメンバーの追加・管理はできません。");
-        return;
+      alert("履歴閲覧モードではメンバーの追加・管理はできません。");
+      return;
     }
+    
     const template = document.getElementById(contentId);
     if (template && modalContent && modalWrapper) {
-        modalContent.innerHTML = `<div class="p-6 pb-0 flex justify-end"><button onclick="closeModal()" class="text-slate-500 hover:text-slate-700 dark:text-slate-300 dark:hover:text-slate-100 p-1 rounded-full"><span class="material-symbols-outlined">close</span></button></div>` + template.innerHTML;
-        modalWrapper.classList.remove("hidden");
-        modalWrapper.classList.add("flex");
-        if (contentId === 'registerModalContent') {
-            modalContent.querySelector('#registerSelfBtn').onclick = window.handleRegisterSelf;
-            modalContent.querySelector('#skipRegisterBtn').onclick = window.closeModal;
-        } else if (contentId === 'managementModalContent') {
-            modalContent.querySelector('#addPlayerBtnModal').onclick = window.handleAddPlayer; 
-            modalContent.querySelector('#autoAssignBtnModal').onclick = window.handleAutoAssign;
-            const closeBtn = modalContent.querySelector('button[onclick="closeModal()"]');
-            if (closeBtn) closeBtn.onclick = window.closeModal;
-        }
+      modalContent.innerHTML = `
+        <div class="p-6 pb-0 flex justify-end">
+          <button onclick="closeModal()" class="text-slate-500 hover:text-slate-700 dark:text-slate-300 dark:hover:text-slate-100 p-1 rounded-full transition-colors">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+      ` + template.innerHTML;
+      
+      modalWrapper.classList.remove("hidden");
+      modalWrapper.classList.add("flex");
+      
+      if (contentId === 'registerModalContent') {
+        modalContent.querySelector('#registerSelfBtn').onclick = window.handleRegisterSelf;
+        modalContent.querySelector('#skipRegisterBtn').onclick = window.closeModal;
+      } else if (contentId === 'managementModalContent') {
+        modalContent.querySelector('#addPlayerBtnModal').onclick = window.handleAddPlayer; 
+        modalContent.querySelector('#autoAssignBtnModal').onclick = window.handleAutoAssign;
+        const closeBtn = modalContent.querySelector('button[onclick="closeModal()"]');
+        if (closeBtn) closeBtn.onclick = window.closeModal;
+      }
     }
   }
 
-  // ヘッダー/タブ 初期化
-  const personalTab = document.getElementById("personalTab");
-  const teamTab = document.getElementById("teamTab");
-  const personalBtn = document.getElementById("personalTabBtn");
-  const teamBtn = document.getElementById("teamTabBtn");
-
-  function showPersonal() {
-    if (!personalTab || !teamTab || !personalBtn || !teamBtn) return;
-    personalTab.classList.add("active"); teamTab.classList.remove("active");
-    personalBtn.classList.add("bg-primary","text-white");
-    personalBtn.classList.remove("bg-slate-200","dark:bg-slate-700","text-slate-800","dark:text-white");
-    teamBtn.classList.remove("bg-primary","text-white");
-    teamBtn.classList.add("bg-slate-200","dark:bg-slate-700","text-slate-800","dark:text-white");
-    updateCenterTabButton();
+  // ルームUIイベント
+  if (leaveBtn) {
+    leaveBtn.addEventListener("click", () => leaveRoom(false));
   }
-  window.showTeam = function() {
-    if (!personalTab || !teamTab || !personalBtn || !teamBtn) return;
-    teamTab.classList.add("active"); personalTab.classList.remove("active");
-    teamBtn.classList.add("bg-primary","text-white");
-    teamBtn.classList.remove("bg-slate-200","dark:bg-slate-700","text-slate-800","dark:text-white");
-    personalBtn.classList.remove("bg-primary","text-white");
-    personalBtn.classList.add("bg-slate-200","dark:bg-slate-700","text-slate-800","dark:text-white");
-    if (!currentRoom) window.renderRoomHistory();
-    updateCenterTabButton();
+  
+  if (openRegisterModalBtn) {
+    openRegisterModalBtn.addEventListener('click', () => openModal('registerModalContent'));
   }
-  if (personalBtn) personalBtn.addEventListener("click", showPersonal);
-  if (teamBtn) teamBtn.addEventListener("click", window.showTeam);
-
-  // share button
-  const shareBtnEl = document.getElementById("shareBtn");
-  if (shareBtnEl) shareBtnEl.addEventListener("click", async () => {
-    const shareText = "矢所分析アプリMATOMA遠的で遠的記録してみよう！";
-    const shareUrl = window.location.href;
-    if (navigator.share) {
-        try { await navigator.share({ title: "MATOMA遠的", text: shareText, url: shareUrl }); }
-        catch (err) { console.error(err); }
-    } else {
-        try { await navigator.clipboard.writeText(`${shareText} ${shareUrl}`); alert("リンクをコピーしました。"); }
-        catch (err) { prompt("コピーに失敗しました:", `${shareText} ${shareUrl}`); }
-    }
-  });
-  const settingsBtn = document.getElementById("settingsBtn");
-  if (settingsBtn) settingsBtn.addEventListener("click", () => { window.location.href = "settings.html"; });
-
-  // ルームUI操作
-  const leaveBtn = document.getElementById("leaveRoomBtn");
-  if (leaveBtn) leaveBtn.addEventListener("click", () => leaveRoom(false));
-  if (openRegisterModalBtn) openRegisterModalBtn.addEventListener('click', () => openModal('registerModalContent'));
-  if (openManagementModalBtn) openManagementModalBtn.addEventListener('click', () => openModal('managementModalContent'));
+  
+  if (openManagementModalBtn) {
+    openManagementModalBtn.addEventListener('click', () => openModal('managementModalContent'));
+  }
 
   const createRoomBtn = document.getElementById("createRoomBtn");
-  if (createRoomBtn) createRoomBtn.addEventListener("click", () => { 
-    if (roomForm) roomForm.style.display="block"; if (joinForm) joinForm.style.display="none"; 
-    window.showTeam(); const rc = document.getElementById("roomControls"); if (rc) rc.style.display = "block"; closeModal();
-    isHistoryView = false; if (leaveBtn) leaveBtn.innerText = "退室";
-  });
-  const cancelRoomBtn = document.getElementById("cancelRoomBtn");
-  if (cancelRoomBtn) cancelRoomBtn.addEventListener("click", () => { if (roomForm) roomForm.style.display="none"; });
+  if (createRoomBtn) {
+    createRoomBtn.addEventListener("click", () => { 
+      if (roomForm) roomForm.style.display = "block"; 
+      if (joinForm) joinForm.style.display = "none"; 
+      
+      const rc = document.getElementById("roomControls"); 
+      if (rc) rc.style.display = "block"; 
+      
+      window.closeModal();
+      isHistoryView = false; 
+      if (leaveBtn) leaveBtn.innerText = "退室";
+    });
+  }
 
-  // ルーム作成（修正版：result を受け取る）
+  const cancelRoomBtn = document.getElementById("cancelRoomBtn");
+  if (cancelRoomBtn) {
+    cancelRoomBtn.addEventListener("click", () => { 
+      if (roomForm) roomForm.style.display = "none"; 
+    });
+  }
+
+  // ルーム作成(修正版: result を受け取る)
   const submitRoomBtn = document.getElementById("submitRoomBtn");
-  if (submitRoomBtn) submitRoomBtn.addEventListener("click", async () => {
-    const nEl = document.getElementById("roomName");
-    const n = nEl ? nEl.value.trim() : "";
-    if(!n){ alert("ルーム名を入力してください"); return; }
-    const result = await window.doCreateRoom(n);
-    if (result && result.roomId) {
-      window.startScoreSynchronization(result.roomId);
-      if (roomForm) roomForm.style.display="none";
-      alert(`ルーム「${n}」を作成しました。\n招待コード: ${result.inviteCode}\n参加者に共有してください。`);
-    } else {
-      alert("ルーム作成に失敗しました。");
-    }
-  });
+  if (submitRoomBtn) {
+    submitRoomBtn.addEventListener("click", async () => {
+      const nEl = document.getElementById("roomName");
+      const n = nEl ? nEl.value.trim() : "";
+      if(!n){ 
+        alert("ルーム名を入力してください"); 
+        return; 
+      }
+      
+      const result = await window.doCreateRoom(n);
+      if (result && result.roomId) {
+        window.startScoreSynchronization(result.roomId);
+        if (roomForm) roomForm.style.display = "none";
+        alert(`ルーム「${n}」を作成しました。\n招待コード: ${result.inviteCode}\n参加者に共有してください。`);
+      } else {
+        alert("ルーム作成に失敗しました。");
+      }
+    });
+  }
 
   const joinRoomBtn = document.getElementById("joinRoomBtn");
-  if (joinRoomBtn) joinRoomBtn.addEventListener("click", () => { 
-    if (joinForm) joinForm.style.display="block"; if (roomForm) roomForm.style.display="none"; 
-    window.showTeam(); const rc = document.getElementById("roomControls"); if (rc) rc.style.display = "block"; closeModal();
-    isHistoryView = false; if (leaveBtn) leaveBtn.innerText = "退室";
-  });
+  if (joinRoomBtn) {
+    joinRoomBtn.addEventListener("click", () => { 
+      if (joinForm) joinForm.style.display = "block"; 
+      if (roomForm) roomForm.style.display = "none"; 
+      
+      const rc = document.getElementById("roomControls"); 
+      if (rc) rc.style.display = "block"; 
+      
+      window.closeModal();
+      isHistoryView = false; 
+      if (leaveBtn) leaveBtn.innerText = "退室";
+    });
+  }
+
   const cancelJoinBtn = document.getElementById("cancelJoinBtn");
-  if (cancelJoinBtn) cancelJoinBtn.addEventListener("click", () => { if (joinForm) joinForm.style.display="none"; });
+  if (cancelJoinBtn) {
+    cancelJoinBtn.addEventListener("click", () => { 
+      if (joinForm) joinForm.style.display = "none"; 
+    });
+  }
   
-  // ルーム参加（修正版）
+  // ルーム参加(修正版)
   const doJoinBtn = document.getElementById("doJoinBtn");
   if (doJoinBtn) {
     doJoinBtn.addEventListener("click", async () => {
       const inputEl = document.getElementById("joinInput");
       const v = inputEl ? inputEl.value.trim() : "";
-      if(!v) return alert("招待コードまたはURLを入力してください");
+      if(!v) {
+        return alert("招待コードまたはURLを入力してください");
+      }
       
       let id = null; 
       if(v.startsWith("MATOMA_JOIN:")) {
@@ -652,7 +777,10 @@ document.addEventListener("DOMContentLoaded", () => {
         const m = v.match(/[#?&]room=([A-Za-z0-9]+)/); 
         if(m) id = m[1]; 
       }
-      if(!id) return alert("招待コードまたはURLが見つかりません");
+      
+      if(!id) {
+        return alert("招待コードまたはURLが見つかりません");
+      }
 
       try {
         const roomId = await window.joinTeamMatch(id);
@@ -660,7 +788,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if(roomId){ 
           window.startScoreSynchronization(roomId);
           isHistoryView = false; 
-          if (joinForm) joinForm.style.display="none"; 
+          if (joinForm) joinForm.style.display = "none"; 
           alert(`✅ ルームに参加しました。`);
         } else {
           console.warn("ルーム参加失敗: joinTeamMatch returned null");
@@ -672,70 +800,195 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // ハッシュ処理・最後のルーム
+  // ハッシュ処理・最後のルーム・履歴閲覧処理
   (function handleHashOnLoad(){
+    // URLパラメータから履歴閲覧モードをチェック
+    const urlParams = new URLSearchParams(window.location.search);
+    const historyParam = urlParams.get('history');
+    
+    if (historyParam) {
+      // 履歴閲覧モードで起動
+      const room = window.loadRoomFromHistory(historyParam);
+      if (room) {
+        isHistoryView = true;
+        window.currentRoom = room;
+        
+        if (joinForm) joinForm.style.display = "none";
+        if (roomForm) roomForm.style.display = "none";
+        const rc = document.getElementById("roomControls");
+        if (rc) rc.style.display = "block";
+        
+        window.renderRoom(room, true);
+        
+        const title = document.getElementById("roomTitle");
+        const subtitle = document.getElementById("roomSubtitle");
+        if (title) title.innerText = `${room.name} の【履歴閲覧中】`;
+        if (subtitle) subtitle.innerText = `ルームID: ${room.id} - これは過去の記録です。スコア編集はできません。`;
+        
+        if (leaveBtn) {
+          leaveBtn.style.display = "block";
+          leaveBtn.innerText = "履歴閲覧を終了";
+        }
+        
+        alert(`${room.name} の過去の記録を閲覧しています。編集はできません。`);
+        return;
+      }
+    }
+    
+    // ハッシュからルームIDをチェック（通常の参加モード）
     const m = (location.hash || "").match(/room=([A-Za-z0-9]+)/);
     if(m){ 
-        if (joinForm) joinForm.style.display="block"; 
-        const joinInput = document.getElementById("joinInput");
-        if (joinInput) joinInput.value = `MATOMA_JOIN:${m[1]}`; 
-        window.showTeam(); const rc = document.getElementById("roomControls"); if (rc) rc.style.display = "block"; 
-        const title = document.getElementById("roomTitle"); if (title) title.innerText = `招待されています。参加コードを確認してください。`;
-        const subtitle = document.getElementById("roomSubtitle"); if (subtitle) subtitle.innerText = "「参加」を押して入室してください。";
-        return; 
+      if (joinForm) joinForm.style.display = "block"; 
+      const joinInput = document.getElementById("joinInput");
+      if (joinInput) joinInput.value = `MATOMA_JOIN:${m[1]}`; 
+      
+      const rc = document.getElementById("roomControls"); 
+      if (rc) rc.style.display = "block"; 
+      
+      const title = document.getElementById("roomTitle"); 
+      if (title) title.innerText = `招待されています。参加コードを確認してください。`;
+      
+      const subtitle = document.getElementById("roomSubtitle"); 
+      if (subtitle) subtitle.innerText = "「参加」を押して入室してください。";
+      return; 
     }
+    
     const lastRoomId = localStorage.getItem("MATOMA_last_room_id");
     if (lastRoomId) {
-        if (joinForm) joinForm.style.display="block"; 
-        const joinInput = document.getElementById("joinInput");
-        if (joinInput) joinInput.value = `MATOMA_JOIN:${lastRoomId}`;
-        window.showTeam(); const rc = document.getElementById("roomControls"); if (rc) rc.style.display = "block";
-        const title = document.getElementById("roomTitle"); if (title) title.innerText = `以前のルームに再参加しますか？`;
-        const subtitle = document.getElementById("roomSubtitle"); if (subtitle) subtitle.innerText = "「参加」を押して再入室してください。";
+      if (joinForm) joinForm.style.display = "block"; 
+      const joinInput = document.getElementById("joinInput");
+      if (joinInput) joinInput.value = `MATOMA_JOIN:${lastRoomId}`;
+      
+      const rc = document.getElementById("roomControls"); 
+      if (rc) rc.style.display = "block";
+      
+      const title = document.getElementById("roomTitle"); 
+      if (title) title.innerText = `以前のルームに再参加しますか?`;
+      
+      const subtitle = document.getElementById("roomSubtitle"); 
+      if (subtitle) subtitle.innerText = "「参加」を押して再入室してください。";
     }
   })();
 
-  // ストップウォッチロジック（簡易）
+  // ストップウォッチロジック(簡易)
   let swStartTime = 0, swElapsed = 0, swTimer = null;
   const swDisplay = document.getElementById("swDisplay");
   const floatingSwDisplay = document.getElementById("floatingSwDisplay");
   const lapList = document.getElementById("lapList");
-  function formatTime(ms){ const c = Math.floor(ms/10)%100, s = Math.floor(ms/1000)%60, m = Math.floor(ms/60000); return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}.${String(c).padStart(2,'0')}`; }
-  function updateSwDisplay(){ const val = swElapsed + (swStartTime? (Date.now()-swStartTime) : 0); const time = formatTime(val); if (swDisplay) swDisplay.innerText = time; if (floatingSwDisplay) floatingSwDisplay.innerText = time; }
-  const startAction = () => { if(swTimer) return; swStartTime = Date.now(); swTimer = setInterval(updateSwDisplay, 50); };
-  const pauseAction = () => { if(!swTimer) return; swElapsed += Date.now() - swStartTime; clearInterval(swTimer); swTimer = null; swStartTime = 0; };
-  const resetAction = () => { swElapsed = 0; swStartTime = 0; clearInterval(swTimer); swTimer = null; updateSwDisplay(); if (lapList) lapList.innerHTML = ""; };
+  
+  function formatTime(ms){ 
+    const c = Math.floor(ms/10)%100;
+    const s = Math.floor(ms/1000)%60;
+    const m = Math.floor(ms/60000); 
+    return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}.${String(c).padStart(2,'0')}`; 
+  }
+  
+  function updateSwDisplay(){ 
+    const val = swElapsed + (swStartTime ? (Date.now() - swStartTime) : 0); 
+    const time = formatTime(val); 
+    if (swDisplay) swDisplay.innerText = time; 
+    if (floatingSwDisplay) floatingSwDisplay.innerText = time; 
+  }
+  
+  const startAction = () => { 
+    if(swTimer) return; 
+    swStartTime = Date.now(); 
+    swTimer = setInterval(updateSwDisplay, 50); 
+  };
+  
+  const pauseAction = () => { 
+    if(!swTimer) return; 
+    swElapsed += Date.now() - swStartTime; 
+    clearInterval(swTimer); 
+    swTimer = null; 
+    swStartTime = 0; 
+  };
+  
+  const resetAction = () => { 
+    swElapsed = 0; 
+    swStartTime = 0; 
+    clearInterval(swTimer); 
+    swTimer = null; 
+    updateSwDisplay(); 
+    if (lapList) lapList.innerHTML = ""; 
+  };
+  
   const swStartBtn = document.getElementById("swStart");
   const swPauseBtn = document.getElementById("swPause");
   const swResetBtn = document.getElementById("swReset");
   const swLapBtn = document.getElementById("swLap");
+  
   if (swStartBtn) swStartBtn.addEventListener("click", startAction);
   if (swPauseBtn) swPauseBtn.addEventListener("click", pauseAction);
   if (swResetBtn) swResetBtn.addEventListener("click", resetAction);
-  if (swLapBtn) swLapBtn.addEventListener("click", () => { if (lapList) lapList.innerHTML = `<li>${formatTime(swElapsed + (swStartTime? (Date.now()-swStartTime):0))}</li>` + lapList.innerHTML; });
+  if (swLapBtn) {
+    swLapBtn.addEventListener("click", () => { 
+      if (lapList) {
+        const currentTime = swElapsed + (swStartTime ? (Date.now() - swStartTime) : 0);
+        lapList.innerHTML = `<li>${formatTime(currentTime)}</li>` + lapList.innerHTML; 
+      }
+    });
+  }
+
+  // フローティングストップウォッチボタン
+  const floatingSwStart = document.getElementById("floatingSwStart");
+  const floatingSwPause = document.getElementById("floatingSwPause");
+  const floatingSwReset = document.getElementById("floatingSwReset");
+  const floatingSwLap = document.getElementById("floatingSwLap");
+  
+  if (floatingSwStart) floatingSwStart.addEventListener("click", startAction);
+  if (floatingSwPause) floatingSwPause.addEventListener("click", pauseAction);
+  if (floatingSwReset) floatingSwReset.addEventListener("click", resetAction);
+  if (floatingSwLap) {
+    floatingSwLap.addEventListener("click", () => { 
+      if (lapList) {
+        const currentTime = swElapsed + (swStartTime ? (Date.now() - swStartTime) : 0);
+        lapList.innerHTML = `<li>${formatTime(currentTime)}</li>` + lapList.innerHTML; 
+      }
+    });
+  }
 
   // QR / 共有設定関数
   function setupShareControls(room) {
     const qrIconBtn = document.getElementById("qrIconBtn");
     const shareIconBtn = document.getElementById("shareIconBtn");
     if (!qrIconBtn || !shareIconBtn) return;
+    
     qrIconBtn.classList.remove("bg-slate-200", "dark:bg-slate-700", "text-slate-700", "dark:text-slate-200");
     qrIconBtn.classList.add("bg-primary/20", "text-primary", "dark:bg-primary/50");
+    
     const code = `MATOMA_JOIN:${room.id}`;
     const link = location.href.split('#')[0] + "#room=" + room.id;
+    
     shareIconBtn.onclick = async () => { 
-        if (isHistoryView) return alert("履歴閲覧モードでは共有できません。");
-        const textToCopy = `【MATOMA遠的 ルーム招待】\nルーム名: ${room.name}\n\nURL:\n${link}\n\n招待コード:\n${code}`;
-        try { await navigator.clipboard.writeText(textToCopy); alert("共有リンクとコードをコピーしました！"); } catch (err) { prompt("コピーに失敗しました:", textToCopy); }
+      if (isHistoryView) {
+        return alert("履歴閲覧モードでは共有できません。");
+      }
+      
+      const textToCopy = `【MATOMA的 ルーム招待】\nルーム名: ${room.name}\n\nURL:\n${link}\n\n招待コード:\n${code}`;
+      try { 
+        await navigator.clipboard.writeText(textToCopy); 
+        alert("共有リンクとコードをコピーしました!"); 
+      } catch (err) { 
+        prompt("コピーに失敗しました:", textToCopy); 
+      }
     };
+    
     qrIconBtn.onclick = () => { 
-        if (isHistoryView) return alert("履歴閲覧モードでは共有できません。");
-        openModal('qrModalContent');
-        const qrDisplay = modalContent.querySelector("#qrCodeDisplayModal");
-        if (qrDisplay) {
-            qrDisplay.innerHTML = "";
-            new QRCode(qrDisplay, { text: link, width: 120, height: 120 });
-        }
+      if (isHistoryView) {
+        return alert("履歴閲覧モードでは共有できません。");
+      }
+      
+      openModal('qrModalContent');
+      const qrDisplay = modalContent.querySelector("#qrCodeDisplayModal");
+      if (qrDisplay) {
+        qrDisplay.innerHTML = "";
+        new QRCode(qrDisplay, { 
+          text: link, 
+          width: 200, 
+          height: 200 
+        });
+      }
     };
   }
 
@@ -743,12 +996,21 @@ document.addEventListener("DOMContentLoaded", () => {
   function setRoomHeader(room) {
     const title = document.getElementById("roomTitle");
     const subtitle = document.getElementById("roomSubtitle");
+    
     if (title) title.innerText = `${room.name} のルーム`;
-    const createdAt = room.createdAt ? (typeof room.createdAt === 'object' && room.createdAt.hasOwnProperty('seconds') ? new Date(room.createdAt.seconds * 1000).toLocaleString() : new Date(room.createdAt).toLocaleString()) : '日時不明';
-    if (subtitle) subtitle.innerText = `ルームID: ${room.id} — 作成: ${createdAt}`;
+    
+    const createdAt = room.createdAt 
+      ? (typeof room.createdAt === 'object' && room.createdAt.hasOwnProperty('seconds') 
+        ? new Date(room.createdAt.seconds * 1000).toLocaleString() 
+        : new Date(room.createdAt).toLocaleString()) 
+      : '日時不明';
+    
+    if (subtitle) {
+      subtitle.innerText = `ルームID: ${room.id} — 作成: ${createdAt}`;
+    }
   }
 
-  // レンダリング（外部から呼ばれる）
+  // レンダリング(外部から呼ばれる)
   window.renderRoom = function(roomData, isHistorical = false) {
     currentRoom = roomData;
     isHistoryView = isHistorical;
@@ -759,38 +1021,50 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const rc = document.getElementById("roomControls");
     if (rc) rc.style.display = "block";
+    
     setRoomHeader(currentRoom);
     setupShareControls(currentRoom); 
     toggleMemberControlButtons(currentRoom);
-    renderTeamsAndPlayers(); 
-    updateRoomSummary(); 
-    if (document.getElementById("createRoomBtn")) document.getElementById("createRoomBtn").style.display = 'none';
-    if (document.getElementById("joinRoomBtn")) document.getElementById("joinRoomBtn").style.display = 'none';
+    window.renderTeamsAndPlayers(); 
+    window.updateRoomSummary(); 
+    
+    if (document.getElementById("createRoomBtn")) {
+      document.getElementById("createRoomBtn").style.display = 'none';
+    }
+    if (document.getElementById("joinRoomBtn")) {
+      document.getElementById("joinRoomBtn").style.display = 'none';
+    }
     if (leaveBtn) leaveBtn.style.display = "block";
+    
     const icons = document.getElementById("roomShareIcons");
     if (icons) icons.style.display = "flex"; 
+    
     const roomHistoryEl = document.getElementById("roomHistory");
     if (roomHistoryEl) roomHistoryEl.style.display = 'none';
+    
     if (!isHistorical) {
-        localStorage.setItem("MATOMA_last_room_id", currentRoom.id);
-        if (leaveBtn) leaveBtn.innerText = "退室";
+      localStorage.setItem("MATOMA_last_room_id", currentRoom.id);
+      if (leaveBtn) leaveBtn.innerText = "退室";
     }
-    updateCenterTabButton();
   };
 
   // 退室
   function leaveRoom(isForced = false) {
     if (isForced) {
-        alert("ルームデータが削除されたため、強制的に退室します。");
+      alert("ルームデータが削除されたため、強制的に退室します。");
     } else {
-        if (!currentRoom) return;
-        const confirmMsg = isHistoryView ? `ルーム「${currentRoom.name}」の履歴閲覧を終了しますか？` : `ルーム「${currentRoom.name}」から退室しますか？\n（データはデータベースに残ります。次回再参加可能です。）`;
-        if (!confirm(confirmMsg)) return;
+      if (!currentRoom) return;
+      
+      const confirmMsg = isHistoryView 
+        ? `ルーム「${currentRoom.name}」の履歴閲覧を終了しますか?` 
+        : `ルーム「${currentRoom.name}」から退室しますか?\n(データはデータベースに残ります。次回再参加可能です。)`;
+      
+      if (!confirm(confirmMsg)) return;
     }
 
     if (window.currentRoomListener) {
-        window.currentRoomListener();
-        window.currentRoomListener = null;
+      window.currentRoomListener();
+      window.currentRoomListener = null;
     }
 
     isHistoryView = false;
@@ -798,48 +1072,42 @@ document.addEventListener("DOMContentLoaded", () => {
     
     localStorage.removeItem("MATOMA_last_room_id");
     
-    closeModal();
+    window.closeModal();
+    
     const rc = document.getElementById("roomControls");
     if (rc) rc.style.display = "none";
+    
     const icons = document.getElementById("roomShareIcons");
     if (icons) icons.style.display = "none"; 
+    
     toggleMemberControlButtons(null);
-    if (document.getElementById("createRoomBtn")) document.getElementById("createRoomBtn").style.display = 'block';
-    if (document.getElementById("joinRoomBtn")) document.getElementById("joinRoomBtn").style.display = 'block';
+    
+    if (document.getElementById("createRoomBtn")) {
+      document.getElementById("createRoomBtn").style.display = 'block';
+    }
+    if (document.getElementById("joinRoomBtn")) {
+      document.getElementById("joinRoomBtn").style.display = 'block';
+    }
     if (leaveBtn) leaveBtn.style.display = "none";
+    
     const title = document.getElementById("roomTitle");
     const subtitle = document.getElementById("roomSubtitle");
     if (title) title.innerText = "団体用スコア管理";
     if (subtitle) subtitle.innerText = "ルームを作成して共有、メンバー登録ができます。";
+    
     if (teamsContainer) teamsContainer.innerHTML = "";
-    updateRoomSummary(); 
+    window.updateRoomSummary(); 
+    
+    const roomHistoryEl = document.getElementById("roomHistory");
     if (roomHistoryEl) roomHistoryEl.style.display = 'block';
+    
     window.renderRoomHistory(); 
-    updateCenterTabButton();
+    
     if (!isForced) {
-        alert("ルームから退室しました。");
-    }
-  }
-
-  // 中央ボタンの切り替え
-  function updateCenterTabButton() {
-    if (!centerButton) centerButton = document.getElementById('addSetBtnTab');
-    if (!centerButton) return;
-    const centerButtonIcon = centerButton.querySelector('span.material-symbols-outlined');
-    const isRoomActive = currentRoom && !isHistoryView;
-    const isTeamModeActive = document.getElementById('teamTabBtn')?.classList.contains('bg-primary') && isRoomActive;
-    if (isTeamModeActive) {
-      centerButton.title = "チームを追加";
-      if (centerButtonIcon) centerButtonIcon.innerText = "group_add";
-      centerButton.onclick = (e) => { e.stopPropagation(); e.preventDefault(); window.addNewTeam(currentRoom.id); };
-    } else {
-      centerButton.title = "立ちセットを追加";
-      if (centerButtonIcon) centerButtonIcon.innerText = "add_circle";
-      centerButton.onclick = (e) => { e.stopPropagation(); e.preventDefault(); if(window.addSet) window.addSet(); else alert("addSet 未定義"); };
+      alert("ルームから退室しました。");
     }
   }
 
   // 最初に履歴を表示
   window.renderRoomHistory();
-  updateCenterTabButton();
 });

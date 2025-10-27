@@ -3,11 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-
-  <!-- =========================
-       ファビコン・PWA設定（元のhelp.html基準）
-  ========================== -->
-  <link rel="apple-touch-icon" sizes="57x57" href="/apple-icon-57x57.png">
+  <title>MATOMA-遠的 (ヘルプ・FAQ)</title>
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-icon-57x57.png">
   <link rel="apple-touch-icon" sizes="60x60" href="/apple-icon-60x60.png">
   <link rel="apple-touch-icon" sizes="72x72" href="/apple-icon-72x72.png">
   <link rel="apple-touch-icon" sizes="76x76" href="/apple-icon-76x76.png">
@@ -16,208 +13,323 @@
   <link rel="apple-touch-icon" sizes="144x144" href="/apple-icon-144x144.png">
   <link rel="apple-touch-icon" sizes="152x152" href="/apple-icon-152x152.png">
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-icon-180x180.png">
-
   <link rel="icon" type="image/png" sizes="192x192" href="/android-icon-192x192.png">
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
   <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
   <link rel="manifest" href="/manifest.json">
-
   <meta name="theme-color" content="#1969e1">
   <meta name="msapplication-TileColor" content="#ffffff">
   <meta name="msapplication-TileImage" content="/ms-icon-144x144.png">
 
-  <title>MATOMA | ヘルプ</title>
+  <link rel="apple-touch-icon" sizes="57x57" href="/apple-icon-57x57.png">
+  <link rel="manifest" href="/manifest.json">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/ms-icon-144x144.png">
+  <meta name="theme-color" content="#1a73e8">
 
-  <!-- =========================
-       Tailwind CSS設定
-  ========================== -->
   <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-  <script>
-    tailwind.config = {
-      darkMode: "class",
-      theme: {
-        extend: {
-          colors: {
-            primary: "#1969e1",
-            "background-light": "#f6f7f8",
-            "background-dark": "#111721"
-          },
-          fontFamily: {
-            display: ["Manrope", "Yu Gothic", "Hiragino Maru Gothic ProN", "sans-serif"]
-          },
-          borderRadius: {
-            DEFAULT: "0.5rem",
-            lg: "1rem",
-            xl: "1.5rem",
-            "2xl": "2rem",
-            full: "9999px"
-          }
-        }
-      }
-    }
-  </script>
 
-  <!-- =========================
-       Google Fonts & Icons
-  ========================== -->
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&display=swap" rel="stylesheet"/>
-  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
-  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/shepherd.js/dist/css/shepherd.css"/>
+  <link rel="stylesheet" href="css/settings-overrides.css"/>
 
-  <!-- =========================
-       カスタムCSS（統合）
-  ========================== -->
   <style>
+    /* --- Craft Style Customizations from めも --- */
+    :root {
+      --primary-color: #1a73e8; /* Google Blue / Primary */
+      --surface-light: #ffffff;
+      --surface-dark: #1f2937; /* slate-800 */
+    }
+
+    /* 基本設定 */
     body {
-      padding-bottom: 100px; /* タブバーとの干渉防止 */
+      background-color: #f3f4f6; /* light mode body background: gray-100 */
+      color: #1f2937; /* light mode text: gray-800 */
+      transition: background-color 0.3s, color 0.3s;
+      /* 下部アクションバーがないため、padding-bottomは通常のサイズに */
+      padding-bottom: 2rem;
+    }
+    .dark body {
+      background-color: #111827; /* dark mode body background: gray-900 */
+      color: #e5e7eb; /* dark mode text: gray-200 */
     }
 
+    /* Craft風カード (app-card) */
     .app-card {
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      background-color: var(--surface-light);
+      border-radius: 1rem;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+      transition: box-shadow 0.2s, transform 0.2s;
     }
-    .app-card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
-    }
-
-    .tab-bar {
-      background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(255, 255, 255, 0.95));
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border-top: 1px solid rgba(0, 0, 0, 0.1);
-    }
-    .dark .tab-bar {
-      background: linear-gradient(180deg, rgba(17, 23, 33, 0.98), rgba(17, 23, 33, 0.95));
-      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    .dark .app-card {
+      background-color: var(--surface-dark);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
     }
 
-    .footer-space {
-      margin-bottom: 1.5rem; /* タブバーとの空間を確保 */
+    /* Primary Color Utility */
+    .bg-primary { background-color: var(--primary-color); }
+    .text-primary { color: var(--primary-color); }
+
+    /* Tab Switch Class (Active tab style from memo) */
+    .tab-btn.active {
+      background-color: var(--primary-color) !important;
+      color: white !important;
     }
 
-    a {
-      transition: color 0.2s ease;
+    /* FAQアコーディオンのスタイル調整 */
+    .faq-item {
+      border-bottom: 1px solid #e5e7eb; /* gray-200 */
     }
-    a:hover {
-      color: #1969e1;
+    .dark .faq-item {
+      border-bottom: 1px solid #374151; /* slate-700 */
     }
+    .faq-title {
+      font-weight: 700;
+      color: var(--primary-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 0;
+      cursor: pointer;
+    }
+    .faq-content {
+      padding-bottom: 1rem;
+      color: #4b5563; /* gray-600 */
+    }
+    .dark .faq-content {
+      color: #9ca3af; /* gray-400 */
+    }
+
   </style>
 </head>
 
-<body class="bg-background-light dark:bg-background-dark font-display text-slate-800 dark:text-slate-200">
-<div class="flex flex-col min-h-screen">
+<body class="min-h-screen dark:bg-gray-900">
+  <div class="container mx-auto px-4 pt-6 app-main-container">
 
-  <!-- =========================
-       ヘッダー
-  ========================== -->
-  <header class="sticky top-0 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-sm z-10 shadow-sm">
-    <div class="flex items-center justify-between h-14">
-  <h1 class="text-lg font-bold text-slate-900 dark:text-white">MATOMA遠的</h1>
-  <div class="flex items-center gap-2">
-    <!-- 共有ボタン -->
-    <button id="shareBtn"
-      class="px-4 py-2 bg-primary text-white rounded-full hover:bg-blue-600 text-sm font-semibold shadow-md transition-all">
-      共有
-    </button>
+    <header class="mb-6 flex items-center justify-between">
+      <h1 class="text-3xl font-extrabold text-primary flex items-center">
+        
+        MATOMA - 遠的
+      </h1>
+      <div class="flex items-center gap-2">
+        <button id="shareBtn"
+          class="px-3 py-1 bg-primary text-white rounded-lg hover:bg-primary/90 text-sm font-semibold shadow-md transition-all flex items-center gap-1">
+          <span class="material-symbols-outlined text-base">share</span>
+          <span>共有</span>
+        </button>
 
-    <!-- 設定ボタン（歯車） -->
-    <button id="settingsBtn"
-      class="p-2 rounded-full bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 transition-all shadow-sm"
-      title="設定ページ">
-      <span class="material-symbols-outlined text-2xl">settings</span>
-    </button>
+        <button id="settingsBtn"
+          class="p-2 rounded-lg bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 transition-all shadow-sm"
+          title="設定ページ">
+          <span class="material-symbols-outlined text-2xl">settings</span>
+        </button>
+      </div>
+    </header>
+
+    <nav class="flex space-x-2 p-2 mb-6 app-card rounded-xl bg-surface-light dark:bg-surface-dark shadow-lg sticky top-0 z-30">
+      <a href="index.html" class="tab-btn flex items-center justify-center px-2 py-2 rounded-lg bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-300 text-sm font-medium transition-colors">
+        <span class="material-symbols-outlined text-xl mr-1">target</span> セット
+      </a>
+      <a href="team.html" class="tab-btn flex items-center justify-center px-2 py-2 rounded-lg bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-300 text-sm font-medium transition-colors">
+        <span class="material-symbols-outlined text-xl mr-1">groups</span> チーム
+      </a>
+      <a href="yadokoro.html" class="tab-btn flex items-center justify-center px-2 py-2 rounded-lg bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-300 text-sm font-medium transition-colors">
+        <span class="material-symbols-outlined text-xl mr-1">trending_up</span> 分析
+      </a>
+      <a href="tools.html" class="tab-btn flex items-center justify-center px-2 py-2 rounded-lg bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-300 text-sm font-medium transition-colors">
+        <span class="material-symbols-outlined text-xl mr-1">manufacturing</span> 道具
+      </a>
+      <a href="history.html" class="tab-btn flex items-center justify-center px-2 py-2 rounded-lg bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-300 text-sm font-medium transition-colors">
+        <span class="material-symbols-outlined text-xl mr-1">history</span> 履歴
+      </a>
+      <a href="help.html" class="tab-btn active flex items-center justify-center px-2 py-2 rounded-lg text-white text-sm font-medium transition-colors bg-primary">
+        <span class="material-symbols-outlined text-xl mr-1">help</span> ヘルプ
+      </a>
+    </nav>
+    
+    <div class="mb-6 flex justify-end">
+      <button id="tutorialBtn" class="px-5 py-3 text-sm sm:text-base bg-primary text-white rounded-lg shadow-xl hover:bg-primary/90 font-semibold transition-all hover:scale-105">初めての方へ</button>
+      <button id="tutorialBtnMobile" class="hidden"></button>
+    </div>
+
+    <main class="space-y-6">
+      <h1 class="text-2xl font-bold mb-4 text-slate-900 dark:text-white">ヘルプ・FAQ</h1>
+
+      <section id="faq-section" class="app-card p-5 rounded-2xl shadow-lg">
+        <div id="faq-list">
+          <div class="faq-item">
+            <div class="faq-title" onclick="toggleFaq(1)">
+              <span>Q1. このアプリは何ですか？</span>
+              <span class="material-symbols-outlined">expand_more</span>
+            </div>
+            <div id="faq-content-1" class="faq-content hidden">
+              <p>このアプリは、弓道の遠的記録を簡単にデジタルで記録・管理し、特に「矢所」の傾向を分析するためのツールです。個人記録、団体戦のスコア管理、使用道具の管理ができます。</p>
+            </div>
+          </div>
+          <div class="faq-item">
+            <div class="faq-title" onclick="toggleFaq(2)">
+              <span>Q2. データはどこに保存されますか？</span>
+              <span class="material-symbols-outlined">expand_more</span>
+            </div>
+            <div id="faq-content-2" class="faq-content hidden">
+              <p>全てのデータはお使いのブラウザのローカルストレージ（Local Storage）に保存されます。そのため、インターネット接続がない場所でも利用可能ですが、ブラウザのキャッシュをクリアするとデータが消える可能性があるため、定期的なデータのエクスポートをお勧めします。</p>
+            </div>
+          </div>
+          <div class="faq-item">
+            <div class="faq-title" onclick="toggleFaq(3)">
+              <span>Q3. 団体戦のメンバーはどうやって管理しますか？</span>
+              <span class="material-symbols-outlined">expand_more</span>
+            </div>
+            <div id="faq-content-3" class="faq-content hidden">
+              <p>「チーム」タブ（team.html）でメンバーの登録・編集・削除ができます。団体戦の記録をつける前に、メンバーを登録しておいてください。</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="app-card p-5 rounded-2xl shadow-lg">
+        <h2 class="text-xl font-bold mb-4 text-slate-900 dark:text-white">お問い合わせ・フィードバック</h2>
+        <p class="mb-4">ご質問、バグ報告、機能要望などがございましたら、以下よりご連絡ください。</p>
+        
+        <!-- お問い合わせ履歴 -->
+        <div id="contactHistory" class="mb-4 hidden">
+          <h3 class="text-lg font-bold mb-2 text-slate-800 dark:text-slate-200">送信履歴</h3>
+          <div id="contactHistoryList" class="space-y-2 max-h-48 overflow-y-auto border border-slate-200 dark:border-slate-700 rounded-lg p-2">
+            <!-- 履歴アイテムがここに動的に追加されます -->
+          </div>
+        </div>
+
+        <div class="flex flex-col space-y-3">
+          <button onclick="showEmailModal()" class="px-4 py-3 bg-primary text-white rounded-lg font-semibold hover:bg-primary/90 transition-colors flex items-center justify-center space-x-2">
+            <span class="material-symbols-outlined">mail</span>
+            <span>メールでのお問い合わせ</span>
+          </button>
+          <a href="https://twitter.com/matoma03_matoma" target="_blank" rel="noopener noreferrer" class="px-4 py-3 bg-blue-400 text-white rounded-lg font-semibold hover:bg-blue-400/90 transition-colors flex items-center justify-center space-x-2">
+            <span class="material-symbols-outlined">public</span>
+            <span>X (旧Twitter)でフィードバック</span>
+          </a>
+        </div>
+      </section>
+    </main>
+
   </div>
-</div>
 
-  </header>
-
-  <!-- =========================
-       メインコンテンツ
-  ========================== -->
-  <main class="flex-grow container mx-auto px-4 py-6 space-y-8">
-
-    <section>
-      <h2 class="text-2xl font-bold mb-4 text-slate-900 dark:text-white">MATOMAの入力方法</h2>
-      <div class="app-card bg-white dark:bg-slate-900 p-5 rounded-2xl shadow-lg space-y-4">
-        <p>的の中心をタップしてスコアを入力します。点数の境目などで修正が必要な場合は、マーカーをドラッグして調整してください。</p>
-        <p>合計得点と的中率は自動で計算されます。</p>
-      </div>
-    </section>
-
-    <section>
-      <h2 class="text-2xl font-bold mb-4 text-slate-900 dark:text-white">立ちごとの削除</h2>
-      <div class="app-card bg-white dark:bg-slate-900 p-5 rounded-2xl shadow-lg">
-        <p>各立ち右上の削除ボタンから削除できます。</p>
-      </div>
-    </section>
-
-    <section>
-      <h2 class="text-2xl font-bold mb-4 text-slate-900 dark:text-white">道具登録について</h2>
-      <div class="app-card bg-white dark:bg-slate-900 p-5 rounded-2xl shadow-lg">
-        <p>道具登録は「道具管理」ページから登録・編集できます。</p>
-      </div>
-    </section>
-
-    <section>
-      <h2 class="text-2xl font-bold mb-4 text-slate-900 dark:text-white">履歴の表示</h2>
-      <div class="app-card bg-white dark:bg-slate-900 p-5 rounded-2xl shadow-lg">
-        <p>過去のスコアは日付選択画面から確認可能です。</p>
-      </div>
-    </section>
-
-  </main>
-
-  <!-- =========================
-       フッター（製作者欄あり）
-  ========================== -->
-  <footer class="footer-space container mx-auto px-4 py-6 text-center text-slate-500 dark:text-slate-400 text-sm space-y-2">
-    <p>© 2025 MATOMA App. All Rights Reserved.</p>
-    <p>製作者：
-      <a href="https://x.com/matoma03_matoma" target="_blank" class="hover:text-primary transition-colors font-semibold">@matoma03_matoma</a>
-    </p>
-    <div class="flex justify-center space-x-6">
-      <a href="https://x.com/matoma03_matoma" target="_blank" class="hover:text-primary transition-colors">
-        <span class="material-symbols-outlined align-middle">alternate_email</span> X（旧Twitter）
-      </a>
-      <a href="mailto:sakisuzuki89@gmail.com" class="hover:text-primary transition-colors">
-        <span class="material-symbols-outlined align-middle">mail</span> Gmail
-      </a>
+  <!-- メール問い合わせモーダル -->
+  <div id="emailModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-md space-y-4">
+      <h3 class="text-xl font-bold text-gray-900 dark:text-white">お問い合わせフォーム</h3>
+      <form id="contactForm" class="space-y-4" onsubmit="sendEmail(event)">
+        <div>
+          <label for="from_name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">お名前（任意）</label>
+          <input type="text" id="from_name" name="from_name"
+            class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm" placeholder="山田 太郎">
+        </div>
+        <div>
+          <label for="from_email" class="block text-sm font-medium text-gray-700 dark:text-gray-300">メールアドレス（任意・返信希望がある場合）</label>
+          <input type="email" id="from_email" name="from_email"
+            class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm" placeholder="your@email.example">
+        </div>
+        <div>
+          <label for="subject" class="block text-sm font-medium text-gray-700 dark:text-gray-300">件名</label>
+          <input type="text" id="subject" name="subject" required
+            class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm">
+        </div>
+        <div>
+          <label for="message" class="block text-sm font-medium text-gray-700 dark:text-gray-300">メッセージ</label>
+          <textarea id="message" name="message" rows="4" required
+            class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm"></textarea>
+        </div>
+        <div class="flex justify-end space-x-3">
+          <button type="button" onclick="closeEmailModal()" 
+            class="px-4 py-2 bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600">
+            キャンセル
+          </button>
+          <button id="contactSendBtn" type="submit" 
+            class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90">
+            送信
+          </button>
+        </div>
+        <div id="contactSendStatus" class="text-sm text-slate-600 dark:text-slate-300 mt-2 hidden"></div>
+      </form>
     </div>
-  </footer>
+  </div>
+  
+  <script src="js/font-size.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/shepherd.js/dist/js/shepherd.min.js"></script>
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+  <script>
+    (function() {
+      emailjs.init("qb5-hkJHvPJlHWL1O"); // EmailJSの公開キーを設定
+    })();
+  </script>
 
-  <!-- =========================
-       タブバー
-  ========================== -->
-  <nav class="tab-bar fixed bottom-0 left-0 right-0 z-40 px-4 py-2">
-    <div class="max-w-2xl mx-auto flex items-end justify-around relative">
-      <a href="tools.html" class="flex flex-col items-center gap-1 py-2 px-3 text-slate-500 dark:text-slate-400 hover:text-primary transition-colors">
-        <span class="material-symbols-outlined text-2xl">construction</span>
-        <span class="text-xs font-semibold">道具</span>
-      </a>
-
-      <a href="index.html" class="flex flex-col items-center gap-1 py-2 px-3 text-slate-500 dark:text-slate-400 hover:text-primary transition-colors">
-        <span class="material-symbols-outlined text-2xl">today</span>
-        <span class="text-xs font-semibold">今日の記録</span>
-      </a>
-
-      <a href="yadokoro.html" class="flex flex-col items-center gap-1 py-2 px-3 text-slate-500 dark:text-slate-400 hover:text-primary transition-colors">
-        <span class="material-symbols-outlined text-2xl">analytics</span>
-        <span class="text-xs font-semibold">分析</span>
-      </a>
-
-      <a href="help.html" class="flex flex-col items-center gap-1 py-2 px-3 text-primary">
-        <span class="material-symbols-outlined text-2xl">help</span>
-        <span class="text-xs font-semibold">ヘルプ</span>
-      </a>
-    </div>
-  </nav>
-</div>
-
-<!-- =========================
-     Service Worker登録
-  ========================== -->
 <script>
+// ======== ページ読込時にテーマを反映 (共通ロジック) ========
+(function() {
+  const theme = localStorage.getItem("theme");
+  if (theme === "dark") {
+    document.documentElement.classList.add("dark");
+  } else {
+    document.documentElement.classList.remove("dark");
+  }
+})();
+
+// FAQアコーディオン
+function toggleFaq(id) {
+  const content = document.getElementById(`faq-content-${id}`);
+  if (content.classList.contains('hidden')) {
+    content.classList.remove('hidden');
+  } else {
+    content.classList.add('hidden');
+  }
+}
+
+// チュートリアル (help.htmlに合わせて調整)
+function startTutorial() {
+  const tour = new Shepherd.Tour({
+    defaultStepOptions: {
+      scrollTo: { behavior: 'smooth', block: 'center' }
+    }
+  });
+
+  tour.addStep({
+    text: 'ここが各ページへのナビゲーションです。',
+    attachTo: { element: 'nav', on: 'bottom' },
+    buttons: [
+      { text: '次へ', action: tour.next }
+    ]
+  });
+
+  tour.addStep({
+    text: 'ご不明な点があれば、FAQをご確認いただくか、お問い合わせください。',
+    attachTo: { element: '#faq-section', on: 'top' },
+    buttons: [
+      { text: '終了', action: tour.complete }
+    ]
+  });
+
+  tour.start();
+}
+
+document.getElementById("tutorialBtn").addEventListener("click", startTutorial);
+// document.getElementById("tutorialBtnMobile").addEventListener("click", startTutorial); // 非表示のため
+
+// 共有ボタン (共通ロジック)
+document.getElementById("shareBtn").addEventListener("click", async () => {
+  const shareText = "MATOMA遠的のヘルプページをチェックしよう！";
+  const shareUrl = window.location.href;
+  if (navigator.share) {
+    try { await navigator.share({ title: "MATOMA遠的 | ヘルプ", text: shareText, url: shareUrl }); }
+    catch(err){ console.error(err); }
+  } else {
+    try { await navigator.clipboard.writeText(`${shareText} ${shareUrl}`); alert("リンクをコピーしました。"); }
+    catch(err){ prompt("コピーできません。以下をコピーしてください:", `${shareText} ${shareUrl}`); }
+  }
+});
+
+// PWA Service Worker (共通ロジック)
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/service-worker-v1.0.6.js')
@@ -225,25 +337,139 @@ if ('serviceWorker' in navigator) {
       .catch(err => console.error('❌ Service Worker registration failed:', err));
   });
 }
-</script>
-<script>
-  // ======== ページ読込時にテーマを反映 ========
-  (function() {
-    const theme = localStorage.getItem("theme");
-    if (theme === "dark") {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-    }
-  })();
-</script>
-<script>
+
+// 設定ボタン遷移 (共通ロジック)
 document.addEventListener("DOMContentLoaded", () => {
   const settingsBtn = document.getElementById("settingsBtn");
   if (settingsBtn) {
     settingsBtn.addEventListener("click", () => {
       window.location.href = "settings.html"; // ← 設定ページへ遷移
     });
+  }
+
+  // お問い合わせ履歴を読み込む
+  loadContactHistory();
+});
+
+// お問い合わせ履歴の管理
+const CONTACT_HISTORY_KEY = 'matoma_contact_history';
+
+function loadContactHistory() {
+  const history = JSON.parse(localStorage.getItem(CONTACT_HISTORY_KEY) || '[]');
+  const historyContainer = document.getElementById('contactHistory');
+  const historyList = document.getElementById('contactHistoryList');
+  
+  if (history.length > 0) {
+    historyContainer.classList.remove('hidden');
+    historyList.innerHTML = history.map(item => `
+      <div class="p-2 bg-slate-50 dark:bg-slate-800 rounded-lg">
+        <div class="flex justify-between items-start">
+          <div class="font-medium text-slate-900 dark:text-slate-100">${item.subject}</div>
+          <div class="text-xs text-slate-500 dark:text-slate-400">${new Date(item.date).toLocaleString()}</div>
+        </div>
+        <div class="text-sm text-slate-600 dark:text-slate-300 mt-1">${item.message}</div>
+        <div class="text-xs text-green-600 dark:text-green-400 mt-1">✓ 送信済み</div>
+      </div>
+    `).join('');
+  } else {
+    historyContainer.classList.add('hidden');
+  }
+}
+
+function saveContactHistory(subject, message) {
+  const history = JSON.parse(localStorage.getItem(CONTACT_HISTORY_KEY) || '[]');
+  history.unshift({
+    subject,
+    message,
+    date: new Date().toISOString()
+  });
+  // 最新の10件のみ保持
+  if (history.length > 10) {
+    history.pop();
+  }
+  localStorage.setItem(CONTACT_HISTORY_KEY, JSON.stringify(history));
+  loadContactHistory();
+}
+
+// メールフォーム関連の関数
+function showEmailModal() {
+  document.getElementById('emailModal').classList.remove('hidden');
+}
+
+function closeEmailModal() {
+  document.getElementById('emailModal').classList.add('hidden');
+  document.getElementById('contactForm').reset();
+}
+
+async function sendEmail(event) {
+  event.preventDefault();
+  const sendBtn = document.getElementById('contactSendBtn');
+  const statusEl = document.getElementById('contactSendStatus');
+  const subject = document.getElementById('subject').value;
+  const message = document.getElementById('message').value;
+  const fromName = document.getElementById('from_name')?.value || '';
+  const fromEmail = document.getElementById('from_email')?.value || '';
+
+  // UI: 送信中にボタン無効化
+  if (sendBtn) {
+    sendBtn.disabled = true;
+    sendBtn.classList.add('opacity-60');
+    sendBtn.textContent = '送信中…';
+  }
+  if (statusEl) {
+    statusEl.classList.remove('hidden');
+    statusEl.textContent = '';
+  }
+
+  try {
+    // EmailJS を使う場合は既に init と ID を設定済みであること
+    await emailjs.send(
+      'service_2i2hfvf',
+      'template_lv75tth',
+      {
+        subject: subject,
+        message: message,
+        from_name: fromName,
+        from_email: fromEmail,
+        to_email: 'sakisuzuki89@gmail.com',
+        date: new Date().toLocaleString()
+      }
+    );
+
+    // 履歴を保存
+    saveContactHistory(subject, message);
+
+    // UI: 成功表示
+    if (statusEl) statusEl.textContent = '送信に成功しました（クライアント経由）。受信トレイを確認してください。';
+    // 閉じる前に少し表示
+    setTimeout(() => {
+      closeEmailModal();
+    }, 800);
+  } catch (error) {
+    console.error('送信エラー:', error);
+    if (statusEl) statusEl.textContent = '送信に失敗しました。コンソールログと EmailJS のログを確認してください。';
+    // フォールバック: mailto を提示
+    const fallback = confirm('自動送信に失敗しました。既定のメールアプリで送信しますか？');
+    if (fallback) {
+      const mailtoLink = `mailto:sakisuzuki89@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(message)}`;
+      window.location.href = mailtoLink;
+      saveContactHistory(subject, message);
+      closeEmailModal();
+    }
+  } finally {
+    if (sendBtn) {
+      sendBtn.disabled = false;
+      sendBtn.classList.remove('opacity-60');
+      sendBtn.textContent = '送信';
+    }
+  }
+}
+
+
+// モーダルの外側をクリックしたときに閉じる
+document.getElementById('emailModal').addEventListener('click', (e) => {
+  if (e.target.id === 'emailModal') {
+    closeEmailModal();
   }
 });
 </script>

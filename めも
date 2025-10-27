@@ -22,9 +22,9 @@
   <meta name="msapplication-TileColor" content="#ffffff">
   <meta name="msapplication-TileImage" content="/ms-icon-144x144.png">
 
-  <title>MATOMA | 遠的スコア管理アプリ - 弓道の記録をスマホで簡単に分析</title>
-  <meta name="description" content="MATOMA遠的は弓道の遠的スコアをスマホで簡単に記録・分析・共有できるアプリです。立ちごとの点数管理や矢所分析で、自分の射を可視化しましょう。" />
-  <meta name="keywords" content="弓道,遠的,スコア管理,矢所分析,アプリ,MATOMA" />
+  <title>MATOMA | 弓道スコア管理アプリ - 弓道の記録をスマホで簡単に分析</title>
+  <meta name="description" content="MATOMA弓道は弓道の弓道スコアをスマホで簡単に記録・分析・共有できるアプリです。立ちごとの点数管理や矢所分析で、自分の射を可視化しましょう。" />
+  <meta name="keywords" content="弓道,弓道,スコア管理,矢所分析,アプリ,MATOMA" />
   <meta name="robots" content="index, follow" />
 
   <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
@@ -39,8 +39,7 @@
             "background-dark": "#111721"
           },
           fontFamily: {
-            // 🎨 修正点: Manropeに加え、Noto Sans JP をフォントスタックの先頭に追加
-            "display": ["Manrope", '"Noto Sans JP"', "Yu Gothic", "Hiragino Maru Gothic ProN", "sans-serif"]
+            "display": ["Manrope", "Yu Gothic", "Hiragino Maru Gothic ProN", "sans-serif"]
           }
         }
       }
@@ -50,12 +49,13 @@
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&display=swap" rel="stylesheet" />
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/shepherd.js/dist/css/shepherd.css">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@100..900&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@100..900&display=swap" rel="stylesheet">
+  
   <style>
-    /* custom styles */
-    body { padding-bottom: 120px; }
+/* custom styles */
+    body { padding-bottom: 120px; font-family: "Noto Sans JP", sans-serif; }
     .app-card { transition: transform .18s ease, box-shadow .18s ease; }
     .app-card:hover { transform: translateY(-4px); box-shadow: 0 18px 30px rgba(0,0,0,.08); }
     .center-tab-button { position: relative; top: -20px; width:64px; height:64px; border-radius:50%; display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg,#1969e1,#1557c7); color:white; border:none; box-shadow:0 8px 24px rgba(25,105,225,0.4); }
@@ -66,38 +66,145 @@
     .canvas-container{ width:100%; max-width:600px; margin:0 auto; aspect-ratio:1/1; position:relative; }
     .canvas-container canvas{ width:100% !important; height:100% !important; display:block; }
     
-    .player-row {
-        display: flex;
-        flex-direction: row;
-        align-items: center;
-        justify-content: space-between;
-        gap: 0.5rem;
+    /* ==================== */
+    /* アコーディオンスタイル */
+    /* ==================== */
+    .accordion-card {
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      border: 2px solid transparent;
     }
-    .player-row-left, .player-row-right {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
+    .accordion-card.active {
+      border-color: #1969e1;
+      box-shadow: 0 8px 30px rgba(25, 105, 225, 0.15);
     }
-    .player-row-right {
-        flex-wrap: nowrap;
+    .accordion-content {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     }
-    @media (max-width: 767px) {
-        .player-row {
-            flex-direction: column;
-            align-items: stretch;
-        }
-        .player-row-left {
-            justify-content: space-between;
-            margin-bottom: 0.5rem;
-        }
-        .player-row-right {
-            justify: space-between;
-            flex-wrap: wrap;
-        }
-        .player-score-input {
-            flex-grow: 1;
-            min-width: 60px;
-        }
+    .accordion-content.open {
+      max-height: 3000px;
+    }
+    .accordion-icon {
+      transition: transform 0.3s ease;
+    }
+    
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    
+    .pulse-dot {
+      animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: .5; }
+    }
+    
+    /* ===================================== */
+    /* firebase-room.jsが生成するHTMLへのスタイル */
+    /* ===================================== */
+    
+    /* プレイヤーカード（renderRoom関数で生成される .player-card） */
+    .player-card {
+      background: white;
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+      transition: all 0.2s;
+      border: 2px solid transparent;
+    }
+    .dark .player-card {
+      background: #1e293b;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+    }
+    .player-card:hover {
+      border-color: #1969e1;
+      box-shadow: 0 6px 20px rgba(25, 105, 225, 0.2);
+      transform: translateY(-2px);
+    }
+    
+    /* プレイヤー名入力フィールド */
+    .player-name-input {
+      background: transparent !important;
+      border: none !important;
+      border-bottom: 2px solid #e2e8f0 !important;
+      font-size: 18px !important;
+      font-weight: 700 !important;
+      padding: 6px 0 !important;
+      width: 100% !important;
+      margin-bottom: 12px !important;
+      transition: border-color 0.2s;
+    }
+    .dark .player-name-input {
+      border-bottom-color: #475569 !important;
+      color: white !important;
+    }
+    .player-name-input:focus {
+      outline: none !important;
+      border-bottom-color: #1969e1 !important;
+    }
+    
+    /* スコアセレクトボックス */
+    #teamsContainer select {
+      min-width: 60px;
+      min-height: 48px;
+      padding: 8px 12px;
+      border: 2px solid #e2e8f0;
+      border-radius: 10px;
+      background: white;
+      font-size: 16px;
+      font-weight: 700;
+      text-align: center;
+      transition: all 0.2s;
+      cursor: pointer;
+    }
+    .dark #teamsContainer select {
+      background: #334155;
+      border-color: #475569;
+      color: white;
+    }
+    #teamsContainer select:focus {
+      outline: none;
+      border-color: #1969e1;
+      box-shadow: 0 0 0 3px rgba(25, 105, 225, 0.1);
+    }
+    #teamsContainer select:hover {
+      border-color: #1969e1;
+    }
+    
+    /* プレイヤー合計表示 */
+    .player-total {
+      margin-top: 16px;
+      padding: 12px;
+      background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+      border-radius: 10px;
+      font-weight: 700;
+      text-align: center;
+      font-size: 16px;
+      color: #1e293b;
+    }
+    .dark .player-total {
+      background: linear-gradient(135deg, #334155 0%, #475569 100%);
+      color: #f1f5f9;
+    }
+    
+    /* teamsContainerのグリッドレイアウト改善 */
+    #teamsContainer {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 20px;
+    }
+    @media (max-width: 640px) {
+      #teamsContainer {
+        grid-template-columns: 1fr;
+      }
     }
 
     #floatingStopwatch {
@@ -131,8 +238,6 @@
     #floatingStopwatch .drag-handle .material-symbols-outlined {
         font-size: 20px;
     }
-    
-    /* 🎨 削除: 壊れたCSSを削除 */
   </style>
 </head>
 
@@ -141,7 +246,7 @@
 
     <header class="sticky top-0 z-20 bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm border-b border-slate-100 dark:border-slate-800">
       <div class="container mx-auto px-4 py-3 flex items-center justify-between">
-        <h1 class="text-lg font-bold text-slate-900 dark:text-white">MATOMA遠的</h1>
+        <h1 class="text-lg font-bold text-slate-900 dark:text-white">MATOMA弓道</h1>
         <div class="flex items-center gap-2">
           <button id="shareBtn" class="px-4 py-2 bg-primary text-white rounded-full text-sm font-semibold shadow-md">共有</button>
           <button id="settingsBtn" class="p-2 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200" title="設定">
@@ -151,16 +256,17 @@
       </div>
     </header>
 
-    <div class="bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800 py-3">
-      <div class="container mx-auto px-4">
-        <div class="flex gap-2 justify-center">
-          <button id="personalTabBtn" class="px-4 py-2 rounded-lg font-semibold bg-primary text-white">個人用</button>
-          <button id="teamTabBtn" class="px-4 py-2 rounded-lg font-semibold bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-white">団体用</button>
-        </div>
+    <div class="container mx-auto px-4 py-4">
+      <div class="flex gap-2 justify-center">
+        <button id="personalTabBtn" class="px-4 py-2 rounded-lg font-semibold bg-primary text-white">個人用</button>
+        <button id="teamTabBtn" class="px-4 py-2 rounded-lg font-semibold bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-white">団体用</button>
       </div>
     </div>
 
-    <main class="flex-grow container mx-auto px-4 pb-12 pt-6"> <section id="personalTab" class="tab-content active">
+    <main class="flex-grow container mx-auto px-4 pb-12">
+
+      <!-- 個人用タブ（元のまま） -->
+      <section id="personalTab" class="tab-content active">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <section class="app-card bg-white dark:bg-slate-900 p-5 rounded-2xl shadow-lg" id="matchDateSection">
             <label for="matchDate" class="block mb-3 font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2">
@@ -173,26 +279,17 @@
           <section id="dailySummary">
             <h2 class="text-xl font-bold mb-3 text-slate-900 dark:text-white">日別集計</h2>
             <div class="app-card bg-white dark:bg-slate-900 rounded-2xl shadow-lg p-5">
-              <div id="emptySummaryPlaceholder" class="text-center py-4">
-                <span class="material-symbols-outlined text-5xl text-slate-300 dark:text-slate-600">query_stats</span>
-                <p class="mt-2 font-semibold text-slate-500 dark:text-slate-400">集計データがありません</p>
-                <p class="text-sm text-slate-400 dark:text-slate-500">記録を追加すると、ここに集計が表示されます。</p>
+              <div class="flex items-center gap-3 text-slate-500 dark:text-slate-400">
+                <span class="material-symbols-outlined text-3xl text-primary">analytics</span>
+                <p class="text-sm">ここに日別集計（立ち数・合計点）が表示されます</p>
               </div>
-              </div>
+            </div>
           </section>
         </div>
 
         <section class="mt-6">
           <h2 class="text-xl font-bold mb-4 text-slate-900 dark:text-white">立ちセット</h2>
-          <div id="setsContainer" class="space-y-4">
-            <div id="emptySetsPlaceholder" class="text-center app-card bg-white dark:bg-slate-900 p-8 rounded-2xl shadow-lg border-2 border-dashed border-slate-200 dark:border-slate-700">
-              <span class="material-symbols-outlined text-6xl text-slate-300 dark:text-slate-600">add_task</span>
-              <h3 class="mt-4 text-lg font-bold text-slate-800 dark:text-slate-200">立ちセットがありません</h3>
-              <p class="mt-1 text-slate-500 dark:text-slate-400">
-                下の <span class="inline-flex items-center justify-center bg-primary text-white w-5 h-5 rounded-full"><span class="material-symbols-outlined text-sm" style="font-size: 1rem;">add_circle</span></span> ボタンから最初のセットを追加してください。
-              </p>
-            </div>
-          </div>
+          <div id="setsContainer" class="space-y-4"></div>
         </section>
 
         <div class="mt-6">
@@ -207,110 +304,288 @@
         </div>
       </section>
 
+      <!-- 🎯 団体用タブ（カード式アコーディオンに改善） -->
       <section id="teamTab" class="tab-content">
-
         <div class="py-2">
-          <div class="flex items-center justify-between mb-3">
-            <div>
-              <div class="flex items-center gap-2"> 
+          
+          <!-- ヘッダー部分 -->
+          <div class="flex items-center justify-between mb-6 p-5 bg-white dark:bg-slate-900 rounded-2xl shadow-lg">
+            <div class="flex items-center gap-3">
+              <span class="material-symbols-outlined text-4xl text-primary">sports_score</span>
+              <div>
                 <h2 id="roomTitle" class="text-2xl font-bold text-slate-900 dark:text-white">団体用スコア管理</h2>
-                <div id="roomShareIcons" class="flex gap-1" style="display:none;">
-                    <button id="shareIconBtn" class="p-1.5 rounded-full bg-primary/20 text-primary dark:bg-primary/50" title="共有リンク・コードをコピー">
-                        <span class="material-symbols-outlined text-xl">content_copy</span>
-                    </button>
-                    <button id="qrIconBtn" class="p-1.5 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200" title="QRコードを表示/非表示">
-                        <span class="material-symbols-outlined text-xl">qr_code_2</span>
-                    </button>
-                    <button id="exportTeamResultsBtn" class="p-1.5 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200" title="スコア詳細をCSVダウンロード">
-                        <span class="material-symbols-outlined text-xl">download</span>
-                    </button>
-                    <button onclick="exportPlayerScoresToPDF()" class="p-1.5 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200" title="PDF出力">
-                        <span class="material-symbols-outlined text-xl">picture_as_pdf</span>
-                    </button>
-                </div>
+                <p id="roomSubtitle" class="text-sm text-slate-600 dark:text-slate-300">ルームを作成して共有、メンバー登録ができます。</p>
               </div>
-              <p id="roomSubtitle" class="text-sm text-slate-600 dark:text-slate-300">ルームを作成して共有、メンバー登録ができます。</p>
-            </div>
-            <div id="roomEntryButtons" class="flex gap-2">
-              <button id="createRoomBtn" class="px-4 py-2 bg-primary text-white font-semibold rounded-lg shadow hover:bg-opacity-90 transition-all">ルーム作成</button>
-              <button id="joinRoomBtn" class="px-4 py-2 bg-indigo-600 text-white font-semibold rounded-lg shadow hover:bg-indigo-700 transition-all">ルームに参加</button>
-              <button id="leaveRoomBtn" style="display:none;" class="px-4 py-2 bg-red-500 text-white font-semibold rounded-lg shadow hover:bg-red-600 transition-all">退室</button>
             </div>
           </div>
-          
-          <div id="roomControls" style="display:none;">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-              <div id="roomForm" style="display:none;" class="app-card bg-white dark:bg-slate-900 p-4 rounded-2xl shadow">
-                <label class="block mb-2 font-bold text-slate-800 dark:text-slate-200">ルーム名</label>
-                <input id="roomName" class="w-full rounded-xl border-2 border-slate-200 dark:border-slate-700 px-4 py-3 bg-white dark:bg-slate-800" placeholder="ルーム名を入力" />
-                <div class="flex gap-2 mt-3">
-                  <button id="submitRoomBtn" class="px-4 py-2 bg-green-500 text-white font-semibold rounded-lg shadow hover:bg-green-600 transition-all">ルーム作成</button>
-                  <button id="cancelRoomBtn" class="px-4 py-2 bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-200 font-semibold rounded-lg hover:bg-slate-300 dark:hover:bg-slate-600 transition-all">キャンセル</button>
+
+          <!-- 🎴 1. ルームセットアップカード -->
+          <div class="accordion-card bg-white dark:bg-slate-900 rounded-2xl shadow-lg overflow-hidden mb-4">
+            <button class="accordion-header w-full px-6 py-5 flex items-center justify-between text-left hover:bg-slate-50 dark:hover:bg-slate-800 transition" data-target="setupContent">
+              <div class="flex items-center gap-4">
+                <div class="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                  <span class="material-symbols-outlined text-blue-600 dark:text-blue-400 text-2xl">settings</span>
+                </div>
+                <div>
+                  <h3 class="text-lg font-bold text-slate-900 dark:text-white">ルーム設定</h3>
+                  <p class="text-sm text-slate-500 dark:text-slate-400">ルーム作成・参加・基本情報</p>
                 </div>
               </div>
-
-              <div id="joinForm" style="display:none;" class="app-card bg-white dark:bg-slate-900 p-4 rounded-2xl shadow">
-                <label class="block mb-2 font-bold text-slate-800 dark:text-slate-200">招待コードまたはURLを入力</label>
-                <input id="joinInput" class="w-full rounded-xl border-2 border-slate-200 dark:border-slate-700 px-4 py-3 bg-white dark:bg-slate-800" placeholder="例: MATOMA_JOIN:RMXXXX または https://...#room=RMXXXX" />
-                <div class="flex gap-2 mt-3">
-                  <button id="doJoinBtn" class="px-4 py-2 bg-green-500 text-white font-semibold rounded-lg shadow hover:bg-green-600 transition-all">参加</button>
-                  <button id="cancelJoinBtn" class="px-4 py-2 bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-200 font-semibold rounded-lg hover:bg-slate-300 dark:hover:bg-slate-600 transition-all">キャンセル</button>
-                </div>
+              <div class="flex items-center gap-3">
+                <span class="badge bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400" id="setupStatusBadge">
+                  <span class="w-2 h-2 rounded-full bg-green-500 pulse-dot"></span>
+                  準備中
+                </span>
+                <span class="material-symbols-outlined text-slate-400 accordion-icon">expand_more</span>
               </div>
-            </div>
+            </button>
+            
+            <div class="accordion-content" id="setupContent">
+              <div class="px-6 pb-6 border-t border-slate-100 dark:border-slate-800 pt-6 space-y-4">
+                
+                <!-- 初期ボタン -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="roomEntryButtons">
+                  <button id="createRoomBtn" class="p-6 border-2 border-blue-200 dark:border-blue-800 rounded-xl hover:border-blue-400 dark:hover:border-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition group">
+                    <span class="material-symbols-outlined text-5xl text-blue-600 dark:text-blue-400 mb-2 group-hover:scale-110 transition block">add_circle</span>
+                    <h4 class="font-bold text-slate-900 dark:text-white mb-1">新規ルーム作成</h4>
+                    <p class="text-sm text-slate-500 dark:text-slate-400">新しい試合のルームを作成</p>
+                  </button>
+                  <button id="joinRoomBtn" class="p-6 border-2 border-emerald-200 dark:border-emerald-800 rounded-xl hover:border-emerald-400 dark:hover:border-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition group">
+                    <span class="material-symbols-outlined text-5xl text-emerald-600 dark:text-emerald-400 mb-2 group-hover:scale-110 transition block">login</span>
+                    <h4 class="font-bold text-slate-900 dark:text-white mb-1">既存ルームに参加</h4>
+                    <p class="text-sm text-slate-500 dark:text-slate-400">招待コードで参加</p>
+                  </button>
+                </div>
 
-            <div class="flex flex-col lg:flex-row gap-4">
-              <div class="flex-1 space-y-4">
-                <div id="memberControlButtons" class="flex gap-2">
-                    <button id="openRegisterModalBtn" class="px-4 py-2 bg-primary text-white font-semibold rounded-lg shadow hover:bg-opacity-90 transition-all" style="display:none;">メンバー登録</button>
-                    <button id="openManagementModalBtn" class="px-4 py-2 bg-blue-500 text-white font-semibold rounded-lg shadow hover:bg-blue-600 transition-all" style="display:none;">メンバー管理</button>
-                </div>
-                <div id="teamsContainer" class="flex flex-col md:flex-row md:flex-wrap gap-4">
-                    <div id="emptyTeamsPlaceholder" class="w-full text-center app-card bg-white dark:bg-slate-900 p-8 rounded-2xl shadow-lg border-2 border-dashed border-slate-200 dark:border-slate-700">
-                        <span class="material-symbols-outlined text-6xl text-slate-300 dark:text-slate-600">group_add</span>
-                        <h3 class="mt-4 text-lg font-bold text-slate-800 dark:text-slate-200">メンバーがいません</h3>
-                        <p class="mt-1 text-slate-500 dark:text-slate-400">「メンバー登録」ボタンからメンバーを追加してください。</p>
-                    </div>
-                </div>
-                <div id="specialMemberContainer" class="mt-8 space-y-6">
-                    <div id="emptySpecialPlaceholder" class="app-card bg-white/50 dark:bg-slate-900/50 p-5 rounded-2xl border border-slate-200 dark:border-slate-700">
-                        <h3 class="text-lg font-bold text-slate-700 dark:text-slate-300 mb-2">監督者・その他</h3>
-                        <p class="text-sm text-slate-500 dark:text-slate-400">監督者または閲覧のみのメンバーはここに表示されます。</p>
-                    </div>
-                </div>
-              </div>
-
-              <aside id="sidebar-aside" class="w-full lg:w-96 space-y-4">
-                <div class="app-card bg-white dark:bg-slate-900 rounded-2xl shadow p-4">
-                  <h3 class="font-bold mb-3">ストップウォッチ</h3>
-                  <div id="swDisplay" class="text-2xl font-mono mb-3">00:00.00</div>
-                  <div class="flex gap-2 mb-3">
-                    <button id="swStart" class="px-3 py-2 bg-green-500 text-white font-semibold rounded-lg shadow hover:bg-green-600 transition-all flex-1">Start</button>
-                    <button id="swPause" class="px-3 py-2 bg-yellow-500 text-white font-semibold rounded-lg shadow hover:bg-yellow-600 transition-all flex-1">Pause</button>
-                    <button id="swReset" class="px-3 py-2 bg-red-500 text-white font-semibold rounded-lg shadow hover:bg-red-600 transition-all flex-1">Reset</button>
-                  </div>
-                  <button id="swLap" class="px-3 py-2 bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-200 font-semibold rounded-lg hover:bg-slate-300 dark:hover:bg-slate-600 transition-all w-full">Lap</button>
-                  <ul id="lapList" class="mt-3 text-sm list-disc list-inside max-h-48 overflow-auto"></ul>
-                </div>
-                <div class="app-card bg-white dark:bg-slate-900 rounded-2xl shadow p-4">
-                  <h3 class="font-bold mb-2">ルーム集計</h3>
-                  <div id="roomSummary" class="text-center py-3 text-slate-400 dark:text-slate-500">
-                    <span class="material-symbols-outlined text-4xl">receipt_long</span>
-                    <p class="text-sm font-medium mt-1">集計結果はここに表示されます</p>
+                <!-- ルーム作成フォーム -->
+                <div id="roomForm" style="display:none;" class="space-y-3">
+                  <label class="block">
+                    <span class="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2 block">ルーム名</span>
+                    <input type="text" id="roomName" placeholder="例: 春季大会 予選" class="w-full px-4 py-3 border-2 border-slate-200 dark:border-slate-700 rounded-xl focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition bg-white dark:bg-slate-800 text-slate-900 dark:text-white">
+                  </label>
+                  <div class="flex gap-2">
+                    <button id="submitRoomBtn" class="flex-1 px-6 py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition">作成</button>
+                    <button id="cancelRoomBtn" class="px-6 py-3 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl font-semibold hover:bg-slate-300 dark:hover:bg-slate-600 transition">キャンセル</button>
                   </div>
                 </div>
-              </aside>
-            </div>
-          </div>
-          
-          <div id="roomHistory" class="mt-8">
-            <div class="app-card bg-white dark:bg-slate-900 rounded-2xl shadow-lg p-5">
-              <h2 class="text-xl font-bold mb-3 text-slate-900 dark:text-white">過去のルーム履歴（ブラウザ保存）</h2>
-              <div id="historyList" class="space-y-2">
-                  <p class="text-sm text-slate-500" id="noHistoryMessage">履歴はありません。</p>
+
+                <!-- 参加フォーム -->
+                <div id="joinForm" style="display:none;" class="space-y-3">
+                  <label class="block">
+                    <span class="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2 block">招待コードまたはURL</span>
+                    <input type="text" id="joinInput" placeholder="例: MATOMA_JOIN:RMXXXX" class="w-full px-4 py-3 border-2 border-slate-200 dark:border-slate-700 rounded-xl focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition bg-white dark:bg-slate-800 text-slate-900 dark:text-white">
+                  </label>
+                  <div class="flex gap-2">
+                    <button id="doJoinBtn" class="flex-1 px-6 py-3 bg-emerald-600 text-white rounded-xl font-semibold hover:bg-emerald-700 transition">参加</button>
+                    <button id="cancelJoinBtn" class="px-6 py-3 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl font-semibold hover:bg-slate-300 dark:hover:bg-slate-600 transition">キャンセル</button>
+                  </div>
+                </div>
+
+                <!-- ルーム情報表示 -->
+                <div id="roomInfoDisplay" class="hidden p-5 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-xl border-2 border-blue-200 dark:border-blue-800">
+                  <div class="flex items-start justify-between mb-4">
+                    <div>
+                      <p class="text-xs text-blue-600 dark:text-blue-400 font-semibold mb-1">ルームID</p>
+                      <p class="font-mono font-bold text-slate-900 dark:text-white text-lg" id="roomIdDisplayText">RM1234</p>
+                    </div>
+                    <button id="leaveRoomBtn" class="px-3 py-2 bg-red-500 text-white rounded-lg text-sm font-semibold hover:bg-red-600 transition">退室</button>
+                  </div>
+                  <div class="flex gap-2">
+                    <button id="copyRoomBtn" class="flex-1 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-semibold hover:bg-slate-50 dark:hover:bg-slate-700 transition flex items-center justify-center gap-2">
+                      <span class="material-symbols-outlined text-lg">content_copy</span>
+                      コピー
+                    </button>
+                    <button id="qrIconBtn" class="flex-1 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-semibold hover:bg-slate-50 dark:hover:bg-slate-700 transition flex items-center justify-center gap-2">
+                      <span class="material-symbols-outlined text-lg">qr_code_2</span>
+                      QRコード
+                    </button>
+                  </div>
+                </div>
+
               </div>
             </div>
           </div>
+
+          <!-- 🎴 2. メンバー・チーム管理カード -->
+          <div class="accordion-card bg-white dark:bg-slate-900 rounded-2xl shadow-lg overflow-hidden mb-4">
+            <button class="accordion-header w-full px-6 py-5 flex items-center justify-between text-left hover:bg-slate-50 dark:hover:bg-slate-800 transition" data-target="membersContent">
+              <div class="flex items-center gap-4">
+                <div class="w-12 h-12 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
+                  <span class="material-symbols-outlined text-purple-600 dark:text-purple-400 text-2xl">groups</span>
+                </div>
+                <div>
+                  <h3 class="text-lg font-bold text-slate-900 dark:text-white">メンバー・チーム構成</h3>
+                  <p class="text-sm text-slate-500 dark:text-slate-400">選手登録・チーム編成</p>
+                </div>
+              </div>
+              <div class="flex items-center gap-3">
+                <span class="badge bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400" id="memberCountBadge">0人</span>
+                <span class="material-symbols-outlined text-slate-400 accordion-icon">expand_more</span>
+              </div>
+            </button>
+            
+            <div class="accordion-content" id="membersContent">
+              <div class="px-6 pb-6 border-t border-slate-100 dark:border-slate-800 pt-6 space-y-4">
+                
+                <!-- クイックアクション -->
+                <div class="flex flex-wrap gap-2" id="memberControlButtons" style="display:none;">
+                  <button id="openRegisterModalBtn" class="px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition flex items-center gap-2">
+                    <span class="material-symbols-outlined text-xl">person_add</span>
+                    メンバー登録
+                  </button>
+                  <button id="openManagementModalBtn" class="px-4 py-2 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700 transition flex items-center gap-2">
+                    <span class="material-symbols-outlined text-xl">manage_accounts</span>
+                    メンバー管理
+                  </button>
+                  <button id="cloneTeamTriggerBtn" class="px-4 py-2 bg-yellow-500 text-white rounded-lg font-semibold hover:bg-yellow-600 transition flex items-center gap-2">
+                    <span class="material-symbols-outlined text-xl">content_copy</span>
+                    チーム複製
+                  </button>
+                </div>
+
+                <!-- チーム一覧（視覚的表示用） -->
+                <div id="teamsDisplay" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <!-- チームカードはJSで動的生成 -->
+                </div>
+
+                <!-- 監督・その他表示エリア -->
+                <div id="specialMemberContainer" class="mt-6 space-y-4">
+                  <!-- 監督などはJSで動的生成 -->
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+          <!-- 🎴 3. スコア入力カード（デフォルト展開） -->
+          <div class="accordion-card active bg-white dark:bg-slate-900 rounded-2xl shadow-lg overflow-hidden mb-4">
+            <button class="accordion-header w-full px-6 py-5 flex items-center justify-between text-left hover:bg-slate-50 dark:hover:bg-slate-800 transition" data-target="scoringContent">
+              <div class="flex items-center gap-4">
+                <div class="w-12 h-12 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
+                  <span class="material-symbols-outlined text-amber-600 dark:text-amber-400 text-2xl">edit_note</span>
+                </div>
+                <div>
+                  <h3 class="text-lg font-bold text-slate-900 dark:text-white">スコア入力</h3>
+                  <p class="text-sm text-slate-500 dark:text-slate-400">各選手の得点を記録</p>
+                </div>
+              </div>
+              <div class="flex items-center gap-3">
+                <span class="badge bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
+                  <span class="w-2 h-2 rounded-full bg-amber-500 pulse-dot"></span>
+                  入力中
+                </span>
+                <span class="material-symbols-outlined text-slate-400 accordion-icon" style="transform: rotate(180deg);">expand_more</span>
+              </div>
+            </button>
+            
+            <div class="accordion-content open" id="scoringContent">
+              <div class="px-6 pb-6 border-t border-slate-100 dark:border-slate-800 pt-6">
+                
+                <!-- スコア入力エリア（renderRoom関数で動的生成） -->
+                <div id="teamsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <p class="text-sm text-slate-500 dark:text-slate-400 col-span-full text-center py-8">ルームに参加後、ここにスコア入力フォームが表示されます。</p>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+          <!-- 🎴 4. 結果・エクスポートカード -->
+          <div class="accordion-card bg-white dark:bg-slate-900 rounded-2xl shadow-lg overflow-hidden mb-4">
+            <button class="accordion-header w-full px-6 py-5 flex items-center justify-between text-left hover:bg-slate-50 dark:hover:bg-slate-800 transition" data-target="resultsContent">
+              <div class="flex items-center gap-4">
+                <div class="w-12 h-12 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                  <span class="material-symbols-outlined text-green-600 dark:text-green-400 text-2xl">analytics</span>
+                </div>
+                <div>
+                  <h3 class="text-lg font-bold text-slate-900 dark:text-white">結果・エクスポート</h3>
+                  <p class="text-sm text-slate-500 dark:text-slate-400">集計結果とデータ出力</p>
+                </div>
+              </div>
+              <div class="flex items-center gap-3">
+                <span class="badge bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300" id="resultsStatusBadge">待機中</span>
+                <span class="material-symbols-outlined text-slate-400 accordion-icon">expand_more</span>
+              </div>
+            </button>
+            
+            <div class="accordion-content" id="resultsContent">
+              <div class="px-6 pb-6 border-t border-slate-100 dark:border-slate-800 pt-6 space-y-4">
+                
+                <!-- 集計サマリー -->
+                <div id="roomSummaryDisplay" class="p-5 bg-slate-50 dark:bg-slate-800 rounded-xl">
+                  <h4 class="font-bold text-slate-900 dark:text-white mb-3 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-green-600">bar_chart</span>
+                    ルーム集計
+                  </h4>
+                  <pre id="roomSummary" class="text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap">—</pre>
+                </div>
+
+                <!-- エクスポートオプション -->
+                <div class="space-y-2">
+                  <h4 class="font-bold text-slate-900 dark:text-white mb-3">データ出力</h4>
+                  <button onclick="window.exportPlayerScoresToPDF && window.exportPlayerScoresToPDF()" class="w-full px-6 py-4 bg-emerald-600 text-white rounded-xl font-semibold hover:bg-emerald-700 transition flex items-center justify-center gap-2">
+                    <span class="material-symbols-outlined text-2xl">description</span>
+                    PDFでダウンロード
+                  </button>
+                  <button onclick="window.exportPlayerScoresToXLSX && window.exportPlayerScoresToXLSX()" class="w-full px-6 py-4 bg-green-600 text-white rounded-xl font-semibold hover:bg-green-700 transition flex items-center justify-center gap-2">
+                    <span class="material-symbols-outlined text-2xl">table_chart</span>
+                    Excelでダウンロード
+                  </button>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+          <!-- 🎴 5. ストップウォッチカード -->
+          <div class="accordion-card bg-white dark:bg-slate-900 rounded-2xl shadow-lg overflow-hidden mb-4">
+            <button class="accordion-header w-full px-6 py-5 flex items-center justify-between text-left hover:bg-slate-50 dark:hover:bg-slate-800 transition" data-target="stopwatchContent">
+              <div class="flex items-center gap-4">
+                <div class="w-12 h-12 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center">
+                  <span class="material-symbols-outlined text-indigo-600 dark:text-indigo-400 text-2xl">timer</span>
+                </div>
+                <div>
+                  <h3 class="text-lg font-bold text-slate-900 dark:text-white">ストップウォッチ</h3>
+                  <p class="text-sm text-slate-500 dark:text-slate-400">時間計測・ラップ記録</p>
+                </div>
+              </div>
+              <div class="flex items-center gap-3">
+                <span class="material-symbols-outlined text-slate-400 accordion-icon">expand_more</span>
+              </div>
+            </button>
+            
+            <div class="accordion-content" id="stopwatchContent">
+              <div class="px-6 pb-6 border-t border-slate-100 dark:border-slate-800 pt-6">
+                
+                <div class="space-y-4">
+                  <div id="swDisplay" class="text-5xl font-mono font-bold text-center text-slate-900 dark:text-white mb-4 p-4 bg-slate-50 dark:bg-slate-800 rounded-xl">00:00.00</div>
+                  <div class="grid grid-cols-3 gap-2 mb-3">
+                    <button id="swStart" class="px-4 py-3 bg-green-500 text-white rounded-xl font-semibold hover:bg-green-600 transition">Start</button>
+                    <button id="swPause" class="px-4 py-3 bg-yellow-500 text-white rounded-xl font-semibold hover:bg-yellow-600 transition">Pause</button>
+                    <button id="swReset" class="px-4 py-3 bg-red-500 text-white rounded-xl font-semibold hover:bg-red-600 transition">Reset</button>
+                  </div>
+                  <button id="swLap" class="px-4 py-3 bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-white rounded-xl w-full font-semibold hover:bg-slate-300 dark:hover:bg-slate-600 transition">Lap</button>
+                  <div class="mt-4">
+                    <h4 class="font-bold text-slate-900 dark:text-white mb-2 text-sm">ラップ記録</h4>
+                    <ul id="lapList" class="text-sm list-disc list-inside max-h-48 overflow-auto space-y-1 text-slate-700 dark:text-slate-300"></ul>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+          <!-- ルーム履歴 -->
+          <div id="roomHistory" class="mt-8 pt-6 border-t border-slate-200 dark:border-slate-700">
+            <h2 class="text-xl font-bold mb-4 text-slate-900 dark:text-white flex items-center gap-2">
+              <span class="material-symbols-outlined text-2xl text-slate-500">history</span>
+              過去のルーム履歴（ブラウザ保存）
+            </h2>
+            <div id="historyList" class="space-y-2">
+              <p class="text-sm text-slate-500 dark:text-slate-400" id="noHistoryMessage">履歴はありません。</p>
+            </div>
+          </div>
+
         </div>
 
         <div class="mt-6">
@@ -354,9 +629,10 @@
     </nav>
   </div>
 
+  <!-- モーダル -->
   <div id="modalWrapper" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 backdrop-blur-sm p-4" onclick="if(event.target.id==='modalWrapper') closeModal()">
     <div id="modalContent" class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden max-h-[90vh] flex flex-col">
-      </div>
+    </div>
   </div>
 
   <div id="modalTemplates" class="hidden">
@@ -364,7 +640,7 @@
       <h3 class="text-xl font-bold mb-4 text-slate-900 dark:text-white">ルーム招待QRコード</h3>
       <div id="qrCodeDisplayModal" class="flex justify-center mb-4"></div>
       <p class="text-sm text-slate-600 dark:text-slate-400">このQRコードを読み込むか、上部のコピーボタンでリンクを共有してください。</p>
-      <button onclick="closeModal()" class="mt-4 px-4 py-2 bg-slate-500 text-white font-semibold rounded-lg shadow hover:bg-slate-600 transition-all">閉じる</button>
+      <button onclick="closeModal()" class="mt-4 px-4 py-2 bg-slate-500 text-white rounded-lg">閉じる</button>
     </div>
 
     <div id="registerModalContent" class="p-6">
@@ -377,25 +653,25 @@
         <option value="other">その他（閲覧のみ）</option>
       </select>
       <div class="flex gap-2">
-        <button id="registerSelfBtn" class="px-4 py-2 bg-primary text-white font-semibold rounded-lg shadow hover:bg-opacity-90 transition-all flex-1">登録</button>
-        <button id="skipRegisterBtn" class="px-4 py-2 bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-200 font-semibold rounded-lg hover:bg-slate-300 dark:hover:bg-slate-600 transition-all">キャンセル</button>
+        <button id="registerSelfBtn" class="px-4 py-2 bg-primary text-white rounded-md flex-1">登録</button>
+        <button id="skipRegisterBtn" class="px-4 py-2 bg-slate-200 text-slate-800 rounded-md">キャンセル</button>
       </div>
     </div>
 
     <div id="managementModalContent" class="p-6">
       <h3 class="text-xl font-bold mb-4 text-slate-900 dark:text-white">メンバー操作（管理）</h3>
       <div class="space-y-2">
-          <label for="newPlayerNameModal" class="block text-sm font-medium mb-1 text-slate-800 dark:text-slate-200">新しいプレイヤーの追加</label>
-          <div class="flex gap-2">
-              <input type="text" id="newPlayerNameModal" placeholder="プレイヤー名を入力" class="w-full rounded-xl border-2 border-slate-200 dark:border-slate-700 px-3 py-2 bg-white dark:bg-slate-800" />
-              <button id="addPlayerBtnModal" class="px-4 py-2 bg-primary text-white font-semibold rounded-lg shadow hover:bg-opacity-90 transition-all">追加</button>
-          </div>
-          <div class="pt-2">
-              <button id="autoAssignBtnModal" class="w-full px-4 py-2 bg-slate-300 dark:bg-slate-700 text-slate-800 dark:text-slate-200 font-semibold rounded-lg hover:bg-slate-400 dark:hover:bg-slate-600 transition-all">自動割当（3人）</button>
-          </div>
+        <label for="newPlayerNameModal" class="block text-sm font-medium mb-1 text-slate-800 dark:text-slate-200">新しいプレイヤーの追加</label>
+        <div class="flex gap-2">
+          <input type="text" id="newPlayerNameModal" placeholder="プレイヤー名を入力" class="w-full rounded-xl border-2 border-slate-200 dark:border-slate-700 px-3 py-2 bg-white dark:bg-slate-800" />
+          <button id="addPlayerBtnModal" class="px-4 py-2 bg-primary text-white rounded-md">追加</button>
+        </div>
+        <div class="pt-2">
+          <button id="autoAssignBtnModal" class="w-full px-4 py-2 bg-slate-300 text-slate-800 rounded-md">自動割当（3人）</button>
+        </div>
       </div>
       <div class="mt-4 pt-4 border-t border-slate-200 dark:border-slate-700">
-          <button onclick="closeModal()" class="w-full px-4 py-2 bg-slate-500 text-white font-semibold rounded-lg shadow hover:bg-slate-600 transition-all">閉じる</button>
+        <button onclick="closeModal()" class="w-full px-4 py-2 bg-slate-500 text-white rounded-md">閉じる</button>
       </div>
     </div>
   </div>
@@ -406,37 +682,509 @@
     </div>
     <div id="floatingSwDisplay" class="text-2xl font-mono mb-3 text-center">00:00.00</div>
     <div class="flex gap-2 mb-2">
-        <button id="floatingSwStart" class="px-3 py-2 bg-green-500 text-white font-semibold rounded-lg shadow hover:bg-green-600 transition-all flex-1 text-sm">Start</button>
-        <button id="floatingSwPause" class="px-3 py-2 bg-yellow-500 text-white font-semibold rounded-lg shadow hover:bg-yellow-600 transition-all flex-1 text-sm">Pause</button>
-        <button id="floatingSwReset" class="px-3 py-2 bg-red-500 text-white font-semibold rounded-lg shadow hover:bg-red-600 transition-all flex-1 text-sm">Reset</button>
+      <button id="floatingSwStart" class="px-3 py-2 bg-green-500 text-white rounded-md flex-1 text-sm">Start</button>
+      <button id="floatingSwPause" class="px-3 py-2 bg-yellow-500 text-white rounded-md flex-1 text-sm">Pause</button>
+      <button id="floatingSwReset" class="px-3 py-2 bg-red-500 text-white rounded-md flex-1 text-sm">Reset</button>
     </div>
-    <button id="floatingSwLap" class="px-3 py-2 bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-slate-200 font-semibold rounded-lg hover:bg-slate-200 dark:hover:bg-slate-600 transition-all w-full text-sm">Lap</button>
+    <button id="floatingSwLap" class="px-3 py-2 bg-slate-100 dark:bg-slate-700 rounded-md w-full text-sm">Lap</button>
   </div>
 
-<script src="https://cdn.jsdelivr.net/npm/lz-string/libs/lz-string.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/qrcodejs/qrcode.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/shepherd.js/dist/js/shepherd.min.js"></script>
+  <!-- ========================= -->
+  <!-- ✅ 1. ユーティリティ系 -->
+  <!-- ========================= -->
+  <script src="https://cdn.jsdelivr.net/npm/lz-string/libs/lz-string.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs/qrcode.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/shepherd.js/dist/js/shepherd.min.js"></script>
 
-<script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+  <!-- ========================= -->
+  <!-- ✅ 2. Excel出力 -->
+  <!-- ========================= -->
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+  <!-- PDF出力用 -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
 
+  <!-- アコーディオン制御・UI統合スクリプト -->
+  <script>
+    // グローバル変数
+    window.currentRoom = null;
+    window.currentRoomListener = null;
 
-<script src="js/main.js"></script>
-<script src="js/matchSet.js"></script>
-<script src="js/navbar.js"></script>
-<script src="js/page.js"></script>
+    // アコーディオン機能
+    document.addEventListener('DOMContentLoaded', () => {
+      // アコーディオンの開閉
+      document.querySelectorAll('.accordion-header').forEach(header => {
+        header.addEventListener('click', () => {
+          const target = header.dataset.target;
+          const content = document.getElementById(target);
+          const card = header.closest('.accordion-card');
+          const icon = header.querySelector('.accordion-icon');
+          
+          const isOpen = content.classList.contains('open');
+          
+          if (isOpen) {
+            content.classList.remove('open');
+            card.classList.remove('active');
+            icon.style.transform = 'rotate(0deg)';
+          } else {
+            content.classList.add('open');
+            card.classList.add('active');
+            icon.style.transform = 'rotate(180deg)';
+          }
+        });
+      });
 
+      // タブ切り替え
+      const personalTabBtn = document.getElementById('personalTabBtn');
+      const teamTabBtn = document.getElementById('teamTabBtn');
+      const personalTab = document.getElementById('personalTab');
+      const teamTab = document.getElementById('teamTab');
 
+      personalTabBtn?.addEventListener('click', () => {
+        personalTabBtn.classList.add('bg-primary', 'text-white');
+        personalTabBtn.classList.remove('bg-slate-200', 'dark:bg-slate-700', 'text-slate-800', 'dark:text-white');
+        teamTabBtn.classList.remove('bg-primary', 'text-white');
+        teamTabBtn.classList.add('bg-slate-200', 'dark:bg-slate-700', 'text-slate-800', 'dark:text-white');
+        personalTab.classList.add('active');
+        teamTab.classList.remove('active');
+      });
+
+      teamTabBtn?.addEventListener('click', () => {
+        teamTabBtn.classList.add('bg-primary', 'text-white');
+        teamTabBtn.classList.remove('bg-slate-200', 'dark:bg-slate-700', 'text-slate-800', 'dark:text-white');
+        personalTabBtn.classList.remove('bg-primary', 'text-white');
+        personalTabBtn.classList.add('bg-slate-200', 'dark:bg-slate-700', 'text-slate-800', 'dark:text-white');
+        teamTab.classList.add('active');
+        personalTab.classList.remove('active');
+      });
+
+      // ルーム作成ボタン
+      const createRoomBtn = document.getElementById('createRoomBtn');
+      const roomForm = document.getElementById('roomForm');
+      const roomEntryButtons = document.getElementById('roomEntryButtons');
+      const cancelRoomBtn = document.getElementById('cancelRoomBtn');
+      const submitRoomBtn = document.getElementById('submitRoomBtn');
+
+      createRoomBtn?.addEventListener('click', () => {
+        roomEntryButtons.style.display = 'none';
+        roomForm.style.display = 'block';
+      });
+
+      cancelRoomBtn?.addEventListener('click', () => {
+        roomForm.style.display = 'none';
+        roomEntryButtons.style.display = 'grid';
+      });
+
+      submitRoomBtn?.addEventListener('click', async () => {
+        const roomName = document.getElementById('roomName')?.value;
+        if (roomName && window.doCreateRoom) {
+          const result = await window.doCreateRoom(roomName);
+          if (result) {
+            roomForm.style.display = 'none';
+            document.getElementById('roomInfoDisplay').classList.remove('hidden');
+            document.getElementById('roomIdDisplayText').textContent = result.roomId;
+            document.getElementById('setupStatusBadge').innerHTML = '<span class="w-2 h-2 rounded-full bg-green-500"></span>設定完了';
+            document.getElementById('setupStatusBadge').className = 'badge bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400';
+            document.getElementById('roomSubtitle').textContent = `ルーム: ${roomName}`;
+            
+            // メンバー管理ボタンを表示
+            document.getElementById('memberControlButtons').style.display = 'flex';
+          }
+        }
+      });
+
+      // 参加ボタン
+      const joinRoomBtn = document.getElementById('joinRoomBtn');
+      const joinForm = document.getElementById('joinForm');
+      const cancelJoinBtn = document.getElementById('cancelJoinBtn');
+      const doJoinBtn = document.getElementById('doJoinBtn');
+
+      joinRoomBtn?.addEventListener('click', () => {
+        roomEntryButtons.style.display = 'none';
+        joinForm.style.display = 'block';
+      });
+
+      cancelJoinBtn?.addEventListener('click', () => {
+        joinForm.style.display = 'none';
+        roomEntryButtons.style.display = 'grid';
+      });
+
+      doJoinBtn?.addEventListener('click', async () => {
+        const input = document.getElementById('joinInput')?.value;
+        if (input) {
+          let roomId = input.trim();
+          if (roomId.startsWith('MATOMA_JOIN:')) {
+            roomId = roomId.replace('MATOMA_JOIN:', '');
+          } else if (roomId.includes('#room=')) {
+            roomId = roomId.split('#room=')[1].split('&')[0];
+          }
+          
+          if (window.joinTeamMatch) {
+            const result = await window.joinTeamMatch(roomId);
+            if (result) {
+              joinForm.style.display = 'none';
+              document.getElementById('roomInfoDisplay').classList.remove('hidden');
+              document.getElementById('roomIdDisplayText').textContent = roomId;
+              document.getElementById('setupStatusBadge').innerHTML = '<span class="w-2 h-2 rounded-full bg-green-500"></span>参加完了';
+              document.getElementById('setupStatusBadge').className = 'badge bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400';
+              
+              // メンバー登録ボタンを表示
+              document.getElementById('memberControlButtons').style.display = 'flex';
+              
+              alert('ルームに参加しました！');
+            }
+          }
+        }
+      });
+
+      // コピーボタン
+      document.getElementById('copyRoomBtn')?.addEventListener('click', () => {
+        const roomId = document.getElementById('roomIdDisplayText')?.textContent;
+        if (roomId) {
+          const inviteCode = `MATOMA_JOIN:${roomId}`;
+          navigator.clipboard.writeText(inviteCode).then(() => {
+            alert('招待コードをコピーしました！\n' + inviteCode);
+          });
+        }
+      });
+
+      // 退室ボタン
+      document.getElementById('leaveRoomBtn')?.addEventListener('click', () => {
+        if (confirm('本当に退室しますか？')) {
+          if (window.currentRoomListener) {
+            window.currentRoomListener();
+            window.currentRoomListener = null;
+          }
+          window.currentRoom = null;
+          document.getElementById('roomInfoDisplay').classList.add('hidden');
+          document.getElementById('roomForm').style.display = 'none';
+          document.getElementById('joinForm').style.display = 'none';
+          document.getElementById('roomEntryButtons').style.display = 'grid';
+          document.getElementById('setupStatusBadge').innerHTML = '<span class="w-2 h-2 rounded-full bg-green-500 pulse-dot"></span>準備中';
+          document.getElementById('setupStatusBadge').className = 'badge bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400';
+          document.getElementById('teamsContainer').innerHTML = '<p class="text-sm text-slate-500 dark:text-slate-400 col-span-full text-center py-8">ルームに参加後、ここにスコア入力フォームが表示されます。</p>';
+          document.getElementById('teamsDisplay').innerHTML = '';
+          document.getElementById('memberControlButtons').style.display = 'none';
+          alert('退室しました');
+        }
+      });
+
+      // QRコードボタン
+      document.getElementById('qrIconBtn')?.addEventListener('click', () => {
+        if (window.openModal) {
+          window.openModal('qrModalContent');
+        }
+      });
+    });
+
+    // renderRoom関数の拡張（チーム表示も追加）
+    window.renderRoom = function(room) { 
+      if (!room) return;
+      
+      // ルームサブタイトル更新
+      const subtitle = document.getElementById('roomSubtitle');
+      if (subtitle) {
+        subtitle.textContent = `ルーム: ${room.name} (ID: ${room.id})`;
+      }
+
+      // メンバー数バッジ更新
+      const memberCount = Object.keys(room.players || {}).length;
+      const badge = document.getElementById('memberCountBadge');
+      if (badge) {
+        badge.textContent = `${memberCount}人`;
+      }
+
+      // チーム表示（視覚的カード）
+      const teamsDisplay = document.getElementById('teamsDisplay');
+      if (teamsDisplay && room.teams) {
+        const teams = Array.isArray(room.teams) ? room.teams : Object.values(room.teams);
+        teamsDisplay.innerHTML = '';
+        
+        teams.forEach(team => {
+          const teamPlayers = Object.values(room.players || {}).filter(p => p.teamId === team.id && p.role !== 'manager');
+          if (teamPlayers.length === 0) return;
+          
+          const teamCard = document.createElement('div');
+          teamCard.className = 'team-card rounded-xl p-4 text-white';
+          
+          let teamHTML = `
+            <div class="flex items-center justify-between mb-3 relative z-10">
+              <h3 class="font-bold text-lg">${team.name}</h3>
+              <button onclick="renameTeamPrompt('${room.id}', '${team.id}')" class="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center hover:bg-white/30 transition">
+                <span class="material-symbols-outlined text-xl">edit</span>
+              </button>
+            </div>
+            <div class="space-y-2 relative z-10">
+          `;
+          
+          teamPlayers.forEach(p => {
+            const total = (p.scores || []).filter(v => v != null).reduce((a, b) => a + b, 0);
+            teamHTML += `
+              <div class="flex items-center justify-between bg-white/10 rounded-lg px-3 py-2">
+                <div class="flex items-center gap-2">
+                  <span class="material-symbols-outlined text-lg">person</span>
+                  <span class="text-sm">${p.name}</span>
+                </div>
+                <span class="text-sm font-bold">${total}点</span>
+              </div>
+            `;
+          });
+          
+          const teamTotal = teamPlayers.reduce((sum,p)=>sum+(p.scores||[]).reduce((a,b)=>a+(b||0),0),0);
+          teamHTML += `
+            </div>
+            <div class="mt-3 pt-3 border-t border-white/20 text-center relative z-10">
+              <p class="text-xs opacity-75">合計スコア</p>
+              <p class="text-2xl font-bold">${teamTotal}点</p>
+            </div>
+          `;
+          
+          teamCard.innerHTML = teamHTML;
+          teamsDisplay.appendChild(teamCard);
+        });
+      }
+
+      // スコア入力エリア（既存のロジックを維持）
+      const container = document.getElementById("teamsContainer");
+      if (!container) return;
+      container.innerHTML = "";
+
+      const playersArray = (room.playersOrder || Object.keys(room.players || {}))
+        .map(id => room.players[id])
+        .filter(p => p);
+      
+      const playersOrder = room.playersOrder || [];
+      if (playersOrder.length > 0) {
+        playersArray.sort((a, b) => {
+          const indexA = playersOrder.indexOf(a.id);
+          const indexB = playersOrder.indexOf(b.id);
+          if (indexA === -1 || indexB === -1) return 0; 
+          return indexA - indexB; 
+        });
+      }
+
+      playersArray.forEach(p => {
+        const div = document.createElement("div");
+        div.className = "player-card";
+        
+        div.innerHTML = `
+          <input 
+            type="text" 
+            id="player-name-${p.id}" 
+            class="player-name-input" 
+            value="${p.name || "名無し"}" 
+            data-player-id="${p.id}"
+          />
+          <div class="text-xs text-slate-500 dark:text-slate-400 mb-2">${p.role === 'manager' ? '監督' : 'プレーヤー'}</div>
+          <div class="grid grid-cols-4 gap-2 mb-2">
+            ${[0,1,2,3].map(i => `
+              <select id="score-${p.id}-${i}" class="px-2 py-2 border-2 border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-center font-semibold focus:border-primary focus:ring-2 focus:ring-primary/20 transition">
+                <option value="">-</option>
+                ${[0,1,2,3,4,5,6,7,8,9,10].map(v => `<option value="${v}">${v}</option>`).join("")}
+              </select>
+            `).join("")}
+          </div>
+          <div id="player-total-${p.id}" class="player-total">合計: 0点</div>
+        `;
+
+        container.appendChild(div);
+
+        [0,1,2,3].forEach(i => {
+          const sel = div.querySelector(`#score-${p.id}-${i}`);
+          if (sel) {
+            sel.value = p.scores && p.scores[i] != null ? p.scores[i] : "";
+            sel.onchange = () => {
+              const val = parseInt(sel.value);
+              const newScore = Number.isNaN(val) ? null : val;
+              window.updatePlayerTurnScore(room.id, p.id, i, newScore);
+            };
+          }
+        });
+        
+        const nameInput = div.querySelector(`#player-name-${p.id}`);
+        if (nameInput) {
+          nameInput.addEventListener("change", async () => {
+            const newName = nameInput.value.trim() || "名無し";
+            await window.updatePlayerName(room.id, p.id, newName);
+          });
+        }
+
+        const totalEl = div.querySelector(`#player-total-${p.id}`);
+        const total = (p.scores || []).filter(v => v != null).reduce((a, b) => a + b, 0);
+        if (totalEl) totalEl.innerText = `合計: ${total}点`;
+      });
+
+      // 集計サマリー更新
+      updateRoomSummary(room);
+    };
+
+    // 集計サマリー更新関数
+    function updateRoomSummary(room) {
+      const summaryEl = document.getElementById('roomSummary');
+      if (!summaryEl || !room) return;
+
+      const players = Object.values(room.players || {});
+      const totalPlayers = players.length;
+      const totalScore = players.reduce((sum, p) => {
+        return sum + (p.scores || []).reduce((a, b) => a + (b || 0), 0);
+      }, 0);
+      const avgScore = totalPlayers > 0 ? (totalScore / totalPlayers).toFixed(1) : 0;
+
+      summaryEl.textContent = `
+総参加者: ${totalPlayers}人
+合計スコア: ${totalScore}点
+平均スコア: ${avgScore}点
+      `.trim();
+
+      // ステータスバッジ更新
+      if (totalPlayers > 0) {
+        const resultsStatus = document.getElementById('resultsStatusBadge');
+        if (resultsStatus) {
+          resultsStatus.innerHTML = '<span class="w-2 h-2 rounded-full bg-green-500"></span>集計済';
+          resultsStatus.className = 'badge bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400';
+        }
+      }
+    }
+
+    // チーム名変更プロンプト
+    window.renameTeamPrompt = function(roomId, teamId) {
+      const newName = prompt('新しいチーム名を入力してください:');
+      if (newName && newName.trim() && window.renameTeam) {
+        window.renameTeam(roomId, teamId, newName.trim());
+      }
+    };
+
+    // モーダル関連
+    window.openModal = function(templateId) {
+      const template = document.getElementById(templateId);
+      const modalContent = document.getElementById('modalContent');
+      const modalWrapper = document.getElementById('modalWrapper');
+      
+      if (template && modalContent && modalWrapper) {
+        modalContent.innerHTML = template.innerHTML;
+        modalWrapper.classList.remove('hidden');
+        modalWrapper.classList.add('flex');
+      }
+    };
+
+    window.closeModal = function() {
+      const modalWrapper = document.getElementById('modalWrapper');
+      if (modalWrapper) {
+        modalWrapper.classList.add('hidden');
+        modalWrapper.classList.remove('flex');
+      }
+    };
+
+    // メンバー登録モーダル
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('openRegisterModalBtn')?.addEventListener('click', () => {
+        openModal('registerModalContent');
+      });
+
+      document.getElementById('openManagementModalBtn')?.addEventListener('click', () => {
+        openModal('managementModalContent');
+      });
+
+      // 登録ボタン（モーダル内）
+      document.addEventListener('click', (e) => {
+        if (e.target.id === 'registerSelfBtn') {
+          const name = document.getElementById('registerNameInput')?.value;
+          const role = document.getElementById('registerRoleSelect')?.value;
+          
+          if (name && name.trim() && window.currentRoom && window.addPlayerToRoom) {
+            window.addPlayerToRoom(window.currentRoom.id, name.trim(), role).then(() => {
+              alert(`${name}さんを登録しました！`);
+              closeModal();
+            }).catch(err => {
+              console.error('登録エラー:', err);
+              alert('登録に失敗しました');
+            });
+          } else {
+            alert('名前を入力してください');
+          }
+        }
+
+        if (e.target.id === 'skipRegisterBtn') {
+          closeModal();
+        }
+
+        // メンバー管理モーダル内のボタン
+        if (e.target.id === 'addPlayerBtnModal') {
+          const name = document.getElementById('newPlayerNameModal')?.value;
+          
+          if (name && name.trim() && window.currentRoom && window.addPlayerToRoom) {
+            window.addPlayerToRoom(window.currentRoom.id, name.trim(), 'player').then(() => {
+              alert(`${name}さんを追加しました！`);
+              document.getElementById('newPlayerNameModal').value = '';
+            }).catch(err => {
+              console.error('追加エラー:', err);
+              alert('追加に失敗しました');
+            });
+          } else {
+            alert('名前を入力してください');
+          }
+        }
+
+        if (e.target.id === 'autoAssignBtnModal') {
+          // 自動割当ロジック（既存のロジックを使用）
+          alert('自動割当機能は開発中です');
+        }
+      });
+
+      // チーム複製ボタン
+      document.getElementById('cloneTeamTriggerBtn')?.addEventListener('click', () => {
+        if (!window.currentRoom) {
+          alert('ルームに参加してください');
+          return;
+        }
+
+        const teams = Array.isArray(window.currentRoom.teams) 
+          ? window.currentRoom.teams 
+          : Object.values(window.currentRoom.teams || {});
+        
+        if (teams.length === 0) {
+          alert('複製するチームがありません');
+          return;
+        }
+
+        let teamOptions = '';
+        teams.forEach(t => {
+          const playerCount = Object.values(window.currentRoom.players || {})
+            .filter(p => p.teamId === t.id && p.role !== 'manager').length;
+          teamOptions += `<option value="${t.id}">${t.name} (${playerCount}人)</option>`;
+        });
+
+        const sourceTeamId = prompt(`複製元のチームを選択してください:\n\n${teams.map((t, i) => `${i+1}. ${t.name}`).join('\n')}\n\n番号を入力:`);
+        
+        if (sourceTeamId && !isNaN(sourceTeamId)) {
+          const teamIndex = parseInt(sourceTeamId) - 1;
+          if (teamIndex >= 0 && teamIndex < teams.length) {
+            const selectedTeam = teams[teamIndex];
+            const newTeamName = prompt(`新しいチーム名を入力してください:`, `${selectedTeam.name} (コピー)`);
+            
+            if (newTeamName && newTeamName.trim() && window.cloneTeam) {
+              window.cloneTeam(window.currentRoom.id, selectedTeam.id, newTeamName.trim());
+            }
+          } else {
+            alert('無効な番号です');
+          }
+        }
+      });
+    });
+  </script>
+
+  <script src="js/main.js"></script>
+  <script src="js/matchSet.js"></script>
+  <script src="js/navbar.js"></script>
+
+  <!-- ===================== Firebase + 機能スクリプト ===================== -->
   <script type="module" src="js/firebase-room.js"></script>
 
-<script src="js/non-module.js"></script>
-
-
-<script src="js/tekito.js"></script>
-
-<script src="js/daisuki.js"></script>
+  <!-- non-module scripts -->
+  <script src="js/non-module.js"></script>
+  <script src="js/tekito.js"></script>
+  <script src="js/daisuki.js"></script>
 
   <script>
     // Service Workerのエラー（404）を回避するため、登録処理自体をコメントアウト/削除することを推奨します。

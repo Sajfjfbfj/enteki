@@ -1,0 +1,642 @@
+/* settings.html の <style> ブロック内に追加 */
+.app-main-container {
+    /* JSで設定された変数を利用。未設定時のフォールバック値は64rem */
+    max-width: var(--max-container-width, 64rem) !important;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 1rem; /* Tailwind px-4 */
+    padding-right: 1rem; /* Tailwind px-4 */
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* 子要素も同様に box-sizing を継承してはみ出しを防ぐ */
+.app-main-container, .app-main-container * {
+    box-sizing: inherit;
+}
+
+/* メディア要素・キャンバスはコンテナ幅に合わせる */
+.app-main-container img,
+.app-main-container video,
+.app-main-container canvas,
+.app-main-container svg {
+    max-width: 100%;
+    height: auto;
+    display: block;
+}
+
+/* フレックスコンテナの折返しを許可（はみ出しを減らす） */
+.app-main-container .flex {
+    flex-wrap: wrap;
+}
+
+/* ヘルプページのFAQコンテナのレスポンシブ対応 */
+[data-font-size="large"] .faq-container,
+[data-font-size="x-large"] .faq-container {
+    max-width: 100%;
+    padding: 0.5rem;
+}
+
+[data-font-size="large"] .faq-item,
+[data-font-size="x-large"] .faq-item {
+    overflow-wrap: break-word;
+    word-break: break-word;
+}
+
+/* ヘルプページのボタン・テキストのレスポンシブ対応 */
+[data-font-size="large"] .help-page-button,
+[data-font-size="x-large"] .help-page-button {
+    font-size: 0.875em;
+    padding: 0.5em 1em;
+}
+
+[data-font-size="large"] .help-text,
+[data-font-size="x-large"] .help-text {
+    font-size: 0.95em;
+    line-height: 1.4;
+}
+
+
+/* 側欄や狭い列の最小幅を 0 にして縮小可能にする（flex 子のオーバーフロー対策） */
+.app-main-container aside, .app-main-container .flex-1, .app-main-container [class*="w-"] {
+    min-width: 0;
+}
+
+/* 長いテキストやURLがはみ出さないように折り返しを強制 */
+.app-main-container, .app-main-container p, .app-main-container pre, .app-main-container code {
+    overflow-wrap: break-word;
+    word-break: break-word;
+}
+
+/* フォーム要素の固定幅が原因で横スクロールする場合に備え、幅上限を設定 */
+.app-main-container input, .app-main-container textarea, .app-main-container select, .app-main-container button {
+    max-width: 100%;
+}
+
+/* テーブルを固定レイアウトにしてセルの折返しを有効にする (大フォントでの横はみ出し対策) */
+.app-main-container table {
+    width: 100%;
+    table-layout: fixed;
+    border-collapse: collapse;
+}
+.app-main-container th, .app-main-container td {
+    word-break: break-word;
+    overflow-wrap: break-word;
+    white-space: normal;
+}
+
+/* Chart.js 等の canvas や svg をコンテナ幅内に収める */
+.app-main-container canvas, .app-main-container svg {
+    max-width: 100% !important;
+    height: auto !important;
+}
+
+/* フォントが大きいときは特定のレイアウトを折り返し可能にする (HTML に data-font-size 属性を付与して切替) */
+html[data-font-size="large"] .player-row,
+html[data-font-size="x-large"] .player-row {
+    flex-wrap: wrap;
+    align-items: flex-start;
+}
+
+html[data-font-size="large"] .player-row-left,
+html[data-font-size="x-large"] .player-row-left {
+    flex: 1 1 60%;
+    min-width: 0;
+}
+
+html[data-font-size="large"] .player-row-right,
+html[data-font-size="x-large"] .player-row-right {
+    flex: 1 1 35%;
+    min-width: 0;
+    margin-top: 0.5rem;
+}
+
+/* スコア入力欄等の固定幅要素は縮小可能にする */
+.player-score-input {
+    width: 70px !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    flex: 0 0 auto !important;
+}
+
+html[data-font-size="x-large"] .player-score-input {
+    width: 60px !important;
+}
+
+/* 大フォント時に player-row-right が nowrap 指定されている場合があるため強制上書き */
+html[data-font-size="large"] .player-row,
+html[data-font-size="x-large"] .player-row,
+html[data-font-size="large"] .player-row-right,
+html[data-font-size="x-large"] .player-row-right {
+    flex-wrap: wrap !important;
+}
+
+/* player-row-right 内の select / input にも強制的に縮小を許可 */
+html[data-font-size="large"] .player-row-right select,
+html[data-font-size="x-large"] .player-row-right select,
+html[data-font-size="large"] .player-row-right input,
+html[data-font-size="x-large"] .player-row-right input {
+    max-width: 5.5rem !important;
+    width: auto !important;
+    min-width: 0 !important;
+    flex-shrink: 1 !important;
+}
+
+/* フローティングウィジェット等の横幅を画面比率で制限してはみ出しを抑える */
+#floatingStopwatch {
+    max-width: min(280px, 40vw);
+    width: auto;
+}
+
+/* 汎用的に flex 子を縮められるように指定 (より多くのケースでオーバーフローを防ぐ) */
+.app-main-container [class*="flex"] > *,
+.app-main-container .flex > * {
+    min-width: 0;
+}
+
+/* チームカードが横に並ぶレイアウトで幅はみ出しする問題を防ぐ */
+.app-main-container #teamsContainer > .team-card {
+    /* 基本は幅保持しつつ、必要なら縮小して折り返す */
+    flex: 1 1 320px; /* grow, shrink, basis */
+    min-width: 0;    /* shrink を有効化 */
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+/* 大フォント時はカード幅をさらに小さくして折り返しやすくする */
+html[data-font-size="large"] .app-main-container #teamsContainer > .team-card {
+    flex-basis: 280px;
+}
+html[data-font-size="x-large"] .app-main-container #teamsContainer > .team-card {
+    flex-basis: 240px;
+}
+
+/* カード内のプレイヤー行も大きな文字で折り返す */
+html[data-font-size="large"] .team-card .player-row,
+html[data-font-size="x-large"] .team-card .player-row {
+    flex-wrap: wrap;
+}
+
+/* チーム名などが長すぎてはみ出す場合の対策 */
+.team-card .team-name, .team-card .team-title {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* 小画面（スマホ）かつ特大フォント時にカードを幅いっぱいにして折り返しを確実にする */
+@media (max-width: 480px) {
+    html[data-font-size="x-large"] .app-main-container #teamsContainer {
+        /* Ensure single-column stacking on very small screens when font is huge */
+        flex-direction: column !important;
+    }
+    html[data-font-size="x-large"] .app-main-container #teamsContainer > .team-card {
+        flex-basis: 100% !important;
+        width: 100% !important;
+    }
+
+    /* スコア入力等の要素は強制的に小さくして折り返しを優先 */
+    html[data-font-size="x-large"] .app-main-container .player-score-input,
+    html[data-font-size="x-large"] .app-main-container .player-row-right select,
+    html[data-font-size="x-large"] .app-main-container .player-row-right input {
+        max-width: 4.5rem !important;
+        width: auto !important;
+        flex-shrink: 1 !important;
+        min-width: 0 !important;
+    }
+}
+
+/* 汎用フォールバック: select / input が幅を取りすぎる場合に備え小さめに制限 */
+.app-main-container select, .app-main-container input[type="number"], .app-main-container input[type="text"] {
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+/* 追加チューニング: メンバー登録後に動的に追加される要素向けにさらに縮小・折返しを強制 */
+/* 小〜中画面かつ大フォントのときにプレイヤー行を縦積みにしてはみ出しを完全に防ぐ */
+@media (max-width: 640px) {
+    html[data-font-size="large"] .player-row,
+    html[data-font-size="x-large"] .player-row {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 0.25rem !important;
+        padding: 0.25rem 0.5rem !important;
+    }
+
+    html[data-font-size="large"] .player-row-left,
+    html[data-font-size="x-large"] .player-row-left,
+    html[data-font-size="large"] .player-row-right,
+    html[data-font-size="x-large"] .player-row-right {
+        width: 100% !important;
+        display: block !important;
+    }
+
+    /* player-row-right の内部要素を折り返して小さく見せる */
+    html[data-font-size="large"] .player-row-right,
+    html[data-font-size="x-large"] .player-row-right {
+        display: flex !important;
+        flex-wrap: wrap !important;
+        gap: 0.25rem !important;
+        justify-content: flex-start !important;
+    }
+
+    /* select / input をさらに小さくして横幅を占めないようにする */
+    html[data-font-size="large"] .player-row-right select,
+    html[data-font-size="x-large"] .player-row-right select,
+    html[data-font-size="large"] .player-row-right input,
+    html[data-font-size="x-large"] .player-row-right input {
+        max-width: 3.2rem !important;
+        width: auto !important;
+        padding: 0.25rem 0.4rem !important;
+        font-size: 0.9em !important;
+    }
+
+    /* スコア入力欄は更に小さく */
+    html[data-font-size="large"] .player-score-input,
+    html[data-font-size="x-large"] .player-score-input {
+        width: 48px !important;
+        max-width: 48px !important;
+    }
+}
+
+/* 中〜大画面でも特大フォント時に横並びが厳しければ列を分割して縦積みに切り替える */
+@media (max-width: 820px) {
+    html[data-font-size="x-large"] .app-main-container #teamsContainer {
+        flex-direction: column !important;
+    }
+    html[data-font-size="x-large"] .app-main-container #teamsContainer > .team-card {
+        flex-basis: 100% !important;
+        width: 100% !important;
+    }
+}
+
+/* プレイヤー行のレイアウトをより厳密に制御（特にスコア入力部分） */
+html[data-font-size="x-large"] .player-row {
+    padding: 0.35rem !important;
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 0.25rem !important;
+    align-items: start !important;
+}
+
+html[data-font-size="x-large"] .player-row > * {
+    margin: 0 !important;
+}
+
+html[data-font-size="x-large"] .player-row-left {
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.35rem !important;
+    flex-wrap: wrap !important;
+}
+
+html[data-font-size="x-large"] .player-row-right {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fit, minmax(2.8rem, 1fr)) !important;
+    gap: 0.25rem !important;
+    width: 100% !important;
+}
+
+/* スコアセレクトと移動ボタンをさらにコンパクトに */
+html[data-font-size="x-large"] .player-row select,
+html[data-font-size="x-large"] .player-row input,
+html[data-font-size="x-large"] .player-row button {
+    padding: 0.25rem !important;
+    min-height: 0 !important;
+    height: auto !important;
+    font-size: 0.9em !important;
+    min-width: 2.8rem !important;
+    max-width: 100% !important;
+}
+
+/* チーム名部分も長すぎるときは省略 */
+html[data-font-size="x-large"] .team-card h3,
+html[data-font-size="x-large"] .team-card .team-title {
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    max-width: 100% !important;
+}
+
+/* 全ページ共通のレイアウト調整（特大フォント対応） */
+html[data-font-size="large"] .app-main-container,
+html[data-font-size="x-large"] .app-main-container {
+    padding-left: 0.5rem !important;
+    padding-right: 0.5rem !important;
+    max-width: calc(100vw - 1rem) !important;
+}
+
+/* 全ページ共通のヘッダー部分の調整 */
+header.flex.items-center.justify-between {
+    flex-wrap: wrap !important;
+    gap: 0.5rem !important;
+    margin-bottom: 1rem !important;
+}
+
+/* タイトル部分の統一 */
+header h1.text-3xl,
+header h1.text-primary {
+    display: flex !important;
+    align-items: center !important;
+    font-size: 1.5rem !important;
+    line-height: 1.2 !important;
+    gap: 0.5rem !important;
+}
+
+header h1 .material-symbols-outlined {
+    font-size: 1.75em !important;
+}
+
+/* 共有・設定ボタン部分の統一 */
+header .flex.items-center.gap-2 {
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.5rem !important;
+}
+
+#shareBtn {
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.25rem !important;
+    padding: 0.35rem 0.75rem !important;
+    font-size: 0.875rem !important;
+    border-radius: 0.5rem !important;
+    white-space: nowrap !important;
+}
+
+#settingsBtn {
+    padding: 0.5rem !important;
+    border-radius: 0.5rem !important;
+}
+
+/* 特大フォントサイズ時の調整 */
+html[data-font-size="x-large"] header h1.text-3xl {
+    font-size: 1.5rem !important;
+    line-height: 1.2 !important;
+    flex-wrap: wrap !important;
+}
+
+html[data-font-size="x-large"] #roomSummary {
+    font-size: 0.875rem !important;
+    margin-top: 0.25rem !important;
+}
+
+/* 全ページ共通のナビゲーション調整 */
+nav.flex.space-x-2 {
+    display: flex !important;
+    gap: 0.5rem !important;
+    padding: 0.75rem !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: none !important;
+    margin-bottom: 1.5rem !important;
+}
+
+nav.flex.space-x-2::-webkit-scrollbar {
+    display: none !important;
+}
+
+nav.flex.space-x-2 a {
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.35rem !important;
+    padding: 0.5rem 0.75rem !important;
+    font-size: 0.875rem !important;
+    border-radius: 0.5rem !important;
+    white-space: nowrap !important;
+    transition: all 0.2s !important;
+}
+
+nav.flex.space-x-2 a .material-symbols-outlined {
+    font-size: 1.25em !important;
+}
+
+/* 特大フォントサイズ時のナビゲーション調整 */
+html[data-font-size="large"] nav.flex.space-x-2,
+html[data-font-size="x-large"] nav.flex.space-x-2 {
+    flex-wrap: wrap !important;
+    gap: 0.35rem !important;
+    padding: 0.5rem !important;
+    justify-content: flex-start !important;
+}
+
+html[data-font-size="large"] nav.flex.space-x-2 a,
+html[data-font-size="x-large"] nav.flex.space-x-2 a {
+    padding: 0.35rem 0.5rem !important;
+    font-size: 0.875rem !important;
+    flex: 0 1 auto !important;
+}
+
+/* スマートフォンでの表示調整 */
+@media (max-width: 480px) {
+    nav.flex.space-x-2 {
+        padding: 0.5rem !important;
+    }
+    
+    nav.flex.space-x-2 a {
+        padding: 0.4rem 0.6rem !important;
+        font-size: 0.8rem !important;
+    }
+    
+    nav.flex.space-x-2 a .material-symbols-outlined {
+        font-size: 1.1em !important;
+    }
+}
+
+html[data-font-size="x-large"] nav.flex .material-symbols-outlined {
+    font-size: 1.25em !important;
+    margin-right: 0.25rem !important;
+}
+
+/* お問い合わせボタン群を縦積みにして省スペース化 */
+html[data-font-size="x-large"] .space-y-3 {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0.5rem !important;
+}
+
+html[data-font-size="x-large"] .space-y-3 a {
+    padding: 0.5rem !important;
+    min-height: 0 !important;
+    white-space: normal !important;
+    text-align: center !important;
+    gap: 0.35rem !important;
+}
+
+html[data-font-size="x-large"] .space-y-3 .material-symbols-outlined {
+    font-size: 1.25em !important;
+}
+
+/* ヘッダー部分も折返し可能に */
+html[data-font-size="x-large"] header.flex {
+    flex-wrap: wrap !important;
+    gap: 0.5rem !important;
+    justify-content: space-between !important;
+}
+
+html[data-font-size="x-large"] header h1 {
+    font-size: 1.75em !important;
+    line-height: 1.2 !important;
+    flex-wrap: wrap !important;
+}
+
+/* ヘッダーの共有・設定ボタン群を縦積みにしてコンパクトに */
+html[data-font-size="x-large"] header .flex.items-center.gap-2 {
+    flex-direction: column !important;
+    align-items: flex-end !important;
+    gap: 0.35rem !important;
+}
+
+/* 共有ボタンをコンパクトに */
+html[data-font-size="x-large"] #shareBtn {
+    padding: 0.3rem 0.5rem !important;
+    font-size: 0.9em !important;
+    min-height: 0 !important;
+    white-space: nowrap !important;
+}
+
+html[data-font-size="x-large"] #shareBtn .material-symbols-outlined {
+    font-size: 1.1em !important;
+}
+
+/* 設定ボタンもコンパクトに */
+html[data-font-size="x-large"] #settingsBtn {
+    padding: 0.3rem !important;
+    min-height: 0 !important;
+}
+
+html[data-font-size="x-large"] #settingsBtn .material-symbols-outlined {
+    font-size: 1.5em !important;
+}
+
+/* 日付選択部分の調整 */
+html[data-font-size="x-large"] #dateControl {
+    padding: 0.75rem !important;
+}
+
+html[data-font-size="x-large"] #dateControl label {
+    font-size: 0.9rem !important;
+}
+
+html[data-font-size="x-large"] #dateControl input[type="date"] {
+    font-size: 0.9rem !important;
+    padding: 0.4rem !important;
+}
+
+/* 共有・設定ボタンの調整 */
+html[data-font-size="x-large"] #shareBtn,
+html[data-font-size="x-large"] #settingsBtn {
+    padding: 0.4rem !important;
+    font-size: 0.875rem !important;
+}
+
+/* 特に小さい画面では横並びに戻してさらにコンパクトに */
+@media (max-width: 480px) {
+    /* ヘッダー部分のスマホ対応 */
+    header.flex.items-center.justify-between {
+        gap: 0.35rem !important;
+    }
+
+    header h1.text-3xl,
+    header h1.text-primary {
+        font-size: 1.25rem !important;
+    }
+
+    header h1 .material-symbols-outlined {
+        font-size: 1.5em !important;
+    }
+
+    /* 共有・設定ボタンのスマホ対応 */
+    header .flex.items-center.gap-2 {
+        flex-direction: row !important;
+        gap: 0.25rem !important;
+    }
+
+    #shareBtn {
+        padding: 0.25rem 0.5rem !important;
+        font-size: 0.8rem !important;
+    }
+
+    #settingsBtn {
+        padding: 0.35rem !important;
+    }
+
+    /* 特大フォントサイズでの追加調整 */
+    html[data-font-size="x-large"] header .flex.items-center.gap-2 {
+        flex-direction: row !important;
+        gap: 0.25rem !important;
+    }
+    
+    html[data-font-size="x-large"] #shareBtn,
+    html[data-font-size="x-large"] #settingsBtn {
+        padding: 0.25rem !important;
+    }
+    
+    html[data-font-size="x-large"] #shareBtn span:not(.material-symbols-outlined) {
+        display: none !important;
+    }
+    
+    html[data-font-size="x-large"] #shareBtn .material-symbols-outlined,
+    html[data-font-size="x-large"] #settingsBtn .material-symbols-outlined {
+        font-size: 1.25em !important;
+        margin: 0 !important;
+    }
+}
+
+/* FAQ部分の調整 */
+html[data-font-size="x-large"] .faq-title {
+    padding: 0.75rem 0 !important;
+    gap: 0.5rem !important;
+    line-height: 1.3 !important;
+}
+
+/* 全体的なスペース調整 */
+html[data-font-size="x-large"] .app-card {
+    padding: 0.75rem !important;
+}
+
+html[data-font-size="x-large"] .mb-6 {
+    margin-bottom: 1rem !important;
+}
+
+html[data-font-size="x-large"] .px-4 {
+    padding-left: 0.75rem !important;
+    padding-right: 0.75rem !important;
+}
+
+/* 立ちセット追加ボタンの調整 */
+html[data-font-size="x-large"] #addSetBtnTab {
+    font-size: 1rem !important;
+    padding: 0.75rem !important;
+}
+
+html[data-font-size="x-large"] #addSetBtnTab .material-symbols-outlined {
+    font-size: 1.25rem !important;
+}
+
+/* セットコンテナの調整 */
+html[data-font-size="x-large"] #setsContainer {
+    gap: 0.75rem !important;
+}
+
+html[data-font-size="x-large"] #setsContainer .app-card {
+    padding: 0.75rem !important;
+}
+
+/* メディアクエリでさらに小さい画面に対応 */
+@media (max-width: 360px) {
+    html[data-font-size="x-large"] header h1.text-3xl {
+        font-size: 1.25rem !important;
+    }
+
+    html[data-font-size="x-large"] nav.flex a {
+        padding: 0.25rem 0.4rem !important;
+        font-size: 0.8rem !important;
+    }
+
+    html[data-font-size="x-large"] #addSetBtnTab {
+        font-size: 0.9rem !important;
+        padding: 0.5rem !important;
+    }
+}
+

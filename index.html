@@ -1,10 +1,10 @@
-<!DOCTYPE html>
+<!DOCTYPE html> 
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-  <link rel="apple-touch-icon" sizes="57x57" href="/apple-icon-57x57.png">
+  <title>MATOMA-遠的</title>
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-icon-57x57.png">
   <link rel="apple-touch-icon" sizes="60x60" href="/apple-icon-60x60.png">
   <link rel="apple-touch-icon" sizes="72x72" href="/apple-icon-72x72.png">
   <link rel="apple-touch-icon" sizes="76x76" href="/apple-icon-76x76.png">
@@ -22,425 +22,426 @@
   <meta name="msapplication-TileColor" content="#ffffff">
   <meta name="msapplication-TileImage" content="/ms-icon-144x144.png">
 
-  <title>MATOMA | 遠的スコア管理アプリ - 弓道の記録をスマホで簡単に分析</title>
-  <meta name="description" content="MATOMA遠的は弓道の遠的スコアをスマホで簡単に記録・分析・共有できるアプリです。立ちごとの点数管理や矢所分析で、自分の射を可視化しましょう。" />
-  <meta name="keywords" content="弓道,遠的,スコア管理,矢所分析,アプリ,MATOMA" />
-  <meta name="robots" content="index, follow" />
+  <link rel="apple-touch-icon" sizes="57x57" href="/apple-icon-57x57.png">
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#1a73e8">
 
-  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-  <script>
-    tailwind.config = {
-      darkMode: "class",
-      theme: {
-        extend: {
-          colors: {
-            "primary": "#1969e1",
-            "background-light": "#f6f7f8",
-            "background-dark": "#111721"
-          },
-          fontFamily: {
-            "display": ["Manrope", "Yu Gothic", "Hiragino Maru Gothic ProN", "sans-serif"]
-          }
-        }
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" />
+  <link rel="stylesheet" href="css/settings-overrides.css">
+  <link rel="stylesheet" href="https://unpkg.com/shepherd.js/dist/css/shepherd.css">
+  
+  <style>
+    :root {
+      --primary-color: #1a73e8;
+      --surface-light: #ffffff;
+      --surface-dark: #1f2937;
+      font-size: 16px; /* デフォルトのフォントサイズ */
+    }
+
+    body {
+      background-color: #f3f4f6;
+      color: #1f2937;
+      transition: background-color 0.3s, color 0.3s;
+      overflow-x: hidden; /* ←横スクロール防止 */
+    }
+    .dark body {
+      background-color: #111827;
+      color: #e5e7eb;
+    }
+
+    .app-card {
+      transition: box-shadow 0.2s, transform 0.2s;
+    }
+    .app-card:hover {
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+    .dark .app-card {
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+    }
+
+    .bg-primary { background-color: var(--primary-color); }
+    .text-primary { color: var(--primary-color); }
+
+    input[type="date"], select {
+        padding: 8px 12px;
+        border-radius: 6px;
+        border: 1px solid #d1d5db;
+        background-color: #f9fafb;
+        transition: border-color 0.2s, box-shadow 0.2s;
+        width: 100%;
+    }
+
+    .dark input[type="date"], .dark select {
+        border-color: #4b5563;
+        background-color: #1f2937;
+        color: #e5e7eb;
+    }
+    input[type="date"]:focus, select:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 1px var(--primary-color);
+    }
+
+    .tab-btn.active {
+      background-color: var(--primary-color) !important;
+      color: white !important;
+    }
+
+    /* スマホ対応のFlexレイアウト調整 */
+    .set-wrapper .tools-score-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .set-wrapper .tools {
+      flex: 1 1 100%;
+      min-width: 200px;
+    }
+
+    .set-wrapper .score-board {
+      flex: 1 1 100%;
+      min-width: 150px;
+    }
+
+    @media (min-width: 640px) {
+      .set-wrapper .tools {
+        flex: 1 1 250px;
+      }
+      .set-wrapper .score-board {
+        flex: 1 1 150px;
       }
     }
-  </script>
 
-  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&display=swap" rel="stylesheet" />
-  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/shepherd.js/dist/css/shepherd.css">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@100..900&display=swap" rel="stylesheet">
-  <style>
-    /* custom styles */
-    body { padding-bottom: 120px; }
-    .app-card { transition: transform .18s ease, box-shadow .18s ease; }
-    .app-card:hover { transform: translateY(-4px); box-shadow: 0 18px 30px rgba(0,0,0,.08); }
-    .center-tab-button { position: relative; top: -20px; width:64px; height:64px; border-radius:50%; display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg,#1969e1,#1557c7); color:white; border:none; box-shadow:0 8px 24px rgba(25,105,225,0.4); }
-    .tab-content { display:none; }
-    .tab-content.active { display:block; }
-    .player-score-input { width:60px; max-width:60px; } 
-    @media (min-width:768px){ .player-score-input{ width:70px; } }
-    .canvas-container{ width:100%; max-width:600px; margin:0 auto; aspect-ratio:1/1; position:relative; }
-    .canvas-container canvas{ width:100% !important; height:100% !important; display:block; }
-    
-    .player-row {
-        display: flex;
-        flex-direction: row;
-        align-items: center;
-        justify-content: space-between;
-        gap: 0.5rem;
+    .score-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
     }
-    .player-row-left, .player-row-right {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-    }
-    .player-row-right {
-        flex-wrap: nowrap;
-    }
-    @media (max-width: 767px) {
-        .player-row {
-            flex-direction: column;
-            align-items: stretch;
-        }
-        .player-row-left {
-            justify-content: space-between;
-            margin-bottom: 0.5rem;
-        }
-        .player-row-right {
-            justify: space-between;
-            flex-wrap: wrap;
-        }
-        .player-score-input {
-            flex-grow: 1;
-            min-width: 60px;
-        }
+    .score-item {
+      width: calc(50% - 4px);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
 
-    #floatingStopwatch {
-        position: fixed;
-        bottom: 80px;
-        right: 16px;
-        z-index: 100;
-        background-color: rgba(255, 255, 255, 0.9);
-        backdrop-filter: blur(8px);
-        border-radius: 12px;
-        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-        padding: 12px;
-        width: 280px;
-        touch-action: none;
-        transition: opacity 0.3s ease, transform 0.3s ease;
+    /* ナビゲーションバーをスマホでも見やすく */
+    nav {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
     }
-    .dark #floatingStopwatch {
-        background-color: rgba(30, 41, 59, 0.9);
+    nav a {
+      flex: 1 1 auto;
+      white-space: nowrap;
     }
-    #floatingStopwatch.hidden {
-        opacity: 0;
-        transform: scale(0.9);
-        pointer-events: none;
+
+    /* フッターボタンをスマホサイズに合わせて最適化 */
+    #addSetBtnTab {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 50;
+      border-radius: 0;
+      font-size: 1rem;
     }
-    #floatingStopwatch .drag-handle {
-        cursor: move;
-        padding: 4px;
-        text-align: center;
-        color: #94a3b8;
-    }
-    #floatingStopwatch .drag-handle .material-symbols-outlined {
-        font-size: 20px;
-    }
-    
-.noto-sans-jp-<uniquifier> {
-  font-family: "Noto Sans JP", sans-serif;
-  font-optical-sizing: auto;
-  font-weight: <weight>;
-  font-style: normal;
-}
+
   </style>
 </head>
 
-<body class="bg-background-light dark:bg-background-dark font-display text-slate-800 dark:text-slate-200">
-  <div class="flex flex-col min-h-screen">
-
-    <header class="sticky top-0 z-20 bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm border-b border-slate-100 dark:border-slate-800">
-      <div class="container mx-auto px-4 py-3 flex items-center justify-between">
-        <h1 class="text-lg font-bold text-slate-900 dark:text-white">MATOMA遠的</h1>
-        <div class="flex items-center gap-2">
-          <button id="shareBtn" class="px-4 py-2 bg-primary text-white rounded-full text-sm font-semibold shadow-md">共有</button>
-          <button id="settingsBtn" class="p-2 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200" title="設定">
-            <span class="material-symbols-outlined text-2xl">settings</span>
-          </button>
+<body class="min-h-screen pb-24 dark:bg-gray-900 ">
+  <div class="container mx-auto px-4 pt-6 pb-28 max-w-2xl app-main-container">
+    <header class="mb-6 flex items-center justify-between">
+      <div>
+        <h1 class="text-3xl font-extrabold text-primary flex items-center">
+          
+          MATOMA - 遠的
+        </h1>
+        <div id="roomSummary" class="mt-2 text-sm text-slate-500 dark:text-slate-400">
+          <p class="font-bold">個人記録モード</p>
+          <p>立ちセットを記録します。</p>
         </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <button id="shareBtn"
+          class="px-3 py-1 bg-primary text-white rounded-lg hover:bg-primary/90 text-sm font-semibold shadow-md transition-all flex items-center gap-1">
+          <span class="material-symbols-outlined text-base">share</span>
+          <span>共有</span>
+        </button>
+
+        <button id="settingsBtn"
+          class="p-2 rounded-lg bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 transition-all shadow-sm"
+          title="設定ページ">
+          <span class="material-symbols-outlined text-2xl">settings</span>
+        </button>
+        
+        <button id="tutorialBtn" class="p-2 rounded-lg bg-primary text-white hover:bg-primary/90 text-sm font-semibold shadow-md transition-all" title="初めての方へ">
+          <span class="material-symbols-outlined">help</span>
+        </button>
       </div>
     </header>
 
-    <div class="container mx-auto px-4 py-4">
-      <div class="flex gap-2 justify-center">
-        <button id="personalTabBtn" class="px-4 py-2 rounded-lg font-semibold bg-primary text-white">個人用</button>
-        <button id="teamTabBtn" class="px-4 py-2 rounded-lg font-semibold bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-white">団体用</button>
-      </div>
-    </div>
-
-    <main class="flex-grow container mx-auto px-4 pb-12">
-
-      <section id="personalTab" class="tab-content active">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <section class="app-card bg-white dark:bg-slate-900 p-5 rounded-2xl shadow-lg" id="matchDateSection">
-            <label for="matchDate" class="block mb-3 font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2">
-              <span class="material-symbols-outlined text-primary">calendar_today</span>
-              日付選択
-            </label>
-            <input type="date" id="matchDate" class="w-full rounded-xl border-2 border-slate-200 dark:border-slate-700 px-4 py-3 text-slate-800 dark:text-slate-200 bg-white dark:bg-slate-800 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all">
-          </section>
-
-          <section id="dailySummary">
-            <h2 class="text-xl font-bold mb-3 text-slate-900 dark:text-white">日別集計</h2>
-            <div class="app-card bg-white dark:bg-slate-900 rounded-2xl shadow-lg p-5">
-              <div class="flex items-center gap-3 text-slate-500 dark:text-slate-400">
-                <span class="material-symbols-outlined text-3xl text-primary">analytics</span>
-                <p class="text-sm">ここに日別集計（立ち数・合計点）が表示されます</p>
-              </div>
-            </div>
-          </section>
-        </div>
-
-        <section class="mt-6">
-          <h2 class="text-xl font-bold mb-4 text-slate-900 dark:text-white">立ちセット</h2>
-          <div id="setsContainer" class="space-y-4"></div>
-        </section>
-
-        <div class="mt-6">
-          <div class="hidden md:block fixed bottom-24 right-4 z-50">
-            <button id="tutorialBtn" class="px-5 py-3 text-sm bg-primary text-white rounded-full shadow-xl">初めての方へ</button>
-          </div>
-          <div class="md:hidden w-full py-3 bg-background-light dark:bg-background-dark">
-            <div class="container mx-auto px-4 flex justify-center">
-              <button id="tutorialBtnMobile" class="px-6 py-3 text-base bg-primary text-white rounded-full shadow-lg">初めての方へ</button>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section id="teamTab" class="tab-content">
-
-        <div class="py-2">
-          <div class="flex items-center justify-between mb-3">
-            <div>
-              <div class="flex items-center gap-2"> 
-                <h2 id="roomTitle" class="text-2xl font-bold text-slate-900 dark:text-white">団体用スコア管理</h2>
-                <div id="roomShareIcons" class="flex gap-1" style="display:none;">
-                    <button id="shareIconBtn" class="p-1.5 rounded-full bg-primary/20 text-primary dark:bg-primary/50" title="共有リンク・コードをコピー">
-                        <span class="material-symbols-outlined text-xl">content_copy</span>
-                    </button>
-                    <button id="qrIconBtn" class="p-1.5 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200" title="QRコードを表示/非表示">
-                        <span class="material-symbols-outlined text-xl">qr_code_2</span>
-                    </button>
-                    <button 
-  id="exportTeamResultsBtn" 
-  style="
-    margin-top: 20px; 
-    padding: 10px 15px; 
-    font-size: 20px; /* アイコンを大きく表示 */
-    cursor: pointer;
-  "
-  title="スコア詳細をCSVダウンロード"
->
-  💾⬇️
-</button>
-<button onclick="exportPlayerScoresToPDF()">PDF出力</button>
-
-                </div>
-              </div>
-              <p id="roomSubtitle" class="text-sm text-slate-600 dark:text-slate-300">ルームを作成して共有、メンバー登録ができます。</p>
-            </div>
-            <div id="roomEntryButtons" class="flex gap-2">
-              <button id="createRoomBtn" class="px-4 py-2 bg-blue-500 text-white rounded-md">ルーム作成</button>
-              <button id="joinRoomBtn" class="px-4 py-2 bg-indigo-600 text-white rounded-md">ルームに参加</button>
-              <button id="leaveRoomBtn" style="display:none;" class="px-4 py-2 bg-red-500 text-white rounded-md">退室</button>
-            </div>
-          </div>
-
-          <div id="roomControls" style="display:none;">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-              <div id="roomForm" style="display:none;" class="app-card bg-white dark:bg-slate-900 p-4 rounded-2xl shadow">
-                <label class="block mb-2 font-bold text-slate-800 dark:text-slate-200">ルーム名</label>
-                <input id="roomName" class="w-full rounded-xl border-2 border-slate-200 dark:border-slate-700 px-4 py-3 bg-white dark:bg-slate-800" placeholder="ルーム名を入力" />
-                <div class="flex gap-2 mt-3">
-                  <button id="submitRoomBtn" class="px-4 py-2 bg-green-500 text-white rounded-md">ルーム作成</button>
-                  <button id="cancelRoomBtn" class="px-4 py-2 bg-slate-300 text-slate-800 rounded-md">キャンセル</button>
-                </div>
-              </div>
-
-              <div id="joinForm" style="display:none;" class="app-card bg-white dark:bg-slate-900 p-4 rounded-2xl shadow">
-                <label class="block mb-2 font-bold text-slate-800 dark:text-slate-200">招待コードまたはURLを入力</label>
-                <input id="joinInput" class="w-full rounded-xl border-2 border-slate-200 dark:border-slate-700 px-4 py-3 bg-white dark:bg-slate-800" placeholder="例: MATOMA_JOIN:RMXXXX または https://...#room=RMXXXX" />
-                <div class="flex gap-2 mt-3">
-                  <button id="doJoinBtn" class="px-4 py-2 bg-green-500 text-white rounded-md">参加</button>
-                  <button id="cancelJoinBtn" class="px-4 py-2 bg-slate-300 text-slate-800 rounded-md">キャンセル</button>
-                </div>
-              </div>
-            </div>
-
-            <div class="flex flex-col lg:flex-row gap-4">
-              <div class="flex-1 space-y-4">
-                <div id="memberControlButtons" class="flex gap-2">
-                    <button id="openRegisterModalBtn" class="px-4 py-2 bg-primary text-white rounded-md font-semibold" style="display:none;">メンバー登録</button>
-                    <button id="openManagementModalBtn" class="px-4 py-2 bg-blue-500 text-white rounded-md font-semibold" style="display:none;">メンバー管理</button>
-                </div>
-                <div id="teamsContainer" class="flex flex-col md:flex-row md:flex-wrap gap-4"></div>
-                <!-- 🔽 監督者・その他表示エリア -->
-<div id="specialMemberContainer" class="mt-8 space-y-6">
-    
-  </div>
-
-
-              </div>
-
-              <aside id="sidebar-aside" class="w-full lg:w-96 space-y-4">
-                <div class="app-card bg-white dark:bg-slate-900 rounded-2xl shadow p-4">
-                  <h3 class="font-bold mb-3">ストップウォッチ</h3>
-                  <div id="swDisplay" class="text-2xl font-mono mb-3">00:00.00</div>
-                  <div class="flex gap-2 mb-3">
-                    <button id="swStart" class="px-3 py-2 bg-green-500 text-white rounded-md flex-1">Start</button>
-                    <button id="swPause" class="px-3 py-2 bg-yellow-500 text-white rounded-md flex-1">Pause</button>
-                    <button id="swReset" class="px-3 py-2 bg-red-500 text-white rounded-md flex-1">Reset</button>
-                  </div>
-                  <button id="swLap" class="px-3 py-2 bg-slate-100 dark:bg-slate-700 rounded-md w-full">Lap</button>
-                  <ul id="lapList" class="mt-3 text-sm list-disc list-inside max-h-48 overflow-auto"></ul>
-                </div>
-                <div class="app-card bg-white dark:bg-slate-900 rounded-2xl shadow p-4">
-                  <h3 class="font-bold mb-2">ルーム集計</h3>
-                  <pre id="roomSummary" class="text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap">—</pre>
-                </div>
-              </aside>
-            </div>
-          </div>
-          
-          <div id="roomHistory" class="mt-8 pt-4 border-t border-slate-200 dark:border-slate-700">
-              <h2 class="text-xl font-bold mb-3 text-slate-900 dark:text-white">過去のルーム履歴（ブラウザ保存）</h2>
-              <div id="historyList" class="space-y-2">
-                  <p class="text-sm text-slate-500" id="noHistoryMessage">履歴はありません。</p>
-              </div>
-          </div>
-          </div>
-
-        <div class="mt-6">
-          <div class="hidden md:block fixed bottom-24 right-4 z-50">
-            <button id="tutorialBtnTeam" class="px-5 py-3 text-sm bg-primary text-white rounded-full shadow-xl">初めての方へ（団体用）</button>
-          </div>
-          <div class="md:hidden w-full py-3 bg-background-light dark:bg-background-dark">
-            <div class="container mx-auto px-4 flex justify-center">
-              <button id="tutorialBtnMobileTeam" class="px-6 py-3 text-base bg-primary text-white rounded-full shadow-lg">初めての方へ（団体用）</button>
-            </div>
-          </div>
-        </div>
-        </section>
-
-    </main>
-
-    <nav class="fixed bottom-0 left-0 right-0 z-40 bg-white/90 dark:bg-slate-900/90 border-t border-slate-100 dark:border-slate-800">
-      <div class="max-w-5xl mx-auto px-4 py-2 flex items-end justify-around relative">
-        <a href="tools.html" class="flex flex-col items-center gap-1 py-1 px-2 text-slate-500 dark:text-slate-400">
-          <span class="material-symbols-outlined text-2xl">construction</span>
-          <span class="text-xs font-semibold">道具</span>
-        </a>
-        <a href="index.html" class="flex flex-col items-center gap-1 py-1 px-2 text-primary">
-          <span class="material-symbols-outlined text-2xl">today</span>
-          <span class="text-xs font-semibold">今日の記録</span>
-        </a>
-
-        <button id="addSetBtnTab" class="center-tab-button" title="立ちセットを追加">
-          <span class="material-symbols-outlined text-3xl">add_circle</span>
-        </button>
-
-        <a href="yadokoro.html" class="flex flex-col items-center gap-1 py-1 px-2 text-slate-500 dark:text-slate-400">
-          <span class="material-symbols-outlined text-2xl">analytics</span>
-          <span class="text-xs font-semibold">分析</span>
-        </a>
-        <a href="help.html" class="flex flex-col items-center gap-1 py-1 px-2 text-slate-500 dark:text-slate-400">
-          <span class="material-symbols-outlined text-2xl">help</span>
-          <span class="text-xs font-semibold">ヘルプ</span>
-        </a>
-      </div>
+    <nav class="flex space-x-2 p-2 mb-6 app-card rounded-xl bg-surface-light dark:bg-surface-dark shadow-lg sticky top-0 z-30">
+      <a href="index.html" class="tab-btn active flex items-center justify-center px-2 py-2 rounded-lg text-white text-sm font-medium bg-primary">
+        <span class="material-symbols-outlined text-xl mr-1">target</span> セット
+      </a>
+      <a href="team.html" class="tab-btn flex items-center justify-center px-2 py-2 rounded-lg bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-300 text-sm">
+        <span class="material-symbols-outlined text-xl mr-1">groups</span> チーム
+      </a>
+      <a href="yadokoro.html" class="tab-btn flex items-center justify-center px-2 py-2 rounded-lg bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-300 text-sm">
+        <span class="material-symbols-outlined text-xl mr-1">trending_up</span> 分析
+      </a>
+      <a href="tools.html" class="tab-btn flex items-center justify-center px-2 py-2 rounded-lg bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-300 text-sm">
+        <span class="material-symbols-outlined text-xl mr-1">manufacturing</span> 道具
+      </a>
+      <a href="history.html" class="tab-btn flex items-center justify-center px-2 py-2 rounded-lg bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-300 text-sm">
+        <span class="material-symbols-outlined text-xl mr-1">history</span> 履歴
+      </a>
+      <a href="help.html" class="tab-btn flex items-center justify-center px-2 py-2 rounded-lg bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-300 text-sm">
+        <span class="material-symbols-outlined text-xl mr-1">help</span> ヘルプ
+      </a>
     </nav>
+
+    <main id="mainContent" class="space-y-6">
+      <div id="dateControl" class="app-card p-4 rounded-xl bg-surface-light dark:bg-surface-dark shadow-lg flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+        <label for="matchDate" class="font-medium text-slate-700 dark:text-slate-300">記録日:</label>
+        <input type="date" id="matchDate" class="text-sm">
+      </div>
+
+      <div id="setsContainer" class="space-y-4">
+        <p class="text-slate-500 italic">下のボタンから新しい立ちを追加してください。</p>
+      </div>
+    </main>
   </div>
 
-  <div id="modalWrapper" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 backdrop-blur-sm p-4" onclick="if(event.target.id==='modalWrapper') closeModal()">
-    <div id="modalContent" class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden max-h-[90vh] flex flex-col">
-      </div>
+  <div class="fixed bottom-0 left-0 right-0 p-3 bg-surface-light dark:bg-gray-800 shadow-2xl border-t border-slate-200 dark:border-slate-700 z-50">
+    <button id="addSetBtnTab" class="w-full py-3 bg-primary hover:bg-primary/90 text-white text-lg font-bold flex items-center justify-center gap-2">
+      <span class="material-symbols-outlined text-2xl">add_circle</span>
+      <span>立ちセットを追加</span>
+    </button>
   </div>
 
-  <div id="modalTemplates" class="hidden">
-    <div id="qrModalContent" class="p-6 text-center">
-      <h3 class="text-xl font-bold mb-4 text-slate-900 dark:text-white">ルーム招待QRコード</h3>
-      <div id="qrCodeDisplayModal" class="flex justify-center mb-4"></div>
-      <p class="text-sm text-slate-600 dark:text-slate-400">このQRコードを読み込むか、上部のコピーボタンでリンクを共有してください。</p>
-      <button onclick="closeModal()" class="mt-4 px-4 py-2 bg-slate-500 text-white rounded-lg">閉じる</button>
-    </div>
+  <!-- ===== スクリプト ===== -->
+  <script src="https://cdn.jsdelivr.net/npm/lz-string/libs/lz-string.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs/qrcode.min.js"></script>
+  <script src="js/main.js"></script>
+  <script src="js/matchSet.js"></script>
+  <script src="js/tools.js"></script>
+  <script src="js/analysis.js"></script>
+  <script src="js/font-size.js"></script>
 
-    <div id="registerModalContent" class="p-6">
-      <h3 class="text-xl font-bold mb-4 text-slate-900 dark:text-white">はじめて参加する方へ（メンバー登録）</h3>
-      <p class="text-sm text-slate-600 dark:text-slate-300 mb-3">あなたの名前と役割を入力して登録してください。登録後はスコアを入力できるようになります。</p>
-      <input type="text" id="registerNameInput" placeholder="あなたの名前を入力" class="w-full rounded-xl border-2 border-slate-200 dark:border-slate-700 px-3 py-2 bg-white dark:bg-slate-800 mb-2" />
-      <select id="registerRoleSelect" class="w-full rounded-xl border-2 border-slate-200 dark:border-slate-700 px-3 py-2 text-slate-800 dark:text-slate-200 bg-white dark:bg-slate-800 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all mb-4">
-        <option value="player">プレーヤー（スコア編集可能）</option>
-        <option value="manager">監督者（スコア編集・管理操作可能）</option>
-        <option value="other">その他（閲覧のみ）</option>
-      </select>
-      <div class="flex gap-2">
-        <button id="registerSelfBtn" class="px-4 py-2 bg-primary text-white rounded-md flex-1">登録</button>
-        <button id="skipRegisterBtn" class="px-4 py-2 bg-slate-200 text-slate-800 rounded-md">キャンセル</button>
-      </div>
-    </div>
-
-    <div id="managementModalContent" class="p-6">
-      <h3 class="text-xl font-bold mb-4 text-slate-900 dark:text-white">メンバー操作（管理）</h3>
-      <div class="space-y-2">
-          <label for="newPlayerNameModal" class="block text-sm font-medium mb-1 text-slate-800 dark:text-slate-200">新しいプレイヤーの追加</label>
-          <div class="flex gap-2">
-              <input type="text" id="newPlayerNameModal" placeholder="プレイヤー名を入力" class="w-full rounded-xl border-2 border-slate-200 dark:border-slate-700 px-3 py-2 bg-white dark:bg-slate-800" />
-              <button id="addPlayerBtnModal" class="px-4 py-2 bg-primary text-white rounded-md">追加</button>
-          </div>
-          <div class="pt-2">
-              <button id="autoAssignBtnModal" class="w-full px-4 py-2 bg-slate-300 text-slate-800 rounded-md">自動割当（3人）</button>
-          </div>
-      </div>
-      <div class="mt-4 pt-4 border-t border-slate-200 dark:border-slate-700">
-          <button onclick="closeModal()" class="w-full px-4 py-2 bg-slate-500 text-white rounded-md">閉じる</button>
-      </div>
-    </div>
-  </div>
-
-  <div id="floatingStopwatch" class="hidden">
-    <div class="drag-handle">
-      <span class="material-symbols-outlined">drag_indicator</span>
-    </div>
-    <div id="floatingSwDisplay" class="text-2xl font-mono mb-3 text-center">00:00.00</div>
-    <div class="flex gap-2 mb-2">
-        <button id="floatingSwStart" class="px-3 py-2 bg-green-500 text-white rounded-md flex-1 text-sm">Start</button>
-        <button id="floatingSwPause" class="px-3 py-2 bg-yellow-500 text-white rounded-md flex-1 text-sm">Pause</button>
-        <button id="floatingSwReset" class="px-3 py-2 bg-red-500 text-white rounded-md flex-1 text-sm">Reset</button>
-    </div>
-    <button id="floatingSwLap" class="px-3 py-2 bg-slate-100 dark:bg-slate-700 rounded-md w-full text-sm">Lap</button>
-  </div>
-
-<!-- ========================= -->
-<!-- ✅ 1. ユーティリティ系 -->
-<!-- ========================= -->
-<script src="https://cdn.jsdelivr.net/npm/lz-string/libs/lz-string.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/qrcodejs/qrcode.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/shepherd.js/dist/js/shepherd.min.js"></script>
-
-<!-- ========================= -->
-<!-- ✅ 2. Excel出力 -->
-<!-- ========================= -->
-<script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
-
-<!-- PDF出力用 -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
-
-
-<script src="js/main.js"></script>
-<script src="js/matchSet.js"></script>
-<script src="js/navbar.js"></script>
-
-
-
-  <!-- ===================== Firebase + 機能スクリプト ===================== -->
-<script type="module" src="js/firebase-room.js"></script>
-
-<!-- non-module scripts (修正済み: player を manager と同等に扱う) -->
-<script src="js/non-module.js"></script>
-
-
-<script src="js/tekito.js"></script>
-
-<script src="js/daisuki.js"></script>
+  <script src="https://unpkg.com/shepherd.js/dist/js/shepherd.min.js"></script>
 
   <script>
-    // Service Workerのエラー（404）を回避するため、登録処理自体をコメントアウト/削除することを推奨します。
+    // ======== ページ読込時にテーマを反映 (共通ロジック) ========
+    (function() {
+      const theme = localStorage.getItem("theme");
+      if (theme === "dark") document.documentElement.classList.add("dark");
+    })();
+
+    document.addEventListener("DOMContentLoaded", () => {
+      // 立ちセット追加ボタンの処理
+      const addSetBtnTab = document.getElementById('addSetBtnTab');
+      if (addSetBtnTab) {
+        addSetBtnTab.addEventListener('click', (e) => { 
+          e.preventDefault();
+          if (window.addSet) window.addSet();
+          else console.error("addSet関数が見つかりません");
+        });
+      }
+
+      // ======== 共有ボタン (共通ロジック) ========
+      const shareBtn = document.getElementById("shareBtn");
+      if (shareBtn) {
+        shareBtn.addEventListener("click", async () => {
+          const shareText = "MATOMA遠的で記録をつけよう！";
+          const shareUrl = window.location.href;
+          if (navigator.share) {
+            try { 
+              await navigator.share({ 
+                title: "MATOMA遠的",
+                text: shareText,
+                url: shareUrl 
+              }); 
+            } catch(err) { 
+              console.error("Share failed:", err); 
+            }
+          } else {
+            try { 
+              await navigator.clipboard.writeText(`${shareText} ${shareUrl}`);
+              alert("リンクをコピーしました。SNSなどでシェアできます。"); 
+            } catch(err) { 
+              prompt("コピーできませんでした。以下を手動でコピーしてください:", `${shareText} ${shareUrl}`); 
+            }
+          }
+        });
+      }
+
+      // ======== 設定ボタン (共通ロジック) ========
+      const settingsBtn = document.getElementById("settingsBtn");
+      if (settingsBtn) {
+        settingsBtn.addEventListener("click", () => {
+          window.location.href = "settings.html";
+        });
+      }
+    });
+  </script>
+
+  <script>
+    // Shepherd tour for index page: shows once when the user first clicks "Add set" (or can be started manually)
+    (function() {
+      // Ensure Shepherd is loaded; if not, inject script and wait for it
+      function ensureShepherdLoaded() {
+        return new Promise((resolve, reject) => {
+          if (window.Shepherd) return resolve();
+          const existing = document.querySelector('script[data-shepherd-loader]');
+          if (existing) {
+            existing.addEventListener('load', () => resolve());
+            existing.addEventListener('error', () => reject(new Error('Shepherd failed to load')));
+            return;
+          }
+          const s = document.createElement('script');
+          s.setAttribute('data-shepherd-loader', '1');
+          s.src = 'https://cdn.jsdelivr.net/npm/shepherd.js/dist/js/shepherd.min.js';
+          s.onload = () => resolve();
+          s.onerror = () => reject(new Error('Shepherd failed to load'));
+          document.head.appendChild(s);
+        });
+      }
+
+      async function startIndexTour() {
+        try {
+          await ensureShepherdLoaded();
+        } catch (err) {
+          console.warn('Shepherd failed to load, tour unavailable:', err);
+          return;
+        }
+
+        const tour = new Shepherd.Tour({
+          useModalOverlay: true,
+          defaultStepOptions: {
+            classes: 'shepherd-theme-default',
+            scrollTo: { behavior: 'smooth', block: 'center' },
+            cancelIcon: { enabled: true }
+          }
+        });
+
+        tour.addStep({
+          id: 'welcome',
+          text: 'ようこそ MATOMA へ！まずは記録日の選択と、立ちセットの追加方法を説明します。',
+          buttons: [ { text: '次へ', action: tour.next } ]
+        });
+
+        if (document.getElementById('dateControl')) {
+          tour.addStep({ id: 'date', text: 'ここで記録日を変更できます。', attachTo: { element: '#dateControl', on: 'bottom' }, buttons: [ { text: '次へ', action: tour.next } ] });
+        }
+
+        if (document.getElementById('addSetBtnTab')) {
+          // Create the add-set step; its Next button will wait for the newly-created canvas
+          tour.addStep({ id: 'add-set', text: 'このボタンから新しい立ちセットを追加します。', attachTo: { element: '#addSetBtnTab', on: 'top' }, buttons: [ { text: '次へ', action: function() {
+                // wait for canvas to appear (polling)
+                const waitForCanvas = () => new Promise((resolve, reject) => {
+                  const start = Date.now();
+                  (function check(){
+                    const canvases = Array.from(document.querySelectorAll('canvas[id^="targetCanvas_"]'));
+                    if (canvases.length) return resolve(canvases[canvases.length - 1]);
+                    if (Date.now() - start > 5000) return reject(new Error('canvas not found'));
+                    setTimeout(check, 200);
+                  })();
+                });
+
+                waitForCanvas().then((canvas) => {
+                  // add a step attached to the actual canvas element
+                  const canvasSelector = `#${canvas.id}`;
+                  tour.addStep({
+                    id: 'tap-target',
+                    text: '的をタップして矢所を記録します。タップすると自動で点数が計算されます。まずは的をタップしてみてください。',
+                    attachTo: { element: canvasSelector, on: 'center' },
+                    buttons: [ { text: '次へ', action: tour.next } ]
+                  });
+
+                  // explain editing/deletion as next step
+                  tour.addStep({ id: 'edit-explain', text: '修正はマーカーをスライド（ドラッグ）して位置を直すか、下のスコアリストで点数を変更できます。マーカーを的の外にスライドすると削除されます。', buttons: [ { text: '完了', action: tour.complete } ] });
+
+                  // advance to the next step (the newly added tap-target)
+                  try { tour.next(); } catch(e) { /* ignore */ }
+
+                  // attach auto-advance to marker addition on this specific canvas
+                  (function attachToSpecificCanvas(c) {
+                    const initialCount = (c.markers && c.markers.length) || 0;
+                    const specificListener = function() {
+                      const now = (c.markers && c.markers.length) || 0;
+                      if (now > initialCount) {
+                        try { tour.next(); } catch(e) {}
+                        c.removeEventListener('mouseup', specificListener);
+                        c.removeEventListener('touchend', specificListener);
+                      }
+                    };
+                    c.addEventListener('mouseup', specificListener);
+                    c.addEventListener('touchend', specificListener);
+                  })(canvas);
+                }).catch(() => {
+                  // If canvas not found, just go to next
+                  try { tour.next(); } catch(e) {}
+                });
+              } } ] });
+        }
+
+        // Hook: if the canvas gets a new marker while the 'tap-target' step is active, advance the tour
+        let markerListener = null;
+        function attachMarkerAutoAdvance() {
+          // choose the last created canvas with id starting with targetCanvas_
+          const canvases = Array.from(document.querySelectorAll('canvas[id^="targetCanvas_"]'));
+          if (!canvases || canvases.length === 0) return;
+          const canvas = canvases[canvases.length - 1];
+          if (!canvas) return;
+          const idx = canvas.id.split('_')[1];
+          const scoreListSelector = `#scoreList_${idx}`;
+
+          let initialCount = (canvas.markers && canvas.markers.length) || 0;
+
+          markerListener = function() {
+            const now = (canvas.markers && canvas.markers.length) || 0;
+            if (now > initialCount) {
+              // advance to next step (if currently on tap-target)
+              try { tour.next(); } catch(e){}
+              // cleanup
+              canvas.removeEventListener('mouseup', markerListener);
+              canvas.removeEventListener('touchend', markerListener);
+            }
+          };
+
+          canvas.addEventListener('mouseup', markerListener);
+          canvas.addEventListener('touchend', markerListener);
+        }
+
+        tour.on('show', (e) => {
+          if (e && e.step && e.step.id === 'tap-target') {
+            // try attaching after a short delay to allow canvas creation
+            setTimeout(attachMarkerAutoAdvance, 300);
+          }
+        });
+
+        tour.on('complete', () => localStorage.setItem('matoma_seen_tour_index_v1', '1'));
+        tour.on('cancel', () => localStorage.setItem('matoma_seen_tour_index_v1', '1'));
+        tour.start();
+      }
+
+      document.addEventListener('DOMContentLoaded', () => {
+        const tutorialBtn = document.getElementById('tutorialBtn');
+        if (tutorialBtn) tutorialBtn.addEventListener('click', () => startIndexTour());
+
+        const addSetBtn = document.getElementById('addSetBtnTab');
+        if (addSetBtn && !localStorage.getItem('matoma_seen_tour_index_v1')) {
+          addSetBtn.addEventListener('click', (e) => {
+            setTimeout(() => { if (!localStorage.getItem('matoma_seen_tour_index_v1')) startIndexTour(); }, 250);
+          }, { once: true });
+        }
+      });
+
+      window.startIndexTour = startIndexTour;
+    })();
   </script>
 </body>
 </html>

@@ -4,118 +4,379 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>設定 - MATOMA</title>
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#1969e1">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/ms-icon-144x144.png">
 
-  <!-- Tailwind + 共通フォント -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      darkMode: "class",
-      theme: {
-        extend: {
-          colors: {
-            primary: "#1969e1",
-            background: "#f6f7f8",
-          },
-          fontFamily: {
-            sans: ["Manrope", "Yu Gothic", "Hiragino Maru Gothic ProN", "sans-serif"],
-          },
-        },
-      },
-    };
-  </script>
+  <link rel="apple-touch-icon" sizes="57x57" href="/apple-icon-57x57.png">
+  <link rel="manifest" href="/manifest.json">
+  <meta name="msapplication-TileColor" content="#ffffff">
+  <meta name="msapplication-TileImage" content="/ms-icon-144x144.png">
+  <meta name="theme-color" content="#1a73e8">
+
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+  
+  <link rel="stylesheet" href="css/settings-overrides.css">
+  <style>
+    /* --- Craft Style Customizations from めも --- */
+    :root {
+      --primary-color: #1a73e8; /* Google Blue / Primary */
+      --surface-light: #ffffff;
+      --surface-dark: #1f2937; /* slate-800 */
+    }
+
+    /* 基本設定 */
+    body {
+      background-color: #f3f4f6; /* light mode body background: gray-100 */
+      color: #1f2937; /* light mode text: gray-800 */
+      transition: background-color 0.3s, color 0.3s;
+      padding-bottom: 2rem; 
+    }
+    .dark body {
+      background-color: #111827; /* dark mode body background: gray-900 */
+      color: #e5e7eb; /* dark mode text: gray-200 */
+    }
+
+    /* Craft風カード (app-card) */
+    .app-card {
+      background-color: var(--surface-light);
+      border-radius: 1rem;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+      transition: box-shadow 0.2s, transform 0.2s;
+    }
+    .dark .app-card {
+      background-color: var(--surface-dark);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+    }
+
+    /* Primary Color Utility */
+    .bg-primary { background-color: var(--primary-color); }
+    .text-primary { color: var(--primary-color); }
+
+    /* トグルスイッチのスタイルをTailwindに合わせて調整 */
+    .toggle-switch:checked {
+        background-color: var(--primary-color);
+        border-color: var(--primary-color);
+    }
+    .toggle-switch:checked + .slider::before {
+        transform: translateX(1.5rem); /* 24px */
+    }
+    .toggle-switch:focus {
+        outline: none;
+        box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.5); /* Primary color shadow */
+    }
+    /* settings.html の <style> ブロック内に追加 */
+.app-main-container {
+    /* JSで設定された変数を利用。未設定時のフォールバック値は64rem */
+    max-width: var(--max-container-width, 64rem); 
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 1rem; /* Tailwind px-4 */
+    padding-right: 1rem; /* Tailwind px-4 */
+}
+  </style>
 </head>
 
-<body class="bg-background font-sans text-slate-900 dark:bg-slate-900 dark:text-slate-100">
-  <!-- ヘッダー -->
-  <header class="bg-primary text-white flex items-center px-4 py-3 shadow-md">
-    <button onclick="location.href='index.html'" class="mr-3 text-2xl">←</button>
-    <h1 class="text-lg font-semibold">MATOMA</h1>
+<body class="min-h-screen dark:bg-gray-900">
+  <header class="bg-surface-light dark:bg-slate-800 flex items-center px-4 py-3 shadow-md border-b border-slate-200 dark:border-slate-700 sticky top-0 z-10">
+    <button onclick="history.back()" class="mr-3 text-2xl p-1 rounded-full text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+      <span class="material-symbols-outlined text-2xl">arrow_back</span>
+    </button>
+    <h1 class="text-xl font-bold text-slate-900 dark:text-white">設定</h1>
   </header>
 
-  <!-- 設定一覧 -->
-  <main class="mt-2 bg-white dark:bg-slate-800 divide-y divide-gray-200 dark:divide-slate-700">
-    <!-- テーマ -->
-    <div class="flex justify-between items-center px-4 py-3">
-      <span>ダークモード</span>
-      <label class="inline-flex relative items-center cursor-pointer">
-        <input id="darkModeToggle" type="checkbox" class="sr-only peer">
-        <div class="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:bg-primary after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:h-5 after:w-5 after:rounded-full after:transition-all peer-checked:after:translate-x-full"></div>
-      </label>
-    </div>
+  <main class="container mx-auto px-4 py-6 space-y-4 app-main-container">
+    <div class="space-y-6 app-card p-5 rounded-xl shadow-lg">
 
-    <!-- 自動保存 -->
-    <div class="flex justify-between items-center px-4 py-3">
-      <span>自動スコア保存</span>
-      <label class="inline-flex relative items-center cursor-pointer">
-        <input id="autoSaveToggle" type="checkbox" class="sr-only peer">
-        <div class="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:bg-primary after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:h-5 after:w-5 after:rounded-full after:transition-all peer-checked:after:translate-x-full"></div>
-      </label>
-    </div>
+      <h2 class="text-xl font-bold mb-4 text-primary">表示設定</h2>
 
-    <!-- 通知 -->
-    <div class="flex justify-between items-center px-4 py-3">
-      <span>通知を有効にする</span>
-      <label class="inline-flex relative items-center cursor-pointer">
-        <input id="notificationToggle" type="checkbox" class="sr-only peer">
-        <div class="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:bg-primary after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:h-5 after:w-5 after:rounded-full after:transition-all peer-checked:after:translate-x-full"></div>
-      </label>
-    </div>
-
-    <!-- データ削除 -->
-    <div class="flex justify-between items-center px-4 py-3">
-      <div>
-        <p>すべてのデータをリセット</p>
-        <p class="text-sm text-gray-500 dark:text-gray-400">※記録・道具データが削除されます</p>
+      <div class="flex items-center justify-between py-2">
+        <label for="darkModeToggle" class="text-base font-medium">ダークモード</label>
+        <label class="relative inline-flex items-center cursor-pointer">
+          <input type="checkbox" id="darkModeToggle" class="sr-only peer toggle-switch">
+          <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
+        </label>
       </div>
-      <button id="clearDataBtn" class="px-3 py-1 bg-red-600 text-white rounded-lg text-sm hover:bg-red-700">
-        実行
-      </button>
+
+      <div class="border-t border-slate-200 dark:border-slate-700"></div>
+
+      <div class="flex items-center justify-between py-2">
+        <label for="textSizeSelect" class="text-base font-medium">文字サイズ</label>
+        <select id="textSizeSelect" class="p-2 rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-slate-200">
+          <option value="small">小 (14px)</option>
+          <option value="medium" selected>中 (16px)</option>
+          <option value="large">大 (18px)</option>
+          <option value="x-large">特大 (20px)</option>
+        </select>
+      </div>
+    </div>
+    
+    <div class="space-y-6 app-card p-5 rounded-xl shadow-lg">
+
+      <h2 class="text-xl font-bold mb-4 text-primary">データ管理</h2>
+      
+      <div class="flex items-center justify-between py-2">
+        <label for="autoSaveToggle" class="text-base font-medium">記録の自動保存</label>
+        <label class="relative inline-flex items-center cursor-pointer">
+          <input type="checkbox" id="autoSaveToggle" class="sr-only peer toggle-switch">
+          <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
+        </label>
+      </div>
+
+      <div class="border-t border-slate-200 dark:border-slate-700"></div>
+
+      <div class="flex items-center justify-between py-2">
+        <label for="notificationToggle" class="text-base font-medium">通知を許可</label>
+        <label class="relative inline-flex items-center cursor-pointer">
+          <input type="checkbox" id="notificationToggle" class="sr-only peer toggle-switch">
+          <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
+        </label>
+      </div>
+
+      <div class="border-t border-slate-200 dark:border-slate-700"></div>
+
+      <div class="flex flex-col space-y-3 py-2">
+        <h3 class="text-base font-medium">データバックアップ</h3>
+        <button id="exportDataBtn" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors">
+          データのエクスポート (JSON/CSV)
+        </button>
+        <button id="importDataBtn" class="px-4 py-2 bg-slate-200 text-slate-800 rounded-lg hover:bg-slate-300 dark:bg-slate-700 dark:text-slate-200 dark:hover:bg-slate-600 transition-colors">
+          データのインポート
+        </button>
+      </div>
+      
+      <div class="border-t border-slate-200 dark:border-slate-700"></div>
+
+      <div class="flex flex-col space-y-3 py-2">
+        <h3 class="text-base font-medium">全データ削除</h3>
+        <p class="text-sm text-red-600 dark:text-red-400">注意: この操作は元に戻せません。</p>
+        <button id="clearDataBtn" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
+          全ての記録データを削除
+        </button>
+      </div>
+
     </div>
   </main>
-
-  <!-- JS：設定保存・読込・連携 -->
+<script src="js/font-size.js"></script>
   <script>
-    document.addEventListener("DOMContentLoaded", () => {
-      const darkModeToggle = document.getElementById("darkModeToggle");
-      const autoSaveToggle = document.getElementById("autoSaveToggle");
-      const notificationToggle = document.getElementById("notificationToggle");
-      const clearDataBtn = document.getElementById("clearDataBtn");
+// ======== ページ読込時にテーマを反映 ========
+(function() {
+  const theme = localStorage.getItem("theme");
+  if (theme === "dark") {
+    document.documentElement.classList.add("dark");
+  } else {
+    document.documentElement.classList.remove("dark");
+  }
+})();
+</script>
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    // ---- 要素取得 ----
+    const darkModeToggle = document.getElementById("darkModeToggle");
+    const autoSaveToggle = document.getElementById("autoSaveToggle");
+    const notificationToggle = document.getElementById("notificationToggle");
+    const clearDataBtn = document.getElementById("clearDataBtn");
+    const textSizeSelect = document.getElementById("textSizeSelect"); // ダミー
 
-      // ---- 初期状態読み込み ----
-      darkModeToggle.checked = localStorage.getItem("theme") === "dark";
-      autoSaveToggle.checked = localStorage.getItem("autoSave") === "true";
-      notificationToggle.checked = localStorage.getItem("notifications") === "true";
+    // ---- 初期状態読み込み ----
+    // LocalStorageから設定を読み込み、初期値を設定
+    darkModeToggle.checked = localStorage.getItem("theme") === "dark";
+    autoSaveToggle.checked = localStorage.getItem("autoSave") === "true";
+    notificationToggle.checked = localStorage.getItem("notifications") === "true";
+    textSizeSelect.value = localStorage.getItem("textSize") || "medium";
 
-      // ダークモード反映
-      if (darkModeToggle.checked) document.documentElement.classList.add("dark");
+    // ダークモードを即時反映
+    if (darkModeToggle.checked) document.documentElement.classList.add("dark");
 
-      // ---- イベント ----
-      darkModeToggle.addEventListener("change", (e) => {
-        if (e.target.checked) {
-          document.documentElement.classList.add("dark");
-          localStorage.setItem("theme", "dark");
-        } else {
-          document.documentElement.classList.remove("dark");
-          localStorage.setItem("theme", "light");
-        }
-      });
-
-      autoSaveToggle.addEventListener("change", (e) => {
-        localStorage.setItem("autoSave", e.target.checked);
-      });
-
-      notificationToggle.addEventListener("change", (e) => {
-        localStorage.setItem("notifications", e.target.checked);
-      });
-
-      clearDataBtn.addEventListener("click", () => {
-        if (confirm("全てのデータを削除しますか？")) {
-          localStorage.removeItem("kyudoSetsByDate");
-          localStorage.removeItem("kyudoTools");
-          alert("データを削除しました。");
-        }
-      });
+    // ---- イベント ----
+    darkModeToggle.addEventListener("change", (e) => {
+      if (e.target.checked) {
+        document.documentElement.classList.add("dark");
+        localStorage.setItem("theme", "dark");
+      } else {
+        document.documentElement.classList.remove("dark");
+        localStorage.setItem("theme", "light");
+      }
     });
-  </script>
+
+    autoSaveToggle.addEventListener("change", (e) => {
+      localStorage.setItem("autoSave", e.target.checked);
+    });
+
+    notificationToggle.addEventListener("change", (e) => {
+      const enabled = !!e.target.checked;
+      // ユーザーがオンにしたら Notification 権限を要求
+      if (enabled && "Notification" in window) {
+        if (Notification.permission === "default") {
+          Notification.requestPermission().then((perm) => {
+            if (perm !== "granted") {
+              alert("通知の権限が許可されませんでした。ブラウザ設定で通知を有効にしてください。");
+              notificationToggle.checked = false;
+              localStorage.setItem("notifications", false);
+            } else {
+              localStorage.setItem("notifications", true);
+            }
+          });
+        } else if (Notification.permission === "granted") {
+          localStorage.setItem("notifications", true);
+        } else {
+          alert("通知がブロックされています。ブラウザのサイト設定で通知を許可してください。");
+          notificationToggle.checked = false;
+          localStorage.setItem("notifications", false);
+        }
+      } else {
+        localStorage.setItem("notifications", false);
+      }
+    });
+    
+    textSizeSelect.addEventListener("change", (e) => {
+      localStorage.setItem("textSize", e.target.value);
+      // 実際にはここでbodyやrootのフォントサイズを変更するCSSクラスを切り替える処理が必要
+      console.log(`Text size set to: ${e.target.value}`);
+    });
+
+    clearDataBtn.addEventListener("click", () => {
+      if (confirm("全ての記録データ（セット、チーム、道具）を削除しますか？")) {
+        // 実際のデータ削除ロジック
+        localStorage.removeItem("kyudoSetsByDate"); 
+        localStorage.removeItem("kyudoTools");
+        localStorage.removeItem("kyudoTeams"); 
+        alert("データを削除しました。");
+      }
+    });
+    
+ 
+
+    // エクスポート機能の実装
+    document.getElementById("exportDataBtn").addEventListener("click", () => {
+      const data = {
+        sets: JSON.parse(localStorage.getItem("kyudoSetsByDate") || "{}"),
+        tools: JSON.parse(localStorage.getItem("kyudoTools") || "{}"),
+        teams: JSON.parse(localStorage.getItem("kyudoTeams") || "{}")
+      };
+
+      // JSON形式でダウンロード
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `matoma_backup_${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      // CSVも出力（セットデータのみ）
+      const sets = data.sets;
+      let csvContent = "日付,立ち,矢番号,得点,道具\n";
+      
+      Object.entries(sets).forEach(([date, dayData]) => {
+        dayData.forEach((set, setIndex) => {
+          if (set.markers) {
+            set.markers.forEach((marker, markerIndex) => {
+              const tools = set.tools || {};
+              const toolsStr = Object.entries(tools)
+                .map(([category, name]) => `${category}:${name}`)
+                .join(';');
+              csvContent += `${date},${setIndex + 1},${markerIndex + 1},${marker.score},${toolsStr}\n`;
+            });
+          }
+        });
+      });
+
+      const csvBlob = new Blob([csvContent], { type: 'text/csv' });
+      const csvUrl = URL.createObjectURL(csvBlob);
+      const csvA = document.createElement('a');
+      csvA.href = csvUrl;
+      csvA.download = `matoma_scores_${new Date().toISOString().split('T')[0]}.csv`;
+      document.body.appendChild(csvA);
+      csvA.click();
+      document.body.removeChild(csvA);
+      URL.revokeObjectURL(csvUrl);
+    });
+
+    // インポート機能の実装
+    document.getElementById("importDataBtn").addEventListener("click", () => {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = '.json';
+      
+      input.onchange = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          try {
+            const data = JSON.parse(e.target.result);
+            
+            // データの検証
+            if (!data.sets || !data.tools || typeof data.sets !== 'object') {
+              throw new Error('Invalid data format');
+            }
+
+            // 既存データとマージするか上書きするか確認
+            const shouldMerge = confirm(
+              "データの取り込み方法を選択してください:\n\n" +
+              "「OK」: 既存データと結合（推奨）\n" +
+              "「キャンセル」: 既存データを削除して上書き"
+            );
+
+            if (shouldMerge) {
+              // マージモード
+              const existingSets = JSON.parse(localStorage.getItem("kyudoSetsByDate") || "{}");
+              const existingTools = JSON.parse(localStorage.getItem("kyudoTools") || "{}");
+              const existingTeams = JSON.parse(localStorage.getItem("kyudoTeams") || "{}");
+
+              // 各データをマージ
+              const mergedSets = { ...existingSets, ...data.sets };
+              const mergedTools = { ...existingTools, ...data.tools };
+              const mergedTeams = { ...existingTeams, ...data.teams };
+
+              localStorage.setItem("kyudoSetsByDate", JSON.stringify(mergedSets));
+              localStorage.setItem("kyudoTools", JSON.stringify(mergedTools));
+              localStorage.setItem("kyudoTeams", JSON.stringify(mergedTeams));
+
+            } else {
+              // 上書きモード
+              localStorage.setItem("kyudoSetsByDate", JSON.stringify(data.sets));
+              localStorage.setItem("kyudoTools", JSON.stringify(data.tools));
+              if (data.teams) localStorage.setItem("kyudoTeams", JSON.stringify(data.teams));
+            }
+
+            alert("データを正常に取り込みました。\nページを再読み込みして反映します。");
+            window.location.reload();
+
+          } catch (err) {
+            console.error('Import error:', err);
+            alert("データの取り込みに失敗しました。ファイル形式を確認してください。");
+          }
+        };
+        reader.readAsText(file);
+      };
+      
+      input.click();
+    });
+
+    // ...existing code...
+  });
+</script>
 </body>
 </html>
