@@ -11,5 +11,15 @@
     "build": "echo 'Static site build complete'",
     "deploy": "vercel --prod"
   },
-  "keywords": ["MATOMA", "的真", "弓道", "遠的", "Kyudo", "ScoreApp"]
+  "keywords": [
+    "MATOMA",
+    "的真",
+    "弓道",
+    "遠的",
+    "Kyudo",
+    "ScoreApp"
+  ],
+  "dependencies": {
+    "@vercel/analytics": "^1.5.0"
+  }
 }
